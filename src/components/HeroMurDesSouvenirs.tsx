@@ -3,71 +3,82 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
-interface PhotoColumn {
+// Photos disponibles dans public/photos/parents
+const parentPhotos = [
+  "/photos/parents/mariage.jpg",
+  "/photos/parents/20150222_152405.jpg",
+  "/photos/parents/20220402_125213.jpg",
+  "/photos/parents/IMG_1767.JPG",
+  "/photos/parents/IMG_20220515_122349_678.jpg",
+  "/photos/parents/PXL_20230330_161354908.jpg",
+  "/photos/parents/PXL_20230604_130602424.MP.jpg",
+  "/photos/parents/PXL_20230604_130852428.jpg",
+  "/photos/parents/PXL_20231026_205931762.jpg",
+  "/photos/parents/PXL_20240822_115356056.jpg",
+  "/photos/parents/PXL_20240823_090657876.jpg",
+  "/photos/parents/PXL_20250809_150947063.jpg",
+  "/photos/parents/PXL_20250826_182933846.jpg",
+  "/photos/parents/Photo_2026-01-10_162010.jpg",
+  "/photos/parents/Photo_2026-01-10_162126 (2) (1).jpg",
+  "/photos/parents/Photo_2026-01-10_162707.jpg",
+  "/photos/parents/Photo_2026-01-10_162818.jpg",
+  "/photos/parents/Photo_2026-01-10_172411.jpg",
+  "/photos/parents/webcam1.jpg",
+];
+
+// Distribution des photos dans 4 colonnes
+function distributePhotos(photos: string[]): string[][] {
+  const columns: string[][] = [[], [], [], []];
+  photos.forEach((photo, index) => {
+    columns[index % 4].push(photo);
+  });
+  return columns;
+}
+
+interface ColumnConfig {
   photos: string[];
   direction: "up" | "down";
   speed: number;
 }
 
-interface HeroMurDesSouvenirsProps {
-  parentPhotos?: string[];
-  famillePhotos?: string[];
-}
-
-// Photos de placeholder pour la démonstration
-const placeholderPhotos = {
-  parents: [
-    "/photos/parents/placeholder-1.jpg",
-    "/photos/parents/placeholder-2.jpg",
-    "/photos/parents/placeholder-3.jpg",
-    "/photos/parents/placeholder-4.jpg",
-  ],
-  famille: [
-    "/photos/famille/placeholder-1.jpg",
-    "/photos/famille/placeholder-2.jpg",
-    "/photos/famille/placeholder-3.jpg",
-    "/photos/famille/placeholder-4.jpg",
-  ],
-};
-
-export default function HeroMurDesSouvenirs({
-  parentPhotos = [],
-  famillePhotos = [],
-}: HeroMurDesSouvenirsProps) {
+export default function HeroMurDesSouvenirs() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Combine et distribue les photos dans 4 colonnes
-  const allPhotos = [
-    ...parentPhotos,
-    ...famillePhotos,
-    // Utilise les placeholders si pas assez de photos
-    ...(parentPhotos.length + famillePhotos.length < 16 ? [...placeholderPhotos.parents, ...placeholderPhotos.famille] : []),
-  ];
+  const distributedPhotos = distributePhotos(parentPhotos);
 
-  // Configuration des 4 colonnes avec alternance de direction
-  const columns: PhotoColumn[] = [
-    { photos: allPhotos.slice(0, 4), direction: "up", speed: 25 },
-    { photos: allPhotos.slice(4, 8), direction: "down", speed: 30 },
-    { photos: allPhotos.slice(8, 12), direction: "up", speed: 28 },
-    { photos: allPhotos.slice(12, 16), direction: "down", speed: 32 },
+  // Configuration des 4 colonnes : colonnes 1 et 3 vers le haut, 2 et 4 vers le bas
+  const columns: ColumnConfig[] = [
+    { photos: distributedPhotos[0], direction: "up", speed: 30 },
+    { photos: distributedPhotos[1], direction: "down", speed: 35 },
+    { photos: distributedPhotos[2], direction: "up", speed: 28 },
+    { photos: distributedPhotos[3], direction: "down", speed: 32 },
   ];
 
   return (
     <section className="relative h-screen w-full overflow-hidden">
-      {/* Grille de 4 colonnes de photos */}
-      <div className="absolute inset-0 grid grid-cols-4 gap-2 p-2">
+      {/* Grille de photos : 2 colonnes mobile, 4 colonnes desktop */}
+      <div className="absolute inset-0 grid grid-cols-2 md:grid-cols-4 gap-2 p-2">
         {columns.map((column, columnIndex) => (
           <div
             key={columnIndex}
-            className="relative h-full overflow-hidden rounded-lg"
+            className={`relative h-full overflow-hidden ${
+              // Masquer les colonnes 3 et 4 sur mobile
+              columnIndex >= 2 ? "hidden md:block" : ""
+            }`}
           >
-            {/* Container animé - double les photos pour créer l'effet de boucle infinie */}
+            {/* Container animé avec duplication pour l'effet de boucle infinie */}
             <div
-              className={`flex flex-col gap-2 ${mounted ? (column.direction === "up" ? "animate-marquee-up" : "animate-marquee-down") : ""}`}
+              className={`flex flex-col gap-2 will-change-transform ${
+                mounted
+                  ? column.direction === "up"
+                    ? "animate-marquee-up"
+                    : "animate-marquee-down"
+                  : ""
+              }`}
               style={{
                 animationDuration: `${column.speed}s`,
               }}
@@ -76,30 +87,31 @@ export default function HeroMurDesSouvenirs({
               {column.photos.map((photo, photoIndex) => (
                 <div
                   key={`first-${photoIndex}`}
-                  className="relative aspect-[3/4] w-full flex-shrink-0 overflow-hidden rounded-lg bg-brand-dark/10"
+                  className="relative aspect-[3/4] w-full flex-shrink-0 overflow-hidden rounded-lg"
                 >
-                  <div className="absolute inset-0 flex items-center justify-center text-brand-dark/30 text-sm">
-                    Photo {columnIndex * 4 + photoIndex + 1}
-                  </div>
-                  {/* L'image sera affichée quand les vraies photos seront ajoutées */}
-                  {/* <Image
+                  <Image
                     src={photo}
-                    alt={`Souvenir ${photoIndex + 1}`}
+                    alt={`Souvenir de famille ${columnIndex * 5 + photoIndex + 1}`}
                     fill
                     className="object-cover"
-                    sizes="25vw"
-                  /> */}
+                    sizes="(max-width: 768px) 50vw, 25vw"
+                    priority={photoIndex === 0 && columnIndex < 2}
+                  />
                 </div>
               ))}
-              {/* Deuxième série (duplication pour l'effet de boucle) */}
+              {/* Deuxième série (duplication pour éviter les trous) */}
               {column.photos.map((photo, photoIndex) => (
                 <div
                   key={`second-${photoIndex}`}
-                  className="relative aspect-[3/4] w-full flex-shrink-0 overflow-hidden rounded-lg bg-brand-dark/10"
+                  className="relative aspect-[3/4] w-full flex-shrink-0 overflow-hidden rounded-lg"
                 >
-                  <div className="absolute inset-0 flex items-center justify-center text-brand-dark/30 text-sm">
-                    Photo {columnIndex * 4 + photoIndex + 1}
-                  </div>
+                  <Image
+                    src={photo}
+                    alt={`Souvenir de famille ${columnIndex * 5 + photoIndex + 1}`}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 50vw, 25vw"
+                  />
                 </div>
               ))}
             </div>
@@ -107,40 +119,38 @@ export default function HeroMurDesSouvenirs({
         ))}
       </div>
 
-      {/* Overlay dégradé de transparent vers Lavender Blush */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-brand-light" />
-      <div className="absolute inset-0 bg-gradient-to-t from-transparent via-brand-light/30 to-brand-light/60" />
+      {/* Overlay dégradé : transparent en haut vers bg-brand-light en bas */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-brand-light" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-brand-light/40 via-transparent to-transparent" />
+      <div className="pointer-events-none absolute inset-0 bg-brand-light/30" />
 
       {/* Contenu du Hero centré */}
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-        <h1 className="font-serif text-4xl md:text-6xl lg:text-7xl font-bold text-brand-dark mb-4 drop-shadow-lg">
-          Véronique et Christophe
-        </h1>
-        <p className="font-serif text-2xl md:text-3xl lg:text-4xl text-brand-accent-deep font-semibold mb-2">
-          30 ans de mariage
-        </p>
-        <p className="font-sans text-lg md:text-xl text-brand-dark/80 italic mb-8">
-          Un évènement qui se fête.. même avec un an de retard !
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4">
-          <a
-            href="#rsvp"
-            className="btn-primary px-8 py-4 rounded-full font-sans font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300"
-          >
-            Confirmer ma présence
-          </a>
-          <a
-            href="#programme"
-            className="px-8 py-4 rounded-full font-sans font-semibold text-lg border-2 border-brand-accent-deep text-brand-accent-deep hover:bg-brand-accent-deep hover:text-brand-light transition-all duration-300"
-          >
-            Voir le programme
-          </a>
+        {/* Conteneur avec fond Black Cherry */}
+        <div className="bg-brand-accent-deep p-8 rounded-2xl max-w-fit text-brand-light">
+          <h1 className="font-oswald text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
+            Véronique &amp; Christophe : 30 ans de mariage
+          </h1>
+          <p className="font-meow text-3xl sm:text-4xl md:text-5xl mb-4">
+            Noces de Perle
+          </p>
+          <p className="font-montserrat text-base sm:text-lg md:text-xl leading-relaxed mb-8">
+            Un anniversaire qui se fête.. même avec un an de retard
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="#rsvp" className="btn btn-on-dark">
+              Confirmer ma présence
+            </a>
+            <a href="#programme" className="btn btn-secondary-on-dark">
+              Voir le programme
+            </a>
+          </div>
         </div>
       </div>
 
       {/* Date de l'événement en bas */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-center">
-        <p className="font-serif text-2xl md:text-3xl text-brand-accent-deep font-bold">
+      <div className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 text-center">
+        <p className="font-oswald text-xl sm:text-2xl md:text-3xl text-brand-accent-deep font-bold drop-shadow-md">
           27 Juin 2026
         </p>
       </div>
