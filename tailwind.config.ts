@@ -60,6 +60,8 @@ const config: Config = {
         "fade-in-up": "fadeInUp 0.7s ease-out forwards",
         "float": "float 4s ease-in-out infinite",
         "draw-arrow": "drawArrow 0.8s ease-out forwards",
+        "marquee-vertical": "marquee-vertical 30s linear infinite",
+        "marquee-vertical-reverse": "marquee-vertical-reverse 30s linear infinite",
       },
       keyframes: {
         fadeIn: {
@@ -76,6 +78,14 @@ const config: Config = {
         },
         drawArrow: {
           "to": { strokeDashoffset: "0" },
+        },
+        "marquee-vertical": {
+          "0%": { transform: "translateY(0)" },
+          "100%": { transform: "translateY(-50%)" },
+        },
+        "marquee-vertical-reverse": {
+          "0%": { transform: "translateY(-50%)" },
+          "100%": { transform: "translateY(0)" },
         },
       },
     },
