@@ -1,0 +1,88 @@
+@import "tailwindcss";
+
+:root {
+  /* Palette de couleurs - 30 ans de mariage */
+  --brand-light: #f6e8ea;      /* Lavender Blush - Arrière-plan principal */
+  --brand-dark: #22181c;       /* Coffee Bean - Texte et titres */
+  --brand-accent-deep: #5a0001; /* Black Cherry - Bordures et titres de sections */
+  --brand-primary: #f45b69;    /* Bubblegum Pink - Boutons d'action et éléments actifs */
+  --brand-alert: #f13030;      /* Cinnabar - Alertes et stocks critiques */
+
+  --background: var(--brand-light);
+  --foreground: var(--brand-dark);
+
+  /* Polices Google Fonts */
+  --font-playfair: "Playfair Display", Georgia, serif;
+  --font-inter: "Inter", Arial, sans-serif;
+}
+
+@theme inline {
+  /* Couleurs personnalisées */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-brand-light: var(--brand-light);
+  --color-brand-dark: var(--brand-dark);
+  --color-brand-accent-deep: var(--brand-accent-deep);
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-alert: var(--brand-alert);
+
+  /* Polices */
+  --font-serif: var(--font-playfair);
+  --font-sans: var(--font-inter);
+
+  /* Animations pour le Vertical Marquee */
+  --animate-marquee-up: marquee-up 25s linear infinite;
+  --animate-marquee-down: marquee-down 25s linear infinite;
+}
+
+/* Animations Vertical Marquee */
+@keyframes marquee-up {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+@keyframes marquee-down {
+  0% {
+    transform: translateY(-50%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-inter);
+}
+
+/* Typographie - Titres */
+h1, h2 {
+  font-family: var(--font-playfair);
+}
+
+/* Boutons - Style de base */
+.btn-primary {
+  background: linear-gradient(135deg, var(--brand-primary), var(--brand-alert));
+  color: var(--brand-light);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background: var(--brand-accent-deep);
+}
+
+/* Focus pour les formulaires */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 2px var(--brand-primary);
+}
