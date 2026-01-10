@@ -1,25 +1,29 @@
 # Components - Lavergne en Fête
 
+> Architecture des blocs selon le style Pixelik : épuré, impactant, fonctionnel.
+
+---
+
 ## Architecture de la Page
 
-La page utilise une **Bento Grid** responsive comme structure principale. Certains blocs adoptent le style "bande de film" verticale (photobooth) avec des bordures blanches épaisses.
-
 ```
-┌─────────────────────────────────────────────────────────┐
-│                      HERO BLOCK                         │
-│              (Montage Photobooth 4 célébrés)            │
-├───────────────┬─────────────────────┬───────────────────┤
-│  FILM STRIP   │    MUSIC BLOCK      │   FILM STRIP      │
-│   (Photos)    │  (Affiche Festival) │    (Photos)       │
-├───────────────┴─────────────────────┴───────────────────┤
-│                     FAN ZONE BLOCK                      │
-│            (TFC / Stade Toulousain + Calendrier)        │
-├─────────────────────────────────────────────────────────┤
-│                      RSVP BLOCK                         │
-│              (Formulaire style billetterie)             │
-├─────────────────────────────────────────────────────────┤
-│                       FOOTER                            │
-└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                        HERO BLOCK                           │
+│     Photo plein écran + "30 ans de mariage" (Oswald)        │
+│     + sous-titre manuscrit (Yellowtail)                     │
+├─────────────────────────────────────────────────────────────┤
+│                      MUSIC LINE-UP                          │
+│           Style affiche festival minimaliste                │
+├─────────────────────────────────────────────────────────────┤
+│                       FAN ZONE SPORT                        │
+│         TFC / Stade Toulousain - Programme soirée           │
+├─────────────────────────────────────────────────────────────┤
+│                        RSVP BLOCK                           │
+│              Formulaire épuré, fonctionnel                  │
+├─────────────────────────────────────────────────────────────┤
+│                         FOOTER                              │
+│              Infos pratiques, date, lieu                    │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -27,260 +31,277 @@ La page utilise une **Bento Grid** responsive comme structure principale. Certai
 ## 1. Hero Block
 
 ### Description
-Montage type photobooth mettant en vedette les 4 célébrés. Design inspiré d'une bande de film photo avec plusieurs "frames".
+
+Bloc d'impact maximal. Photo des parents en fond (ou dans un cadre large), avec le titre "30 ans de mariage" en typographie Oswald massive.
 
 ### Structure
+
 ```tsx
 <HeroBlock>
-  <FilmStrip orientation="horizontal">
-    <PhotoFrame name="Prénom 1" age={30} />
-    <PhotoFrame name="Prénom 2" age={27} />
-    <PhotoFrame name="Prénom 3" age={25} />
-    <PhotoFrame name="Prénom 4" age={20} />
-  </FilmStrip>
-  <HandwrittenTitle>Lavergne en Fête</HandwrittenTitle>
-  <DateBadge>Date de l'événement</DateBadge>
+  <BackgroundImage
+    src="/public/images/photo-parents-hero.jpg"
+    effect="reveal-on-scroll"
+  />
+  <Content>
+    <Title font="Oswald" size="hero">
+      30 ans de mariage
+    </Title>
+    <Subtitle font="Yellowtail">
+      ça se fête, même avec une année de retard
+    </Subtitle>
+    <DateBadge>27 juin 2026</DateBadge>
+  </Content>
+  <ScrollIndicator />
 </HeroBlock>
 ```
 
 ### Spécifications Visuelles
-- **Fond** : Charcoal avec texture subtile grain de film
-- **Photos** : Bordure Pearl (8px), coins légèrement arrondis
-- **Perforations** : Simulated film sprocket holes sur les côtés
-- **Titre** : Playfair Display, Gold, animé au scroll
-- **Annotations** : Reenie Beanie pour les âges ("30 ans !")
 
-### Animations (Framer Motion)
-- Entrée séquentielle des photos (stagger: 0.2s)
-- Légère rotation aléatoire (-2° à +2°) pour effet naturel
-- Hover : Scale 1.05 + shadow elevation
+| Élément | Police | Taille | Couleur |
+|---------|--------|--------|---------|
+| Titre | Oswald 700 | clamp(4rem, 15vw, 10rem) | #F5F5F5 |
+| Sous-titre | Yellowtail | clamp(1.5rem, 4vw, 2.5rem) | #F5F5F5 (opacity 80%) |
+| Date | Montserrat 500 | 1rem | #F5F5F5 |
 
----
+### Comportement
 
-## 2. Film Strip Blocks
+- Photo : parallax léger au scroll (translateY)
+- Titre : fade-in depuis le bas au chargement
+- Sous-titre : apparition décalée (delay 0.3s)
+- Overlay sombre sur la photo pour lisibilité
 
-### Description
-Blocs verticaux simulant une bande de film photo, utilisés comme éléments décoratifs dans la grille.
+### Effet Reveal au Scroll
 
-### Structure
 ```tsx
-<FilmStripBlock>
-  <SprocketHoles side="left" />
-  <PhotoStack>
-    <MiniPhoto src="..." caption="Légende manuscrite" />
-    <MiniPhoto src="..." caption="Autre légende" />
-    <MiniPhoto src="..." caption="Souvenir" />
-  </PhotoStack>
-  <SprocketHoles side="right" />
-</FilmStripBlock>
-```
-
-### Spécifications Visuelles
-- **Largeur** : 200px (fixe) ou 1 colonne de la grille
-- **Perforations** : Rectangles arrondis Pearl, espacés régulièrement
-- **Photos** : Format carré ou 4:5, bordure blanche
-- **Captions** : Reenie Beanie, rotation légère, style Post-it
-
-### SVG - Flèche Manuscrite
-```svg
-<svg viewBox="0 0 100 50" class="hand-drawn-arrow">
-  <path d="M10,25 Q30,10 50,25 T90,25"
-        stroke="currentColor"
-        stroke-width="2"
-        fill="none"
-        stroke-linecap="round"/>
-  <path d="M80,15 L90,25 L80,35"
-        stroke="currentColor"
-        stroke-width="2"
-        fill="none"
-        stroke-linecap="round"/>
-</svg>
+// Utiliser Framer Motion useScroll + useTransform
+const { scrollYProgress } = useScroll();
+const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
+const y = useTransform(scrollYProgress, [0, 1], ['0%', '30%']);
 ```
 
 ---
 
-## 3. Music Block
+## 2. Music Line-up Block
 
 ### Description
-Bloc style affiche de festival présentant les artistes de la soirée.
+
+Présentation des artistes de la soirée dans un style affiche de festival minimaliste.
 
 ### Structure
+
 ```tsx
 <MusicBlock>
-  <FestivalPoster>
-    <PosterHeader>Live Music</PosterHeader>
-    <LineUp>
-      <Headliner name="Watts UP" genre="Rock/Pop" />
-      <Artist name="Steliophonie" genre="Festif" />
-    </LineUp>
-    <PosterFooter>
-      <VinylIcon />
-      <span>All night long</span>
-    </PosterFooter>
-  </FestivalPoster>
+  <SectionTitle font="Oswald">LIVE MUSIC</SectionTitle>
+  <ArtistList>
+    <Artist
+      name="WATTS UP"
+      genre="Rock / Pop"
+      headliner={true}
+    />
+    <Artist
+      name="STELIOPHONIE"
+      genre="Festif"
+    />
+  </ArtistList>
+  <TimeInfo>À partir de 22h30</TimeInfo>
 </MusicBlock>
 ```
 
 ### Spécifications Visuelles
-- **Style** : Affiche de concert vintage/rétro
-- **Fond** : Gradient charcoal vers charcoal-dark
-- **Bordure** : Double trait Gold
-- **Typo artistes** : Playfair Display Bold, grande taille
-- **Éléments déco** : Icônes vinyle, notes de musique (Lucide)
+
+| Élément | Police | Style |
+|---------|--------|-------|
+| Section Title | Oswald 600 | Uppercase, letter-spacing: 0.2em |
+| Artist Name | Oswald 700 | Grande taille, uppercase |
+| Genre | Montserrat 400 | Petite taille, muted |
 
 ### Animations
-- Effet "néon" subtil sur les noms (glow Gold)
-- Parallax léger au scroll
+
+- Noms des artistes : stagger fade-in au scroll
+- Pas d'effet glow ni néon
 
 ---
 
-## 4. Fan Zone Block
+## 3. Fan Zone Sport Block
 
 ### Description
-Espace dédié aux passions sportives (TFC/Stade Toulousain) avec un calendrier des "matchs" de la soirée.
+
+Espace dédié aux passions sportives avec programme de la soirée style "match".
 
 ### Structure
+
 ```tsx
 <FanZoneBlock>
-  <TeamBadge team="tfc" />
-  <TeamBadge team="stade-toulousain" />
-  <MatchCalendar>
-    <MatchCard time="19h00" event="Ouverture des portes" />
-    <MatchCard time="20h00" event="Coup d'envoi - Apéro" />
-    <MatchCard time="21h00" event="Mi-temps - Dîner" />
-    <MatchCard time="22h30" event="Prolongations - Concert" />
-  </MatchCalendar>
+  <TeamLogos>
+    <TeamBadge team="stade-toulousain" />
+    <TeamBadge team="tfc" />
+  </TeamLogos>
+  <ProgramSchedule>
+    <ScheduleItem time="18h00" event="Ouverture des portes" />
+    <ScheduleItem time="19h00" event="Apéritif" />
+    <ScheduleItem time="20h30" event="Dîner" />
+    <ScheduleItem time="22h30" event="Concert" />
+  </ProgramSchedule>
 </FanZoneBlock>
 ```
 
-### Spécifications Visuelles
-- **Fond** : Charcoal avec motif terrain subtil (lignes)
-- **Badges équipes** : Stylisés, monochromes par défaut
-- **Hover badges** : Révèle les vraies couleurs (Violet TFC / Rouge ST)
-- **Calendrier** : Style tableau de scores
-- **Typo** : Inter pour la lisibilité
-
 ### Interactions
-- Hover sur TFC : Bordure violet (#5B2D8E) + glow
-- Hover sur Stade Toulousain : Bordure rouge (#C8102E) + glow
+
+| État | Stade Toulousain | TFC |
+|------|-----------------|-----|
+| Default | #F5F5F5 (monochrome) | #F5F5F5 (monochrome) |
+| Hover | border: #FF2D55 | border: #8B5CF6 |
+
+### Style Programme
+
+- Layout en liste verticale
+- Horaire en Oswald (condensed)
+- Événement en Montserrat
+- Ligne séparatrice subtile (1px, opacity 10%)
 
 ---
 
-## 5. RSVP Block
+## 4. RSVP Block
 
 ### Description
-Formulaire de confirmation de présence stylisé comme une billetterie de stade.
+
+Formulaire de confirmation épuré et fonctionnel.
 
 ### Structure
+
 ```tsx
 <RSVPBlock>
-  <TicketContainer>
-    <TicketHeader>
-      <span>BILLET D'ENTRÉE</span>
-      <TicketNumber>#001</TicketNumber>
-    </TicketHeader>
-    <TicketPerforations />
-    <RSVPForm>
-      <FormField label="Nom" type="text" />
-      <FormField label="Email" type="email" />
-      <FormField label="Nombre de personnes" type="number" />
-      <FormField label="Allergies / Régime" type="textarea" />
-      <SubmitButton>Valider ma présence</SubmitButton>
-    </RSVPForm>
-    <TicketFooter>
-      <Barcode />
-    </TicketFooter>
-  </TicketContainer>
+  <SectionTitle font="Oswald">CONFIRMER MA PRÉSENCE</SectionTitle>
+  <Form>
+    <InputGroup>
+      <Label>Nom complet</Label>
+      <Input type="text" />
+    </InputGroup>
+    <InputGroup>
+      <Label>Email</Label>
+      <Input type="email" />
+    </InputGroup>
+    <InputGroup>
+      <Label>Nombre de personnes</Label>
+      <Select options={[1, 2, 3, 4, 5]} />
+    </InputGroup>
+    <InputGroup>
+      <Label>Restrictions alimentaires</Label>
+      <Textarea />
+    </InputGroup>
+    <SubmitButton>Valider</SubmitButton>
+  </Form>
 </RSVPBlock>
 ```
 
-### Spécifications Visuelles
-- **Container** : Forme de billet avec bords dentelés
-- **Perforations** : Ligne pointillée séparant header/body
-- **Fond billet** : Pearl avec léger grain
-- **Texte** : Charcoal pour contraste
-- **Bouton submit** : Gold, hover révèle gradient vers stadium-red
+### Spécifications Inputs
+
+```css
+.input {
+  background: transparent;
+  border: 1px solid rgba(245, 245, 245, 0.2);
+  color: #F5F5F5;
+  font-family: 'Montserrat', sans-serif;
+  padding: 1rem 1.5rem;
+}
+
+.input:focus {
+  border-color: #F5F5F5;
+  outline: none;
+}
+```
 
 ### États du Formulaire
-- **Idle** : Bordures charcoal-light
-- **Focus** : Bordure Gold
-- **Error** : Bordure stadium-red
-- **Success** : Bordure verte + animation confetti
 
-### Intégration Backend
-- Soumission vers Google Sheets via API
-- Validation côté client + serveur
-- Feedback visuel immédiat
+| État | Style |
+|------|-------|
+| Default | Border rgba(255,255,255,0.2) |
+| Focus | Border #F5F5F5 |
+| Error | Border #FF2D55 + message |
+| Success | Feedback visuel simple |
 
 ---
 
-## 6. Footer
+## 5. Footer Block
 
 ### Description
-Pied de page minimaliste avec informations pratiques.
+
+Pied de page minimaliste avec informations essentielles.
 
 ### Structure
+
 ```tsx
 <Footer>
-  <LocationInfo>
-    <MapPin /> Adresse de l'événement
-  </LocationInfo>
-  <DateInfo>
-    <Calendar /> Date complète
-  </DateInfo>
-  <SocialLinks>
-    {/* Optionnel */}
-  </SocialLinks>
-  <Credits>
-    <HandwrittenNote>Fait avec ♥ pour nos 4 stars</HandwrittenNote>
-  </Credits>
+  <MainInfo>
+    <Date font="Oswald">27 JUIN 2026</Date>
+    <Location font="Montserrat">Lavergne, France</Location>
+  </MainInfo>
+  <Signature font="Yellowtail">
+    La joie d'être ensemble
+  </Signature>
 </Footer>
 ```
+
+### Style
+
+- Hauteur minimale
+- Séparateur subtil en haut (1px, opacity 10%)
+- Centré, aéré
 
 ---
 
 ## Composants Utilitaires
 
-### HandwrittenArrow
+### SectionTitle
+
 ```tsx
-<HandwrittenArrow
-  direction="right" | "left" | "up" | "down"
-  color="gold" | "pearl"
-  className="..."
-/>
+interface SectionTitleProps {
+  children: React.ReactNode;
+  font?: 'oswald' | 'montserrat';
+  align?: 'left' | 'center';
+}
+
+// Usage
+<SectionTitle font="oswald" align="center">
+  LIVE MUSIC
+</SectionTitle>
 ```
 
-### SprocketHoles
+### ScrollReveal
+
 ```tsx
-<SprocketHoles
-  count={8}
-  orientation="vertical" | "horizontal"
-/>
+// Wrapper Framer Motion pour les animations au scroll
+<ScrollReveal delay={0.2}>
+  <Content />
+</ScrollReveal>
 ```
 
-### GlowText
+### DateBadge
+
 ```tsx
-<GlowText
-  color="gold" | "stadium-red" | "tfc-violet"
-  intensity="low" | "medium" | "high"
->
-  Texte lumineux
-</GlowText>
+<DateBadge>
+  <span className="day">27</span>
+  <span className="month">JUIN</span>
+  <span className="year">2026</span>
+</DateBadge>
 ```
 
 ---
 
 ## Responsive Behavior
 
-| Breakpoint | Comportement |
-|------------|--------------|
-| Mobile (<640px) | Stack vertical, film strips cachés |
-| Tablet (640-1024px) | Grille 2 colonnes |
-| Desktop (>1024px) | Bento Grid complète |
+| Breakpoint | Hero Title | Margins | Layout |
+|------------|------------|---------|--------|
+| Mobile (<640px) | 4rem | 24px | Stack vertical |
+| Tablet (640-1024px) | 6rem | 48px | 2 colonnes si pertinent |
+| Desktop (>1024px) | 10rem+ | 104px | Full layout |
+
+---
 
 ## Accessibilité
 
-- Contraste WCAG AA minimum pour tous les textes
+- Contraste WCAG AA : ratio minimum 4.5:1
 - Focus visible sur tous les éléments interactifs
-- Alt text descriptifs pour toutes les images
-- Formulaire RSVP accessible au clavier
+- Alt text descriptifs pour les images
+- Navigation clavier complète
+- Labels explicites pour le formulaire

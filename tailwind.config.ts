@@ -9,59 +9,43 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Couleurs principales
-        charcoal: {
-          DEFAULT: "#1A1A1A",
-          light: "#2A2A2A",
-          dark: "#0D0D0D",
+        // Palette Pixelik
+        void: {
+          DEFAULT: "#080808",
+          soft: "#0F0F0F",
+          lighter: "#1A1A1A",
         },
-        pearl: {
+        "off-white": {
           DEFAULT: "#F5F5F5",
-          muted: "#E0E0E0",
+          muted: "#A0A0A0",
+          dim: "#606060",
         },
-        gold: {
-          DEFAULT: "#D4AF37",
-          light: "#E5C76B",
-          dark: "#B8962E",
-        },
-        // Couleurs d'accent (Hover/Interaction)
-        "stadium-red": "#C8102E",
-        "tfc-violet": "#5B2D8E",
+        // Accents Sport (usage minimal)
+        "stadium-red": "#FF2D55",
+        "tfc-violet": "#8B5CF6",
       },
       fontFamily: {
-        display: ["Playfair Display", "Georgia", "serif"],
-        handwritten: ["Reenie Beanie", "cursive"],
-        body: ["Inter", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
+        display: ["var(--font-oswald)", "Oswald", "sans-serif"],
+        script: ["var(--font-yellowtail)", "Yellowtail", "cursive"],
+        body: ["var(--font-montserrat)", "Montserrat", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
       },
-      borderWidth: {
-        film: "8px",
-        polaroid: "12px",
-      },
-      boxShadow: {
-        film: "0 4px 20px rgba(0, 0, 0, 0.6)",
-        glow: {
-          gold: "0 0 20px rgba(212, 175, 55, 0.5)",
-          red: "0 0 20px rgba(200, 16, 46, 0.5)",
-          violet: "0 0 20px rgba(91, 45, 142, 0.5)",
-        },
+      spacing: {
+        "18": "4.5rem",
+        "26": "6.5rem",
+        "104": "26rem",
       },
       animation: {
         "fade-in": "fadeIn 0.5s ease-out forwards",
-        "slide-up": "slideUp 0.5s ease-out forwards",
-        glow: "glow 2s ease-in-out infinite alternate",
+        "fade-in-up": "fadeInUp 0.6s ease-out forwards",
       },
       keyframes: {
         fadeIn: {
           "0%": { opacity: "0" },
           "100%": { opacity: "1" },
         },
-        slideUp: {
+        fadeInUp: {
           "0%": { opacity: "0", transform: "translateY(20px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
-        },
-        glow: {
-          "0%": { boxShadow: "0 0 5px rgba(212, 175, 55, 0.3)" },
-          "100%": { boxShadow: "0 0 20px rgba(212, 175, 55, 0.6)" },
         },
       },
     },
