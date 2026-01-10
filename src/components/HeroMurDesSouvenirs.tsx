@@ -1,7 +1,57 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+
+// Détails de l'événement pour le calendrier
+const eventDetails = {
+  title: "30 ans de mariage : Véronique & Christophe",
+  date: "20260627",
+  dateEnd: "20260628",
+  location: "Chez Granny",
+  description:
+    "Célébration des 30 ans de mariage de Christophe & Véronique.. avec un an de retard.",
+};
+
+// Génère l'URL Google Calendar
+function generateGoogleCalendarUrl(): string {
+  const params = new URLSearchParams({
+    action: "TEMPLATE",
+    text: eventDetails.title,
+    dates: `${eventDetails.date}/${eventDetails.dateEnd}`,
+    location: eventDetails.location,
+    details: eventDetails.description,
+  });
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}
+
+// Génère et télécharge un fichier .ics pour Apple/Outlook
+function downloadIcsFile(): void {
+  const icsContent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Lavergne en Fête//FR
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+DTSTART;VALUE=DATE:${eventDetails.date}
+DTEND;VALUE=DATE:${eventDetails.dateEnd}
+SUMMARY:${eventDetails.title}
+LOCATION:${eventDetails.location}
+DESCRIPTION:${eventDetails.description}
+STATUS:CONFIRMED
+END:VEVENT
+END:VCALENDAR`;
+
+  const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "anniversaire-30-ans-mariage.ics";
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
 
 // Photos disponibles dans public/photos/parents
 const parentPhotos = [
@@ -43,10 +93,27 @@ interface ColumnConfig {
 
 export default function HeroMurDesSouvenirs() {
   const [mounted, setMounted] = useState(false);
+  const [calendarMenuOpen, setCalendarMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Fermer le menu au clic extérieur
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setCalendarMenuOpen(false);
+      }
+    }
+    if (calendarMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [calendarMenuOpen]);
 
   const distributedPhotos = distributePhotos(parentPhotos);
 
@@ -148,11 +215,54 @@ export default function HeroMurDesSouvenirs() {
         </div>
       </div>
 
-      {/* Date de l'événement en bas */}
-      <div className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 text-center">
-        <p className="font-oswald text-xl sm:text-2xl md:text-3xl text-brand-accent-deep font-bold drop-shadow-md">
-          27 Juin 2026
-        </p>
+      {/* Date de l'événement en bas - Cliquable pour ajouter au calendrier */}
+      <div
+        ref={menuRef}
+        className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 text-center"
+      >
+        <div className="relative group">
+          {/* Texte "ajouter au calendrier" qui apparaît au hover */}
+          <span className="font-montserrat text-xs sm:text-sm text-brand-accent-deep/70 absolute -top-5 sm:-top-6 left-1/2 -translate-x-1/2 whitespace-nowrap opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 ease-out pointer-events-none">
+            ajouter au calendrier
+          </span>
+
+          {/* Date cliquable */}
+          <button
+            onClick={() => setCalendarMenuOpen(!calendarMenuOpen)}
+            className="font-oswald text-xl sm:text-2xl md:text-3xl text-brand-accent-deep font-bold cursor-pointer hover:text-brand-dark transition-colors duration-300 bg-transparent border-none outline-none"
+            aria-label="Ajouter au calendrier"
+          >
+            27 Juin 2026
+          </button>
+
+          {/* Menu dropdown pour choisir le type de calendrier */}
+          <div
+            className={`absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-white rounded-lg overflow-hidden transition-all duration-300 ease-out ${
+              calendarMenuOpen
+                ? "opacity-100 translate-y-0 pointer-events-auto"
+                : "opacity-0 -translate-y-2 pointer-events-none"
+            }`}
+          >
+            <a
+              href={generateGoogleCalendarUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block px-4 py-2 font-montserrat text-sm text-brand-dark hover:bg-brand-light transition-colors duration-200 whitespace-nowrap"
+              onClick={() => setCalendarMenuOpen(false)}
+            >
+              Google Calendar
+            </a>
+            <button
+              onClick={() => {
+                downloadIcsFile();
+                setCalendarMenuOpen(false);
+              }}
+              className="block w-full text-left px-4 py-2 font-montserrat text-sm text-brand-dark hover:bg-brand-light transition-colors duration-200 whitespace-nowrap border-none bg-transparent cursor-pointer"
+            >
+              Apple / Outlook (.ics)
+            </button>
+          </div>
+        </div>
       </div>
     </section>
   );
