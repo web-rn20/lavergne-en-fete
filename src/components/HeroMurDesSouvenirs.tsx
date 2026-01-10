@@ -131,7 +131,7 @@ export default function HeroMurDesSouvenirs() {
           <h1 className="font-oswald text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
             Véronique &amp; Christophe : 30 ans de mariage
           </h1>
-          <p className="font-yellowtail text-3xl sm:text-4xl md:text-5xl mb-4">
+          <p className="font-meow text-3xl sm:text-4xl md:text-5xl mb-4">
             Noces de Perle
           </p>
           <p className="font-montserrat text-base sm:text-lg md:text-xl leading-relaxed mb-8">
@@ -141,7 +141,7 @@ export default function HeroMurDesSouvenirs() {
             <a href="#rsvp" className="btn btn-on-dark">
               Confirmer ma présence
             </a>
-            <a href="#programme" className="btn btn-outline-on-dark">
+            <a href="#programme" className="btn btn-secondary-on-dark">
               Voir le programme
             </a>
           </div>

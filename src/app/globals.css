@@ -13,7 +13,7 @@
 
   /* Polices Google Fonts */
   --font-oswald: "Oswald", Arial, sans-serif;
-  --font-yellowtail: "Yellowtail", cursive;
+  --font-meow: "Meow Script", cursive;
   --font-montserrat: "Montserrat", Arial, sans-serif;
 }
 
@@ -29,7 +29,7 @@
 
   /* Polices */
   --font-oswald: var(--font-oswald);
-  --font-yellowtail: var(--font-yellowtail);
+  --font-meow: var(--font-meow);
   --font-montserrat: var(--font-montserrat);
   --font-serif: var(--font-oswald);
   --font-sans: var(--font-montserrat);
@@ -76,8 +76,8 @@ h1, h2 {
   text-transform: uppercase;
 }
 
-.font-yellowtail {
-  font-family: var(--font-yellowtail);
+.font-meow {
+  font-family: var(--font-meow);
 }
 
 .font-montserrat {
@@ -87,14 +87,17 @@ h1, h2 {
 /* Boutons - Classes utilitaires harmonisées */
 /* Base commune pour tous les boutons */
 .btn {
-  display: inline-block;
-  padding: 16px 24px; /* py-4 px-6 */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 24px;
   font-family: var(--font-montserrat);
-  font-size: 16px; /* text-base */
+  font-size: 14px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  border-radius: 8px; /* rounded-lg */
+  letter-spacing: 0;
+  line-height: 1;
+  border-radius: 8px;
   text-decoration: none;
   text-align: center;
   cursor: pointer;
@@ -108,7 +111,7 @@ h1, h2 {
   box-shadow: none;
 }
 
-/* Bouton pour fonds foncés (dans Hero, cartes sombres) */
+/* Bouton principal pour fonds foncés (Hero, cartes sombres) */
 /* Fond clair, texte foncé */
 .btn-on-dark {
   background-color: var(--brand-light);
@@ -121,7 +124,20 @@ h1, h2 {
   opacity: 0.9;
 }
 
-/* Bouton pour fonds clairs (reste de la page) */
+/* Bouton secondaire pour fonds foncés */
+/* Fond semi-transparent clair, texte clair */
+.btn-secondary-on-dark {
+  background-color: rgba(246, 232, 234, 0.15);
+  color: var(--brand-light);
+}
+
+.btn-secondary-on-dark:hover {
+  background-color: rgba(246, 232, 234, 0.25);
+  color: var(--brand-light);
+  opacity: 1;
+}
+
+/* Bouton principal pour fonds clairs */
 /* Fond foncé, texte clair */
 .btn-on-light {
   background-color: var(--brand-accent-deep);
@@ -134,29 +150,16 @@ h1, h2 {
   opacity: 0.9;
 }
 
-/* Bouton secondaire/outline pour fonds foncés */
-.btn-outline-on-dark {
-  background-color: transparent;
-  color: var(--brand-light);
-  border: 2px solid var(--brand-light);
-}
-
-.btn-outline-on-dark:hover {
-  background-color: var(--brand-light);
+/* Bouton secondaire pour fonds clairs */
+/* Fond semi-transparent foncé, texte foncé */
+.btn-secondary-on-light {
+  background-color: rgba(90, 0, 1, 0.1);
   color: var(--brand-accent-deep);
-  opacity: 1;
 }
 
-/* Bouton secondaire/outline pour fonds clairs */
-.btn-outline-on-light {
-  background-color: transparent;
+.btn-secondary-on-light:hover {
+  background-color: rgba(90, 0, 1, 0.2);
   color: var(--brand-accent-deep);
-  border: 2px solid var(--brand-accent-deep);
-}
-
-.btn-outline-on-light:hover {
-  background-color: var(--brand-accent-deep);
-  color: var(--brand-light);
   opacity: 1;
 }
 
