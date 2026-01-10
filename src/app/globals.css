@@ -12,8 +12,9 @@
   --foreground: var(--brand-dark);
 
   /* Polices Google Fonts */
-  --font-playfair: "Playfair Display", Georgia, serif;
-  --font-inter: "Inter", Arial, sans-serif;
+  --font-oswald: "Oswald", Arial, sans-serif;
+  --font-yellowtail: "Yellowtail", cursive;
+  --font-montserrat: "Montserrat", Arial, sans-serif;
 }
 
 @theme inline {
@@ -27,8 +28,11 @@
   --color-brand-alert: var(--brand-alert);
 
   /* Polices */
-  --font-serif: var(--font-playfair);
-  --font-sans: var(--font-inter);
+  --font-oswald: var(--font-oswald);
+  --font-yellowtail: var(--font-yellowtail);
+  --font-montserrat: var(--font-montserrat);
+  --font-serif: var(--font-oswald);
+  --font-sans: var(--font-montserrat);
 
   /* Animations pour le Vertical Marquee */
   --animate-marquee-up: marquee-up 25s linear infinite;
@@ -57,12 +61,27 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-inter);
+  font-family: var(--font-montserrat);
 }
 
 /* Typographie - Titres */
 h1, h2 {
-  font-family: var(--font-playfair);
+  font-family: var(--font-oswald);
+  text-transform: uppercase;
+}
+
+/* Classe utilitaire pour forcer uppercase sur Oswald */
+.font-oswald {
+  font-family: var(--font-oswald);
+  text-transform: uppercase;
+}
+
+.font-yellowtail {
+  font-family: var(--font-yellowtail);
+}
+
+.font-montserrat {
+  font-family: var(--font-montserrat);
 }
 
 /* Boutons - Style de base */

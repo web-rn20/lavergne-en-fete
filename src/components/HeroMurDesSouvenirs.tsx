@@ -126,35 +126,37 @@ export default function HeroMurDesSouvenirs() {
 
       {/* Contenu du Hero centré */}
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-        <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-brand-dark mb-4 drop-shadow-lg">
-          30 ans de mariage
-        </h1>
-        <p className="font-serif text-xl sm:text-2xl md:text-3xl text-brand-accent-deep font-semibold mb-4">
-          Noces de Perle
-        </p>
-        <p className="font-serif text-base sm:text-lg md:text-xl text-brand-dark max-w-2xl leading-relaxed mb-8">
-          Romain, Maxime et Jade vous invitent à célébrer les 30 ans d&apos;amour
-          de leurs parents, Véronique et Christophe.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4">
-          <a
-            href="#rsvp"
-            className="btn-primary px-6 sm:px-8 py-3 sm:py-4 rounded-full font-sans font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300"
-          >
-            Confirmer ma présence
-          </a>
-          <a
-            href="#programme"
-            className="px-6 sm:px-8 py-3 sm:py-4 rounded-full font-sans font-semibold text-base sm:text-lg border-2 border-brand-accent-deep text-brand-accent-deep hover:bg-brand-accent-deep hover:text-brand-light transition-all duration-300"
-          >
-            Voir le programme
-          </a>
+        {/* Conteneur avec fond Black Cherry */}
+        <div className="bg-brand-accent-deep p-8 rounded-2xl max-w-fit text-brand-light">
+          <h1 className="font-oswald text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
+            Véronique &amp; Christophe : 30 ans de mariage
+          </h1>
+          <p className="font-yellowtail text-3xl sm:text-4xl md:text-5xl mb-4">
+            Noces de Perle
+          </p>
+          <p className="font-montserrat text-base sm:text-lg md:text-xl leading-relaxed mb-8">
+            Un anniversaire qui se fête.. même avec un an de retard
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <a
+              href="#rsvp"
+              className="btn-primary px-6 sm:px-8 py-3 sm:py-4 rounded-full font-montserrat font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300"
+            >
+              Confirmer ma présence
+            </a>
+            <a
+              href="#programme"
+              className="px-6 sm:px-8 py-3 sm:py-4 rounded-full font-montserrat font-semibold text-base sm:text-lg border-2 border-brand-light text-brand-light hover:bg-brand-light hover:text-brand-accent-deep transition-all duration-300"
+            >
+              Voir le programme
+            </a>
+          </div>
         </div>
       </div>
 
       {/* Date de l'événement en bas */}
       <div className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 text-center">
-        <p className="font-serif text-xl sm:text-2xl md:text-3xl text-brand-accent-deep font-bold drop-shadow-md">
+        <p className="font-oswald text-xl sm:text-2xl md:text-3xl text-brand-accent-deep font-bold drop-shadow-md">
           27 Juin 2026
         </p>
       </div>
