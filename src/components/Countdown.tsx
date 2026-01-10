@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import SectionContainer from "./SectionContainer";
 
 // Date cible : 27 juin 2026
 const TARGET_DATE = new Date("2026-06-27T00:00:00").getTime();
@@ -54,7 +55,7 @@ export default function Countdown() {
   // Évite le flash de 0 au chargement côté serveur
   if (!mounted) {
     return (
-      <section id="countdown" className="py-20 px-4 bg-brand-light shadow-none">
+      <SectionContainer id="countdown" className="py-20 bg-brand-light shadow-none">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="font-serif text-4xl md:text-5xl text-brand-dark mb-12">
             Compte à rebours
@@ -72,7 +73,7 @@ export default function Countdown() {
             ))}
           </div>
         </div>
-      </section>
+      </SectionContainer>
     );
   }
 
@@ -84,7 +85,7 @@ export default function Countdown() {
   ];
 
   return (
-    <section id="countdown" className="py-20 px-4 bg-brand-light shadow-none">
+    <SectionContainer id="countdown" className="py-20 bg-brand-light shadow-none">
       <div className="max-w-4xl mx-auto text-center">
         <h2 className="font-serif text-4xl md:text-5xl text-brand-dark mb-12">
           Compte à rebours
@@ -107,6 +108,6 @@ export default function Countdown() {
           ))}
         </div>
       </div>
-    </section>
+    </SectionContainer>
   );
 }

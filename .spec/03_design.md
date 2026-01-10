@@ -12,6 +12,30 @@
 - **Corps & Formulaire** : Sans-Serif moderne (ex: Inter).
 - **Boutons** : Majuscules avec `tracking-wider`.
 
+## Grille et Mise en Page
+
+### Padding Horizontal (SectionContainer)
+Toutes les sections (à l'exception du Hero) doivent utiliser le composant `SectionContainer` pour assurer une mise en page cohérente :
+
+| Breakpoint | Valeur | Classe Tailwind |
+|------------|--------|-----------------|
+| Mobile (< 768px) | 24px | `px-6` |
+| Tablette (md) | 48px | `px-12` |
+| Desktop (lg) | 104px | `px-[104px]` |
+
+### Utilisation
+```tsx
+import SectionContainer from "@/components/SectionContainer";
+
+<SectionContainer id="section-id" className="py-20 bg-brand-light">
+  {/* Contenu de la section */}
+</SectionContainer>
+```
+
+### Alignement des Titres
+- Les titres de sections doivent être centrés (`text-center`) au sein du conteneur
+- Utiliser `max-w-4xl mx-auto` pour limiter la largeur du contenu textuel
+
 ## Composants & Effets
 - **Hero Section** : Overlay dégradé de `transparent` vers Lavender Blush. Texte en Coffee Bean.
 - **Formulaire** : Focus avec bordure 2px Bubblegum Pink. Bouton avec dégradé vers Cinnabar.

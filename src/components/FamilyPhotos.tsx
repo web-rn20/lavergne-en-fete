@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import BounceCards from './BounceCards';
+import SectionContainer from './SectionContainer';
 
 const familyImages = [
   '/photos/famille/1 octobre 07 (005).JPG',
@@ -45,7 +46,7 @@ export default function FamilyPhotos() {
   const currentTransforms = isMobile ? mobileTransformStyles : transformStyles;
 
   return (
-    <section id="famille" className="py-20 px-4 bg-brand-light">
+    <SectionContainer id="famille" className="py-20 bg-brand-light">
       <div className="max-w-4xl mx-auto flex flex-col items-center justify-center">
         <h2 className="font-serif text-4xl md:text-5xl text-brand-accent-deep mb-4 text-center">
           La Famille
@@ -63,6 +64,6 @@ export default function FamilyPhotos() {
           className="mx-auto"
         />
       </div>
-    </section>
+    </SectionContainer>
   );
 }
