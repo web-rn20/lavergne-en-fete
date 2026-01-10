@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 /*
- * Lavergne en Fête - Modern Luxury Redesign
- * Direction Artistique : Expérience Festival Premium (Style Épuré)
+ * Lavergne en Fête - Style Pixelik
+ * Direction Artistique : Minimalisme, Typographie Impactante
  */
 
 /* ========================================
@@ -10,38 +10,34 @@
    ======================================== */
 
 :root {
-  /* Couleurs - Modern Luxury Palette */
-  --color-void: #0A0A0A;
-  --color-void-soft: #121212;
+  /* Couleurs - Palette Pixelik */
+  --color-void: #080808;
+  --color-void-soft: #0F0F0F;
   --color-void-lighter: #1A1A1A;
 
-  --color-pearl: #F5F5F5;
-  --color-pearl-muted: #A0A0A0;
-  --color-pearl-dim: #606060;
+  --color-off-white: #F5F5F5;
+  --color-off-white-muted: #A0A0A0;
+  --color-off-white-dim: #606060;
 
-  --color-gold: #D4AF37;
-  --color-gold-light: #E8C566;
-  --color-gold-dark: #B8962E;
-
-  /* Accent - Sport Colors */
+  /* Accent - Sport Colors (Usage minimal) */
   --color-stadium-red: #FF2D55;
   --color-tfc-violet: #8B5CF6;
 
-  /* Glassmorphism */
-  --glass-bg: rgba(255, 255, 255, 0.03);
-  --glass-bg-hover: rgba(255, 255, 255, 0.06);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-blur: 20px;
+  /* Borders subtiles */
+  --border-subtle: rgba(245, 245, 245, 0.1);
+  --border-hover: rgba(245, 245, 245, 0.2);
 
-  /* Typography */
-  --font-display: 'Clash Display', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-serif: 'Cormorant Garamond', Georgia, serif;
-  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  /* Typography - Pixelik Style */
+  --font-display: var(--font-oswald), 'Oswald', sans-serif;
+  --font-script: var(--font-yellowtail), 'Yellowtail', cursive;
+  --font-body: var(--font-montserrat), 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
 
-  /* Spacing - Site Margins */
+  /* Site Margins - Style Pixelik (généreux) */
   --margin-desktop: 104px;
+  --margin-tablet: 48px;
   --margin-mobile: 24px;
 
+  /* Spacing Scale */
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
@@ -51,21 +47,20 @@
   --space-12: 3rem;
   --space-16: 4rem;
   --space-24: 6rem;
+  --space-32: 8rem;
 
-  /* Transitions */
-  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  /* Transitions - Sobres */
+  --transition-fast: 150ms ease-out;
   --transition-base: 300ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-smooth: 600ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-slow: 500ms cubic-bezier(0.16, 1, 0.3, 1);
 
-  /* Shadows - Clean, no glow */
-  --shadow-elevation: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
-  --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.4);
-  --shadow-subtle: 0 4px 16px rgba(0, 0, 0, 0.3);
+  /* Shadows - Minimales, pas de glow */
+  --shadow-subtle: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-medium: 0 8px 32px rgba(0, 0, 0, 0.5);
 }
 
 /* ========================================
-   Base Styles with Paper Grain Texture
+   Base Styles
    ======================================== */
 
 html {
@@ -75,22 +70,10 @@ html {
 body {
   font-family: var(--font-body);
   background-color: var(--color-void);
-  color: var(--color-pearl);
+  color: var(--color-off-white);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  position: relative;
-}
-
-/* Subtle Paper Grain Texture Overlay */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-  opacity: 0.02;
-  pointer-events: none;
-  z-index: 9999;
 }
 
 /* ========================================
@@ -102,6 +85,13 @@ body::before {
   padding-right: var(--margin-mobile);
 }
 
+@media (min-width: 768px) {
+  .site-container {
+    padding-left: var(--margin-tablet);
+    padding-right: var(--margin-tablet);
+  }
+}
+
 @media (min-width: 1024px) {
   .site-container {
     padding-left: var(--margin-desktop);
@@ -110,263 +100,159 @@ body::before {
 }
 
 /* ========================================
-   Typography - Modern Luxury
+   Typography - Pixelik Style
    ======================================== */
 
-h1, h2, h3 {
+/* Oswald - Titres impactants */
+.font-display {
   font-family: var(--font-display);
   font-weight: 600;
-  line-height: 1.1;
+  line-height: 0.95;
   letter-spacing: -0.02em;
+  text-transform: uppercase;
 }
 
-.font-serif {
-  font-family: var(--font-serif);
+/* Yellowtail - Script manuscrit */
+.font-script {
+  font-family: var(--font-script);
   font-weight: 400;
-  font-style: italic;
-  letter-spacing: 0.01em;
+  line-height: 1.2;
 }
 
-.title-massive {
-  font-size: clamp(3rem, 10vw, 8rem);
-  font-weight: 600;
-  line-height: 0.9;
-  letter-spacing: -0.04em;
+/* Montserrat - Corps */
+.font-body {
+  font-family: var(--font-body);
+  font-weight: 400;
+  line-height: 1.6;
 }
 
+/* Title Sizes */
 .title-hero {
-  font-size: clamp(2.5rem, 8vw, 6rem);
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 12vw, 10rem);
+  font-weight: 700;
+  line-height: 0.9;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+}
+
+.title-section {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 6vw, 4rem);
   font-weight: 600;
   line-height: 1;
-  letter-spacing: -0.03em;
-}
-
-.title-overflow {
-  margin-left: -2%;
-  margin-right: -2%;
-}
-
-/* ========================================
-   Glassmorphism Components
-   ======================================== */
-
-.glass-card {
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  border: 1px solid var(--glass-border);
-  border-radius: 16px;
-  transition: all var(--transition-base);
-}
-
-.glass-card:hover {
-  background: var(--glass-bg-hover);
-  border-color: rgba(255, 255, 255, 0.12);
-}
-
-/* Simple bordered card (no gold gradient) */
-.glass-card-accent {
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  border: 1px solid var(--glass-border);
-  border-radius: 16px;
-  transition: all var(--transition-base);
-}
-
-.glass-card-accent:hover {
-  border-color: rgba(255, 255, 255, 0.15);
-}
-
-/* ========================================
-   Premium Buttons - Clean Style
-   ======================================== */
-
-.btn-premium {
-  position: relative;
-  background: var(--color-gold);
-  color: var(--color-void);
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 0.875rem;
   letter-spacing: 0.05em;
   text-transform: uppercase;
+}
+
+.subtitle-script {
+  font-family: var(--font-script);
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  font-weight: 400;
+  line-height: 1.3;
+}
+
+/* ========================================
+   Buttons - Clean Style
+   ======================================== */
+
+.btn-primary {
+  background: var(--color-off-white);
+  color: var(--color-void);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   padding: var(--space-4) var(--space-8);
-  border-radius: 4px;
   border: none;
   cursor: pointer;
-  overflow: hidden;
   transition: all var(--transition-base);
 }
 
-.btn-premium:hover {
-  background: var(--color-gold-light);
+.btn-primary:hover {
+  opacity: 0.9;
   transform: translateY(-2px);
-  box-shadow: var(--shadow-subtle);
 }
 
-.btn-premium:active {
-  transform: translateY(0);
-}
-
-/* Ghost Button */
 .btn-ghost {
   background: transparent;
-  color: var(--color-pearl);
-  font-family: var(--font-display);
+  color: var(--color-off-white);
+  font-family: var(--font-body);
   font-weight: 500;
   font-size: 0.875rem;
   letter-spacing: 0.05em;
-  padding: var(--space-3) var(--space-6);
-  border: 1px solid var(--glass-border);
-  border-radius: 4px;
+  padding: var(--space-4) var(--space-6);
+  border: 1px solid var(--border-subtle);
   cursor: pointer;
   transition: all var(--transition-base);
 }
 
 .btn-ghost:hover {
-  background: var(--glass-bg);
-  border-color: var(--color-pearl-muted);
+  border-color: var(--color-off-white);
 }
 
 /* ========================================
-   Form Inputs - Clean Style
+   Form Inputs - Minimal Style
    ======================================== */
 
-.input-premium {
+.input-minimal {
   width: 100%;
-  background: var(--glass-bg);
-  color: var(--color-pearl);
+  background: transparent;
+  color: var(--color-off-white);
   font-family: var(--font-body);
   font-size: 1rem;
-  border: 1px solid var(--glass-border);
+  border: 1px solid var(--border-subtle);
   padding: var(--space-4) var(--space-6);
-  border-radius: 8px;
   outline: none;
   transition: all var(--transition-base);
 }
 
-.input-premium::placeholder {
-  color: var(--color-pearl-dim);
+.input-minimal::placeholder {
+  color: var(--color-off-white-dim);
 }
 
-.input-premium:focus {
-  border-color: var(--color-pearl-muted);
+.input-minimal:focus {
+  border-color: var(--color-off-white);
 }
 
-.input-premium:hover:not(:focus) {
-  border-color: rgba(255, 255, 255, 0.15);
-}
-
-/* Select Dropdown */
-.select-premium {
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23A0A0A0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right var(--space-4) center;
-  background-size: 20px;
-  padding-right: var(--space-12);
+.input-minimal:hover:not(:focus) {
+  border-color: var(--border-hover);
 }
 
 /* ========================================
-   Photo Gallery - Clean Levitation Effect
+   Cards - Minimal Style
    ======================================== */
 
-.photo-frame {
-  position: relative;
-  background: var(--color-pearl);
-  border-radius: 4px;
-  overflow: hidden;
-  transform: rotate(var(--rotation, 0deg));
-  transition: all var(--transition-smooth);
-  cursor: pointer;
+.card-minimal {
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  padding: var(--space-8);
+  transition: all var(--transition-base);
 }
 
-.photo-frame:hover {
-  transform: rotate(0deg) translateY(-12px) scale(1.02);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-}
-
-.photo-frame img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform var(--transition-slow);
-}
-
-.photo-frame:hover img {
-  transform: scale(1.05);
-}
-
-/* ========================================
-   Sport Section - Subtle Accent Colors
-   ======================================== */
-
-.accent-border-red {
-  border: 1px solid var(--color-stadium-red);
-}
-
-.accent-border-violet {
-  border: 1px solid var(--color-tfc-violet);
-}
-
-.accent-text-red {
-  color: var(--color-stadium-red);
-}
-
-.accent-text-violet {
-  color: var(--color-tfc-violet);
-}
-
-/* ========================================
-   Bento Grid System
-   ======================================== */
-
-.bento-grid {
-  display: grid;
-  gap: var(--space-6);
-  grid-template-columns: repeat(12, 1fr);
-  grid-auto-rows: minmax(100px, auto);
-}
-
-@media (max-width: 1024px) {
-  .bento-grid {
-    grid-template-columns: repeat(6, 1fr);
-  }
-}
-
-@media (max-width: 640px) {
-  .bento-grid {
-    grid-template-columns: 1fr;
-  }
+.card-minimal:hover {
+  border-color: var(--border-hover);
 }
 
 /* ========================================
    Utility Classes
    ======================================== */
 
-.text-gold { color: var(--color-gold); }
-.text-pearl { color: var(--color-pearl); }
-.text-pearl-muted { color: var(--color-pearl-muted); }
+.text-off-white { color: var(--color-off-white); }
+.text-muted { color: var(--color-off-white-muted); }
+.text-dim { color: var(--color-off-white-dim); }
 .text-stadium-red { color: var(--color-stadium-red); }
 .text-tfc-violet { color: var(--color-tfc-violet); }
 
 .bg-void { background-color: var(--color-void); }
 .bg-void-soft { background-color: var(--color-void-soft); }
-.bg-void-lighter { background-color: var(--color-void-lighter); }
+
+.border-subtle { border-color: var(--border-subtle); }
 
 /* ========================================
-   Animations
+   Animations - Subtiles
    ======================================== */
-
-@keyframes float-gentle {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-8px);
-  }
-}
 
 @keyframes fade-in-up {
   from {
@@ -379,16 +265,25 @@ h1, h2, h3 {
   }
 }
 
-.animate-float {
-  animation: float-gentle 4s ease-in-out infinite;
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.6s ease-out forwards;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out forwards;
 }
 
 /* ========================================
-   Scrollbar Styling
+   Scrollbar - Minimal
    ======================================== */
 
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -397,37 +292,36 @@ h1, h2, h3 {
 
 ::-webkit-scrollbar-thumb {
   background: var(--color-void-lighter);
-  border-radius: 4px;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-pearl-dim);
+  background: var(--color-off-white-dim);
 }
 
 /* ========================================
-   Selection Styling
+   Selection
    ======================================== */
 
 ::selection {
-  background: var(--color-pearl);
+  background: var(--color-off-white);
   color: var(--color-void);
 }
 
 /* ========================================
-   Responsive Adjustments
+   Responsive Typography
    ======================================== */
 
 @media (max-width: 640px) {
-  .title-massive {
-    font-size: clamp(2.5rem, 12vw, 4rem);
-  }
-
   .title-hero {
-    font-size: clamp(2rem, 10vw, 3.5rem);
+    font-size: clamp(2.5rem, 15vw, 4rem);
   }
 
-  .title-overflow {
-    margin-left: 0;
-    margin-right: 0;
+  .title-section {
+    font-size: clamp(1.5rem, 8vw, 2.5rem);
+  }
+
+  .subtitle-script {
+    font-size: clamp(1.25rem, 5vw, 1.75rem);
   }
 }
