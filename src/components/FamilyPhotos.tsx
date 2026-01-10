@@ -47,9 +47,13 @@ export default function FamilyPhotos() {
   return (
     <section id="famille" className="py-20 px-4 bg-brand-light">
       <div className="max-w-4xl mx-auto flex flex-col items-center justify-center">
-        <h2 className="font-meow text-4xl md:text-5xl text-brand-accent-deep mb-12 text-center">
+        <h2 className="font-serif text-4xl md:text-5xl text-brand-accent-deep mb-4 text-center">
           La Famille
         </h2>
+        <p className="text-brand-dark/70 text-center max-w-2xl mb-12">
+          En 2025, nous avons fêté plein de choses, nos 30 ans de mariage, les 27 ans de Romain, les 25 ans de Maxime et les 20 ans de Jade.<br />
+          Cela mérite d&apos;être partagé avec famille et amis lors d&apos;une soirée musicale et festive.
+        </p>
         <BounceCards
           images={familyImages}
           containerWidth={containerWidth}
