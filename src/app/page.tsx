@@ -1,4 +1,5 @@
 import HeroMurDesSouvenirs from "@/components/HeroMurDesSouvenirs";
+import Countdown from "@/components/Countdown";
 
 export default function Home() {
   return (
@@ -6,17 +7,8 @@ export default function Home() {
       {/* Hero Section - Mur des Souvenirs */}
       <HeroMurDesSouvenirs />
 
-      {/* Placeholder pour les sections suivantes */}
-      <section id="countdown" className="py-20 px-4 bg-brand-light">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="font-serif text-4xl md:text-5xl text-brand-dark mb-8">
-            Compte à rebours
-          </h2>
-          <p className="text-brand-dark/70">
-            Section du countdown à implémenter...
-          </p>
-        </div>
-      </section>
+      {/* Countdown - Compte à rebours vers le 27 juin 2026 */}
+      <Countdown />
 
       <section id="programme" className="py-20 px-4 bg-brand-dark">
         <div className="max-w-4xl mx-auto text-center">
