@@ -1,6 +1,5 @@
 import { Metadata } from 'next';
 import { getGuestById } from '@/lib/google-sheets';
-import RSVPBlock from '@/components/blocks/RSVPBlock';
 import InvitationClient from './InvitationClient';
 
 interface PageProps {

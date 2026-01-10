@@ -1,9 +1,9 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { MapPin, Calendar, Music, Clock, Sparkles } from 'lucide-react';
+import { MapPin, Calendar, Clock, Heart, Send, Car, Tent, Building2 } from 'lucide-react';
 import Link from 'next/link';
-import RSVPBlock from '@/components/blocks/RSVPBlock';
+import { useState } from 'react';
 
 interface Guest {
   id: string;
@@ -18,35 +18,44 @@ interface InvitationClientProps {
 
 const eventDetails = [
   { icon: Calendar, label: 'Date', value: '23 Août 2025' },
-  { icon: Clock, label: 'Heure', value: '18h00' },
-  { icon: MapPin, label: 'Lieu', value: 'Chez les Lavergne' },
-  { icon: Music, label: 'Ambiance', value: 'Live Music' },
+  { icon: Clock, label: 'Heure', value: 'À partir de 11h' },
+  { icon: MapPin, label: 'Lieu', value: 'Lavergne' },
+];
+
+const hebergements = [
+  { id: 'van', icon: Car, title: 'Van' },
+  { id: 'tente', icon: Tent, title: 'Camping' },
+  { id: 'hotel', icon: Building2, title: 'Hôtel' },
 ];
 
 export default function InvitationClient({ guestId, initialGuest }: InvitationClientProps) {
+  const [formData, setFormData] = useState({
+    nombrePersonnes: '2',
+    hebergement: '',
+    message: '',
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    // Simulation d'envoi (à connecter avec Google Sheets)
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    setIsSubmitting(false);
+    setIsSubmitted(true);
+  };
+
   return (
     <main className="min-h-screen bg-void relative overflow-hidden">
       {/* Background Elements */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <motion.div
-          className="absolute -top-1/4 -left-1/4 w-3/4 h-3/4 rounded-full"
+        <div
+          className="absolute -top-1/4 -left-1/4 w-3/4 h-3/4 rounded-full opacity-30"
           style={{
             background: 'radial-gradient(circle, rgba(255, 255, 255, 0.02) 0%, transparent 60%)',
-          }}
-          animate={{
-            scale: [1, 1.1, 1],
-            opacity: [0.3, 0.5, 0.3],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-        />
-        <motion.div
-          className="absolute -bottom-1/4 -right-1/4 w-1/2 h-1/2 rounded-full"
-          style={{
-            background: 'radial-gradient(circle, rgba(139, 92, 246, 0.02) 0%, transparent 60%)',
           }}
         />
       </div>
@@ -62,70 +71,79 @@ export default function InvitationClient({ guestId, initialGuest }: InvitationCl
         >
           <Link href="/" className="inline-block mb-8">
             <motion.div
-              className="inline-flex items-center gap-2 glass-card px-4 py-2 rounded-full text-sm text-pearl-muted hover:text-pearl transition-colors"
+              className="inline-flex items-center gap-2 glass-card px-4 py-2 rounded-full text-sm text-off-white-muted hover:text-off-white transition-colors"
               whileHover={{ scale: 1.02 }}
             >
               <span>Voir le site</span>
             </motion.div>
           </Link>
 
-          <motion.div
-            className="inline-flex items-center gap-3 mb-4"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2 }}
-          >
-            <Sparkles className="w-6 h-6 text-pearl-muted" />
-            <span className="text-xs text-pearl-muted uppercase tracking-[0.3em]">
-              Invitation
-            </span>
-            <Sparkles className="w-6 h-6 text-pearl-muted" />
-          </motion.div>
-
-          <h1 className="title-hero mb-4">
-            <span className="text-pearl">LAVERGNE</span>
-            <br />
-            <span className="text-pearl">EN FÊTE</span>
-          </h1>
-
-          <p className="font-serif text-xl text-pearl-muted italic max-w-md mx-auto">
-            Quatre anniversaires, une seule fête exceptionnelle
-          </p>
-
-          <motion.div
-            className="mt-6 font-serif text-2xl text-pearl-muted"
+          <motion.p
+            className="text-off-white-muted text-sm uppercase tracking-[0.3em] mb-6"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
+            transition={{ delay: 0.2 }}
           >
-            30 + 27 + 25 + 20 = <span className="text-pearl text-3xl font-bold">102</span> ans
-          </motion.div>
+            Invitation personnelle
+          </motion.p>
+
+          <h1 className="title-hero mb-4">
+            <span className="text-off-white">30 ans</span>
+            <br />
+            <span className="text-off-white">de mariage</span>
+          </h1>
+
+          <p className="subtitle-script max-w-md mx-auto">
+            ça se fête même avec un an de retard
+          </p>
         </motion.header>
+
+        {/* Welcome Message */}
+        {initialGuest && (
+          <motion.section
+            className="py-8 site-container"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+          >
+            <div className="text-center max-w-xl mx-auto">
+              <div className="glass-card-static p-8 rounded-[32px]">
+                <p className="text-off-white-muted text-sm uppercase tracking-widest mb-4">
+                  Message Personnel
+                </p>
+                <h2 className="font-display text-4xl md:text-5xl text-off-white mb-4">
+                  Salut {initialGuest.prenom} !
+                </h2>
+                <p className="text-off-white-muted text-lg">
+                  On espère te voir parmi nous pour cette journée spéciale.
+                </p>
+              </div>
+            </div>
+          </motion.section>
+        )}
 
         {/* Event Details */}
         <motion.section
           className="py-8 site-container"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.6 }}
+          transition={{ delay: 0.4, duration: 0.6 }}
         >
-          <div className="glass-card p-6 md:p-8 rounded-2xl max-w-2xl mx-auto">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="max-w-2xl mx-auto">
+            <div className="grid grid-cols-3 gap-4">
               {eventDetails.map((detail, index) => (
                 <motion.div
                   key={detail.label}
-                  className="text-center"
+                  className="glass-card p-6 text-center"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 + index * 0.1 }}
+                  transition={{ delay: 0.5 + index * 0.1 }}
                 >
-                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[var(--glass-bg)] text-pearl mb-3">
-                    <detail.icon className="w-5 h-5" />
-                  </div>
-                  <p className="text-pearl-dim text-xs uppercase tracking-wider mb-1">
+                  <detail.icon className="w-6 h-6 mx-auto mb-3 text-off-white-muted" />
+                  <p className="text-off-white-dim text-xs uppercase tracking-wider mb-1">
                     {detail.label}
                   </p>
-                  <p className="text-pearl font-medium">
+                  <p className="text-off-white font-medium">
                     {detail.value}
                   </p>
                 </motion.div>
@@ -134,31 +152,6 @@ export default function InvitationClient({ guestId, initialGuest }: InvitationCl
           </div>
         </motion.section>
 
-        {/* Welcome Message */}
-        {initialGuest && (
-          <motion.section
-            className="py-8 site-container"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.5, duration: 0.5 }}
-          >
-            <div className="text-center max-w-xl mx-auto">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--glass-bg)] text-pearl text-xs tracking-widest uppercase mb-6">
-                <Sparkles className="w-3 h-3" />
-                Message Personnel
-              </div>
-
-              <h2 className="text-4xl md:text-5xl font-bold text-pearl mb-4">
-                Salut{' '}
-                <span className="text-pearl">{initialGuest.prenom}</span> !
-              </h2>
-              <p className="font-serif text-xl text-pearl-muted italic">
-                Prêt(e) pour une soirée inoubliable ?
-              </p>
-            </div>
-          </motion.section>
-        )}
-
         {/* RSVP Form */}
         <motion.section
           className="py-12 md:py-16 site-container"
@@ -166,27 +159,129 @@ export default function InvitationClient({ guestId, initialGuest }: InvitationCl
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6, duration: 0.6 }}
         >
-          <RSVPBlock guestId={guestId} initialGuest={initialGuest} />
+          <div className="max-w-lg mx-auto">
+            <div className="text-center mb-8">
+              <p className="subtitle-script mb-2">Alors, tu viens ?</p>
+              <h2 className="title-section text-off-white">Réponse</h2>
+            </div>
+
+            <div className="glass-card-static p-8 rounded-[32px]">
+              {isSubmitted ? (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="text-center py-8"
+                >
+                  <div className="w-16 h-16 rounded-full bg-void flex items-center justify-center mx-auto mb-6">
+                    <Heart className="w-8 h-8 text-off-white" />
+                  </div>
+                  <h3 className="font-display text-2xl text-off-white mb-4">
+                    Merci {initialGuest?.prenom || ''} !
+                  </h3>
+                  <p className="text-off-white-muted">
+                    Ta réponse a bien été enregistrée.
+                    <br />
+                    On a hâte de te voir !
+                  </p>
+                </motion.div>
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* Nombre de personnes */}
+                  <div>
+                    <label htmlFor="nombrePersonnes" className="label-airbnb">
+                      Nombre de personnes
+                    </label>
+                    <select
+                      id="nombrePersonnes"
+                      value={formData.nombrePersonnes}
+                      onChange={(e) => setFormData({ ...formData, nombrePersonnes: e.target.value })}
+                      className="input-airbnb"
+                    >
+                      {[1, 2, 3, 4, 5, 6].map((num) => (
+                        <option key={num} value={num}>
+                          {num} {num === 1 ? 'personne' : 'personnes'}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Hébergement */}
+                  <div>
+                    <label className="label-airbnb">Hébergement souhaité</label>
+                    <div className="grid grid-cols-3 gap-3">
+                      {hebergements.map((item) => (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => setFormData({ ...formData, hebergement: item.id })}
+                          className={`p-4 rounded-[20px] border transition-all duration-300 ${
+                            formData.hebergement === item.id
+                              ? 'bg-off-white text-void border-off-white'
+                              : 'bg-transparent text-off-white border-[rgba(255,255,255,0.08)] hover:border-[rgba(255,255,255,0.2)]'
+                          }`}
+                        >
+                          <item.icon className={`w-5 h-5 mx-auto mb-2 ${
+                            formData.hebergement === item.id ? 'text-void' : 'text-off-white-muted'
+                          }`} />
+                          <span className="text-sm font-medium">{item.title}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Message */}
+                  <div>
+                    <label htmlFor="message" className="label-airbnb">
+                      Un petit mot ? (optionnel)
+                    </label>
+                    <textarea
+                      id="message"
+                      value={formData.message}
+                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                      className="input-airbnb min-h-[100px] resize-none"
+                      placeholder="Allergies, régime alimentaire..."
+                    />
+                  </div>
+
+                  {/* Submit */}
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="btn-primary w-full justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? (
+                      <span className="flex items-center gap-2">
+                        <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                        Envoi en cours...
+                      </span>
+                    ) : (
+                      <>
+                        <Send className="w-4 h-4" />
+                        Confirmer ma présence
+                      </>
+                    )}
+                  </button>
+                </form>
+              )}
+            </div>
+          </div>
         </motion.section>
 
         {/* Footer */}
         <motion.footer
-          className="py-12 text-center site-container"
+          className="py-12 text-center site-container border-t border-[rgba(255,255,255,0.05)]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8 }}
         >
-          <div className="flex items-center justify-center gap-4 mb-6">
-            <div className="w-16 h-px bg-[var(--glass-border)]" />
-            <Sparkles className="w-4 h-4 text-pearl-muted" />
-            <div className="w-16 h-px bg-[var(--glass-border)]" />
-          </div>
-
-          <p className="font-serif text-xl text-pearl italic mb-2">
-            &ldquo;La joie d&apos;être ensemble&rdquo;
+          <p className="font-script text-2xl text-off-white-muted mb-2">
+            Lavergne en Fête
           </p>
-          <p className="text-pearl-muted text-sm">
-            La Famille Lavergne
+          <p className="text-off-white-dim text-sm">
+            23 Août 2025 • 30 ans de bonheur
           </p>
         </motion.footer>
       </div>
