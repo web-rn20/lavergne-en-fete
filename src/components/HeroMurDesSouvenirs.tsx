@@ -10,7 +10,7 @@ const eventDetails = {
   dateEnd: "20260628",
   location: "Chez Granny",
   description:
-    "Célébration des 30 ans de mariage de Christophe & Véronique.. avec un an de retard.",
+    "Soirée musicale et festive pour les 30 ans de mariage et les anniversaires de Romain, Maxime et Jade.",
 };
 
 // Génère l'URL Google Calendar
@@ -218,26 +218,26 @@ export default function HeroMurDesSouvenirs() {
       {/* Date de l'événement en bas - Cliquable pour ajouter au calendrier */}
       <div
         ref={menuRef}
-        className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 text-center"
+        className="absolute bottom-8 sm:bottom-10 left-1/2 -translate-x-1/2 text-center"
       >
-        <div className="relative group">
-          {/* Texte "ajouter au calendrier" qui apparaît au hover */}
-          <span className="font-montserrat text-xs sm:text-sm text-brand-accent-deep/70 absolute -top-5 sm:-top-6 left-1/2 -translate-x-1/2 whitespace-nowrap opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 ease-out pointer-events-none">
-            ajouter au calendrier
-          </span>
-
+        <div className="relative group flex flex-col items-center">
           {/* Date cliquable */}
           <button
             onClick={() => setCalendarMenuOpen(!calendarMenuOpen)}
-            className="font-oswald text-xl sm:text-2xl md:text-3xl text-brand-accent-deep font-bold cursor-pointer hover:text-brand-dark transition-colors duration-300 bg-transparent border-none outline-none"
+            className="font-oswald text-xl sm:text-2xl md:text-3xl text-brand-accent-deep font-bold cursor-pointer hover:text-brand-dark transition-colors duration-300 bg-transparent border-none outline-none shadow-none"
             aria-label="Ajouter au calendrier"
           >
             27 Juin 2026
           </button>
 
+          {/* Texte "clique sur la date" qui apparaît au hover - centré sous la date */}
+          <span className="font-montserrat text-base text-brand-accent-deep/70 mt-1 whitespace-nowrap opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 ease-out pointer-events-none shadow-none">
+            clique sur la date
+          </span>
+
           {/* Menu dropdown pour choisir le type de calendrier */}
           <div
-            className={`absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-white rounded-lg overflow-hidden transition-all duration-300 ease-out ${
+            className={`absolute top-full mt-8 left-1/2 -translate-x-1/2 bg-white rounded-lg overflow-hidden transition-all duration-300 ease-out shadow-none ${
               calendarMenuOpen
                 ? "opacity-100 translate-y-0 pointer-events-auto"
                 : "opacity-0 -translate-y-2 pointer-events-none"
