@@ -1,21 +1,20 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import SprocketHoles from '../ui/SprocketHoles';
-import HandwrittenArrow from '../ui/HandwrittenArrow';
-import GlowText from '../ui/GlowText';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { useRef } from 'react';
+import Image from 'next/image';
 
 interface Celebrant {
   name: string;
   age: number;
-  imagePlaceholder: string;
+  photo: string;
 }
 
 const celebrants: Celebrant[] = [
-  { name: 'Papa', age: 30, imagePlaceholder: '👨‍👩‍👧‍👦' },
-  { name: 'Maman', age: 27, imagePlaceholder: '💃' },
-  { name: 'Fils', age: 25, imagePlaceholder: '🎸' },
-  { name: 'Fille', age: 20, imagePlaceholder: '🌟' },
+  { name: 'Papa', age: 30, photo: '/photos/IMG_0583.jpg' },
+  { name: 'Maman', age: 27, photo: '/photos/IMG_1312.jpg' },
+  { name: 'Fils', age: 25, photo: '/photos/PXL_20230604_130852428.jpg' },
+  { name: 'Fille', age: 20, photo: '/photos/PXL_20250826_182933846.jpg' },
 ];
 
 const containerVariants = {
@@ -23,18 +22,17 @@ const containerVariants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.2,
+      staggerChildren: 0.15,
       delayChildren: 0.3,
     },
   },
 };
 
-const photoVariants = {
-  hidden: { opacity: 0, y: 50, scale: 0.8 },
+const itemVariants = {
+  hidden: { opacity: 0, y: 40 },
   visible: {
     opacity: 1,
     y: 0,
-    scale: 1,
     transition: {
       type: 'spring',
       stiffness: 100,
@@ -44,136 +42,174 @@ const photoVariants = {
 };
 
 export default function HeroBlock() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ['start start', 'end start'],
+  });
+
+  const y = useTransform(scrollYProgress, [0, 1], ['0%', '30%']);
+  const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
+
   return (
-    <section className="relative py-12 md:py-20 overflow-hidden">
-      {/* Background decorative elements */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute top-10 left-10 w-32 h-32 border-2 border-pearl rounded-full" />
-        <div className="absolute bottom-20 right-20 w-48 h-48 border-2 border-pearl rounded-full" />
+    <section ref={containerRef} className="relative min-h-screen flex items-center justify-center overflow-hidden py-20">
+      {/* Background Gradient Orbs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <motion.div
+          className="absolute -top-1/4 -left-1/4 w-1/2 h-1/2 rounded-full"
+          style={{
+            background: 'radial-gradient(circle, rgba(212, 175, 55, 0.06) 0%, transparent 70%)',
+            y,
+          }}
+        />
+        <motion.div
+          className="absolute -bottom-1/4 -right-1/4 w-1/2 h-1/2 rounded-full"
+          style={{
+            background: 'radial-gradient(circle, rgba(212, 175, 55, 0.04) 0%, transparent 70%)',
+          }}
+        />
       </div>
 
-      <div className="container mx-auto px-4">
-        <div className="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16">
-          {/* Title Section */}
-          <motion.div
-            className="text-center lg:text-left lg:max-w-md"
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, ease: 'easeOut' }}
+      <motion.div
+        className="container mx-auto px-4 relative z-10"
+        style={{ opacity }}
+      >
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="text-center"
+        >
+          {/* Pre-title */}
+          <motion.p
+            variants={itemVariants}
+            className="font-serif text-lg md:text-xl text-pearl-muted italic mb-4"
           >
-            <h1 className="font-display text-4xl md:text-5xl lg:text-6xl text-pearl mb-4">
-              <GlowText color="gold">Lavergne</GlowText>
-              <br />
-              <span className="text-pearl">en Fête</span>
-            </h1>
-            <p className="font-handwritten text-2xl md:text-3xl text-pearl-muted mb-6">
-              La joie d&apos;être ensemble après toutes ces années
-            </p>
-            <motion.div
-              className="flex items-center justify-center lg:justify-start gap-2"
+            La joie d&apos;être ensemble après toutes ces années
+          </motion.p>
+
+          {/* Main Title - Massive and Overflowing */}
+          <motion.h1
+            variants={itemVariants}
+            className="title-massive title-overflow mb-6"
+          >
+            <span className="text-pearl">LAVERGNE</span>
+            <br />
+            <span className="neon-text-gold">EN FÊTE</span>
+          </motion.h1>
+
+          {/* Date Badge */}
+          <motion.div
+            variants={itemVariants}
+            className="inline-flex items-center gap-3 glass-card-gold px-8 py-4 rounded-full mb-16"
+          >
+            <span className="text-pearl-muted text-sm uppercase tracking-widest">
+              Samedi
+            </span>
+            <span className="text-gold text-2xl md:text-3xl font-bold">
+              23 Août 2025
+            </span>
+            <span className="text-pearl-muted text-sm uppercase tracking-widest">
+              18h00
+            </span>
+          </motion.div>
+
+          {/* Celebrants Grid */}
+          <motion.div
+            variants={itemVariants}
+            className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 max-w-4xl mx-auto"
+          >
+            {celebrants.map((person, index) => (
+              <motion.div
+                key={person.name}
+                className="relative group"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{
+                  delay: 0.8 + index * 0.15,
+                  type: 'spring',
+                  stiffness: 100,
+                }}
+              >
+                {/* Photo Card */}
+                <div
+                  className="photo-frame p-2"
+                  style={{
+                    '--rotation': `${(index % 2 === 0 ? -1 : 1) * (2 + index)}deg`,
+                  } as React.CSSProperties}
+                >
+                  <div className="relative aspect-[3/4] overflow-hidden bg-[var(--color-void-lighter)]">
+                    <Image
+                      src={person.photo}
+                      alt={person.name}
+                      fill
+                      className="object-cover transition-transform duration-500 group-hover:scale-110"
+                      sizes="(max-width: 768px) 50vw, 25vw"
+                    />
+
+                    {/* Age Badge */}
+                    <motion.div
+                      className="absolute top-2 right-2 w-12 h-12 rounded-full bg-[var(--color-gold)] flex items-center justify-center"
+                      whileHover={{ scale: 1.1 }}
+                    >
+                      <span className="text-[var(--color-void)] font-bold text-lg">
+                        {person.age}
+                      </span>
+                    </motion.div>
+                  </div>
+
+                  {/* Name */}
+                  <div className="pt-2 pb-1">
+                    <p className="font-serif text-sm md:text-base text-[var(--color-void)] text-center italic">
+                      {person.name}
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+
+          {/* Sum Total */}
+          <motion.div
+            variants={itemVariants}
+            className="mt-12"
+          >
+            <motion.p
+              className="font-serif text-xl md:text-2xl text-pearl-muted italic"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 1, duration: 0.5 }}
+              transition={{ delay: 1.5 }}
             >
-              <HandwrittenArrow direction="right" color="#D4AF37" />
-              <span className="font-handwritten text-xl text-gold">4 anniversaires</span>
-            </motion.div>
+              <span className="text-gold font-bold">30</span> +
+              <span className="text-gold font-bold"> 27</span> +
+              <span className="text-gold font-bold"> 25</span> +
+              <span className="text-gold font-bold"> 20</span> =
+              <span className="neon-text-gold text-3xl md:text-4xl font-bold ml-2">102</span>
+              <span className="text-pearl-muted ml-2">ans de bonheur</span>
+            </motion.p>
           </motion.div>
-
-          {/* Film Strip Photobooth */}
-          <motion.div
-            className="relative"
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            {/* Film Strip Container */}
-            <div className="relative bg-charcoal-dark border-8 border-pearl rounded-sm shadow-film p-4 md:p-6">
-              {/* Sprocket Holes */}
-              <SprocketHoles side="left" count={8} />
-              <SprocketHoles side="right" count={8} />
-
-              {/* Photo Grid */}
-              <div className="flex flex-col gap-4 px-6">
-                {celebrants.map((person, index) => (
-                  <motion.div
-                    key={person.name}
-                    className="relative"
-                    variants={photoVariants}
-                  >
-                    {/* Photo Frame */}
-                    <div
-                      className="bg-pearl p-2 shadow-lg"
-                      style={{
-                        transform: `rotate(${index % 2 === 0 ? -1 : 1}deg)`,
-                      }}
-                    >
-                      {/* Photo Placeholder */}
-                      <div className="w-36 h-28 md:w-44 md:h-32 bg-gradient-to-br from-charcoal-light to-charcoal flex items-center justify-center">
-                        <span className="text-5xl md:text-6xl">{person.imagePlaceholder}</span>
-                      </div>
-                      {/* Caption */}
-                      <div className="flex justify-between items-center mt-2 px-1">
-                        <span className="font-handwritten text-charcoal text-lg">
-                          {person.name}
-                        </span>
-                        <span className="font-display font-bold text-gold text-xl">
-                          {person.age} ans
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Handwritten Arrow pointing to age */}
-                    {index < celebrants.length - 1 && (
-                      <motion.div
-                        className="absolute -right-14 top-1/2 -translate-y-1/2 hidden md:block"
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.5 + index * 0.2 }}
-                      >
-                        <HandwrittenArrow direction="curved-right" color="#F5F5F5" />
-                      </motion.div>
-                    )}
-                  </motion.div>
-                ))}
-              </div>
-
-              {/* Film Strip Bottom Text */}
-              <motion.div
-                className="text-center mt-6 pt-4 border-t border-pearl/30"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1.5 }}
-              >
-                <p className="font-handwritten text-2xl text-pearl">
-                  <GlowText color="gold">30</GlowText> + <GlowText color="gold">27</GlowText> + <GlowText color="gold">25</GlowText> + <GlowText color="gold">20</GlowText> = <GlowText color="gold">102</GlowText> ans de bonheur !
-                </p>
-              </motion.div>
-            </div>
-
-            {/* Decorative Tape */}
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-16 h-6 bg-gold/80 rotate-2 shadow-md" />
-            <div className="absolute -bottom-3 left-1/4 w-12 h-5 bg-pearl/60 -rotate-3 shadow-md" />
-          </motion.div>
-        </div>
-
-        {/* Event Date Banner */}
-        <motion.div
-          className="text-center mt-12 md:mt-16"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.8, duration: 0.6 }}
-        >
-          <div className="inline-block bg-charcoal-light border-2 border-gold px-8 py-4 rounded-sm">
-            <p className="font-display text-xl md:text-2xl text-pearl">
-              <span className="text-gold">Samedi 23 Août 2025</span>
-            </p>
-            <p className="font-handwritten text-lg text-pearl-muted mt-1">
-              À partir de 18h00 • Chez nous
-            </p>
-          </div>
         </motion.div>
-      </div>
+      </motion.div>
+
+      {/* Scroll Indicator */}
+      <motion.div
+        className="absolute bottom-8 left-1/2 -translate-x-1/2"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 2, duration: 0.5 }}
+      >
+        <motion.div
+          className="w-6 h-10 rounded-full border-2 border-[var(--glass-border)] flex items-start justify-center p-2"
+          animate={{ opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        >
+          <motion.div
+            className="w-1.5 h-1.5 rounded-full bg-gold"
+            animate={{ y: [0, 12, 0] }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+          />
+        </motion.div>
+      </motion.div>
     </section>
   );
 }
