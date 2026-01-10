@@ -704,3 +704,31 @@ body {
 .annotation-arrow.animate svg {
   animation: draw-arrow 0.8s ease-out forwards;
 }
+
+/* ========================================
+   Marquee Vertical Animations
+   ======================================== */
+
+@keyframes marquee-vertical {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-50%); }
+}
+
+@keyframes marquee-vertical-reverse {
+  0% { transform: translateY(-50%); }
+  100% { transform: translateY(0); }
+}
+
+.animate-marquee-vertical {
+  animation: marquee-vertical 30s linear infinite;
+}
+
+.animate-marquee-vertical-reverse {
+  animation: marquee-vertical-reverse 30s linear infinite;
+}
+
+/* Pause animation on hover */
+.marquee-container:hover .animate-marquee-vertical,
+.marquee-container:hover .animate-marquee-vertical-reverse {
+  animation-play-state: paused;
+}
