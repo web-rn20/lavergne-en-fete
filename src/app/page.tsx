@@ -1,5 +1,6 @@
 import HeroMurDesSouvenirs from "@/components/HeroMurDesSouvenirs";
 import Countdown from "@/components/Countdown";
+import FamilyPhotos from "@/components/FamilyPhotos";
 
 export default function Home() {
   return (
@@ -9,6 +10,9 @@ export default function Home() {
 
       {/* Countdown - Compte à rebours vers le 27 juin 2026 */}
       <Countdown />
+
+      {/* Photos de Famille - Section avec cartes animées */}
+      <FamilyPhotos />
 
       <section id="programme" className="py-20 px-4 bg-brand-dark">
         <div className="max-w-4xl mx-auto text-center">
