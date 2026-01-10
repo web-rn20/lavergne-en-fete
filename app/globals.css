@@ -2,7 +2,7 @@
 
 /*
  * Lavergne en Fête - Modern Luxury Redesign
- * Direction Artistique : Expérience Festival Premium
+ * Direction Artistique : Expérience Festival Premium (Style Épuré)
  */
 
 /* ========================================
@@ -22,13 +22,10 @@
   --color-gold: #D4AF37;
   --color-gold-light: #E8C566;
   --color-gold-dark: #B8962E;
-  --color-gold-glow: rgba(212, 175, 55, 0.5);
 
-  /* Accent - Sport Neons */
+  /* Accent - Sport Colors */
   --color-stadium-red: #FF2D55;
-  --color-stadium-red-glow: rgba(255, 45, 85, 0.6);
   --color-tfc-violet: #8B5CF6;
-  --color-tfc-violet-glow: rgba(139, 92, 246, 0.6);
 
   /* Glassmorphism */
   --glass-bg: rgba(255, 255, 255, 0.03);
@@ -41,7 +38,10 @@
   --font-serif: 'Cormorant Garamond', Georgia, serif;
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 
-  /* Spacing */
+  /* Spacing - Site Margins */
+  --margin-desktop: 104px;
+  --margin-mobile: 24px;
+
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
@@ -58,12 +58,10 @@
   --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-smooth: 600ms cubic-bezier(0.16, 1, 0.3, 1);
 
-  /* Shadows */
-  --shadow-glow-gold: 0 0 30px var(--color-gold-glow);
-  --shadow-glow-red: 0 0 30px var(--color-stadium-red-glow);
-  --shadow-glow-violet: 0 0 30px var(--color-tfc-violet-glow);
+  /* Shadows - Clean, no glow */
   --shadow-elevation: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
   --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --shadow-subtle: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
 /* ========================================
@@ -96,6 +94,22 @@ body::before {
 }
 
 /* ========================================
+   Site Container with Margins
+   ======================================== */
+
+.site-container {
+  padding-left: var(--margin-mobile);
+  padding-right: var(--margin-mobile);
+}
+
+@media (min-width: 1024px) {
+  .site-container {
+    padding-left: var(--margin-desktop);
+    padding-right: var(--margin-desktop);
+  }
+}
+
+/* ========================================
    Typography - Modern Luxury
    ======================================== */
 
@@ -118,6 +132,13 @@ h1, h2, h3 {
   font-weight: 600;
   line-height: 0.9;
   letter-spacing: -0.04em;
+}
+
+.title-hero {
+  font-size: clamp(2.5rem, 8vw, 6rem);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.03em;
 }
 
 .title-overflow {
@@ -143,35 +164,27 @@ h1, h2, h3 {
   border-color: rgba(255, 255, 255, 0.12);
 }
 
-/* Gold Gradient Border */
-.glass-card-gold {
+/* Simple bordered card (no gold gradient) */
+.glass-card-accent {
   background: var(--glass-bg);
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
   border-radius: 16px;
-  position: relative;
+  transition: all var(--transition-base);
 }
 
-.glass-card-gold::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 16px;
-  padding: 1px;
-  background: linear-gradient(135deg, var(--color-gold), transparent 60%);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
+.glass-card-accent:hover {
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 /* ========================================
-   Premium Buttons with Glow Effect
+   Premium Buttons - Clean Style
    ======================================== */
 
 .btn-premium {
   position: relative;
-  background: linear-gradient(135deg, var(--color-gold), var(--color-gold-dark));
+  background: var(--color-gold);
   color: var(--color-void);
   font-family: var(--font-display);
   font-weight: 600;
@@ -186,22 +199,10 @@ h1, h2, h3 {
   transition: all var(--transition-base);
 }
 
-.btn-premium::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-  transform: translateX(-100%);
-  transition: transform var(--transition-slow);
-}
-
 .btn-premium:hover {
+  background: var(--color-gold-light);
   transform: translateY(-2px);
-  box-shadow: var(--shadow-glow-gold), var(--shadow-soft);
-}
-
-.btn-premium:hover::before {
-  transform: translateX(100%);
+  box-shadow: var(--shadow-subtle);
 }
 
 .btn-premium:active {
@@ -225,12 +226,11 @@ h1, h2, h3 {
 
 .btn-ghost:hover {
   background: var(--glass-bg);
-  border-color: var(--color-gold);
-  color: var(--color-gold);
+  border-color: var(--color-pearl-muted);
 }
 
 /* ========================================
-   Form Inputs - VIP Club Style
+   Form Inputs - Clean Style
    ======================================== */
 
 .input-premium {
@@ -251,8 +251,7 @@ h1, h2, h3 {
 }
 
 .input-premium:focus {
-  border-color: var(--color-gold);
-  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+  border-color: var(--color-pearl-muted);
 }
 
 .input-premium:hover:not(:focus) {
@@ -270,7 +269,7 @@ h1, h2, h3 {
 }
 
 /* ========================================
-   Photo Gallery - Levitation Effect
+   Photo Gallery - Clean Levitation Effect
    ======================================== */
 
 .photo-frame {
@@ -285,9 +284,7 @@ h1, h2, h3 {
 
 .photo-frame:hover {
   transform: rotate(0deg) translateY(-12px) scale(1.02);
-  box-shadow:
-    0 20px 40px rgba(0, 0, 0, 0.4),
-    0 0 60px rgba(212, 175, 55, 0.15);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
 }
 
 .photo-frame img {
@@ -302,74 +299,23 @@ h1, h2, h3 {
 }
 
 /* ========================================
-   Neon Glow Effects - Stadium/TFC
+   Sport Section - Subtle Accent Colors
    ======================================== */
 
-.neon-red {
-  box-shadow:
-    0 0 5px var(--color-stadium-red),
-    0 0 10px var(--color-stadium-red),
-    0 0 20px var(--color-stadium-red-glow),
-    0 0 40px var(--color-stadium-red-glow);
-}
-
-.neon-violet {
-  box-shadow:
-    0 0 5px var(--color-tfc-violet),
-    0 0 10px var(--color-tfc-violet),
-    0 0 20px var(--color-tfc-violet-glow),
-    0 0 40px var(--color-tfc-violet-glow);
-}
-
-.neon-text-red {
-  color: var(--color-stadium-red);
-  text-shadow:
-    0 0 5px var(--color-stadium-red),
-    0 0 10px var(--color-stadium-red),
-    0 0 20px var(--color-stadium-red-glow);
-}
-
-.neon-text-violet {
-  color: var(--color-tfc-violet);
-  text-shadow:
-    0 0 5px var(--color-tfc-violet),
-    0 0 10px var(--color-tfc-violet),
-    0 0 20px var(--color-tfc-violet-glow);
-}
-
-.neon-text-gold {
-  color: var(--color-gold);
-  text-shadow:
-    0 0 5px var(--color-gold),
-    0 0 10px var(--color-gold),
-    0 0 20px var(--color-gold-glow);
-}
-
-/* Subtle Neon Border Animation */
-@keyframes neon-pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
-}
-
-.neon-border-red {
+.accent-border-red {
   border: 1px solid var(--color-stadium-red);
-  box-shadow:
-    inset 0 0 10px rgba(255, 45, 85, 0.1),
-    0 0 10px rgba(255, 45, 85, 0.2);
-  animation: neon-pulse 3s ease-in-out infinite;
 }
 
-.neon-border-violet {
+.accent-border-violet {
   border: 1px solid var(--color-tfc-violet);
-  box-shadow:
-    inset 0 0 10px rgba(139, 92, 246, 0.1),
-    0 0 10px rgba(139, 92, 246, 0.2);
-  animation: neon-pulse 3s ease-in-out infinite;
-  animation-delay: 1.5s;
+}
+
+.accent-text-red {
+  color: var(--color-stadium-red);
+}
+
+.accent-text-violet {
+  color: var(--color-tfc-violet);
 }
 
 /* ========================================
@@ -422,15 +368,6 @@ h1, h2, h3 {
   }
 }
 
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
 @keyframes fade-in-up {
   from {
     opacity: 0;
@@ -444,17 +381,6 @@ h1, h2, h3 {
 
 .animate-float {
   animation: float-gentle 4s ease-in-out infinite;
-}
-
-.animate-shimmer {
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.1),
-    transparent
-  );
-  background-size: 200% 100%;
-  animation: shimmer 2s infinite;
 }
 
 /* ========================================
@@ -483,7 +409,7 @@ h1, h2, h3 {
    ======================================== */
 
 ::selection {
-  background: var(--color-gold);
+  background: var(--color-pearl);
   color: var(--color-void);
 }
 
@@ -494,6 +420,10 @@ h1, h2, h3 {
 @media (max-width: 640px) {
   .title-massive {
     font-size: clamp(2.5rem, 12vw, 4rem);
+  }
+
+  .title-hero {
+    font-size: clamp(2rem, 10vw, 3.5rem);
   }
 
   .title-overflow {

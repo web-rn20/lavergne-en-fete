@@ -15,9 +15,9 @@ interface RSVPBlockProps {
   initialGuest?: Guest | null;
 }
 
-// Premium Confetti Animation
+// Clean Confetti Animation
 function PremiumConfetti() {
-  const colors = ['#D4AF37', '#E8C566', '#FF2D55', '#8B5CF6'];
+  const colors = ['#F5F5F5', '#A0A0A0', '#FF2D55', '#8B5CF6'];
   const confettiPieces = Array.from({ length: 60 }, (_, i) => ({
     id: i,
     x: Math.random() * 100,
@@ -140,7 +140,7 @@ export default function RSVPBlock({ guestId, initialGuest }: RSVPBlockProps) {
           animate={{ rotate: 360 }}
           transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
         >
-          <Loader2 className="w-12 h-12 text-gold" />
+          <Loader2 className="w-12 h-12 text-pearl" />
         </motion.div>
         <p className="mt-6 text-pearl-muted font-serif italic">
           Chargement de votre invitation...
@@ -184,8 +184,8 @@ export default function RSVPBlock({ guestId, initialGuest }: RSVPBlockProps) {
             }}
             transition={{ duration: 0.8 }}
           >
-            <div className="w-24 h-24 rounded-full bg-[var(--color-gold)]/10 flex items-center justify-center mb-8">
-              <Sparkles className="w-12 h-12 text-gold" />
+            <div className="w-24 h-24 rounded-full bg-[var(--glass-bg)] flex items-center justify-center mb-8">
+              <Sparkles className="w-12 h-12 text-pearl" />
             </div>
           </motion.div>
 
@@ -193,7 +193,7 @@ export default function RSVPBlock({ guestId, initialGuest }: RSVPBlockProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-4xl md:text-5xl font-bold neon-text-gold mb-4"
+            className="text-4xl md:text-5xl font-bold text-pearl mb-4"
           >
             Merci {guest?.prenom} !
           </motion.h2>
@@ -231,17 +231,13 @@ export default function RSVPBlock({ guestId, initialGuest }: RSVPBlockProps) {
       className="w-full max-w-xl mx-auto"
     >
       {/* VIP Club Card */}
-      <div className="glass-card-gold p-8 md:p-10 rounded-2xl">
+      <div className="glass-card p-8 md:p-10 rounded-2xl">
         {/* Header */}
         <div className="text-center mb-10">
-          <motion.div
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--color-gold)]/10 text-gold text-xs tracking-widest uppercase mb-4"
-            animate={{ boxShadow: ['0 0 0 rgba(212, 175, 55, 0)', '0 0 20px rgba(212, 175, 55, 0.3)', '0 0 0 rgba(212, 175, 55, 0)'] }}
-            transition={{ duration: 2, repeat: Infinity }}
-          >
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--glass-bg)] text-pearl text-xs tracking-widest uppercase mb-4">
             <Sparkles className="w-3 h-3" />
-            Accès VIP
-          </motion.div>
+            Invitation
+          </div>
 
           <p className="text-pearl-muted text-sm uppercase tracking-widest mb-2">
             Invité(e) d&apos;honneur
@@ -267,7 +263,7 @@ export default function RSVPBlock({ guestId, initialGuest }: RSVPBlockProps) {
                   className={`
                     relative p-4 rounded-lg border transition-all duration-300
                     ${presence === option
-                      ? 'border-[var(--color-gold)] bg-[var(--color-gold)]/10'
+                      ? 'border-pearl bg-[var(--glass-bg-hover)]'
                       : 'border-[var(--glass-border)] hover:border-[var(--color-pearl-dim)]'
                     }
                   `}
@@ -276,14 +272,14 @@ export default function RSVPBlock({ guestId, initialGuest }: RSVPBlockProps) {
                 >
                   <span className={`
                     text-lg font-medium
-                    ${presence === option ? 'text-gold' : 'text-pearl'}
+                    ${presence === option ? 'text-pearl' : 'text-pearl-muted'}
                   `}>
                     {option === 'Oui' ? 'Oui, j\'y serai !' : 'Non, malheureusement'}
                   </span>
                   {presence === option && (
                     <motion.div
                       layoutId="selected"
-                      className="absolute inset-0 rounded-lg border-2 border-[var(--color-gold)]"
+                      className="absolute inset-0 rounded-lg border-2 border-pearl"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ duration: 0.2 }}

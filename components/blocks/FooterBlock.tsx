@@ -21,10 +21,10 @@ export default function FooterBlock() {
       {/* Background Gradient */}
       <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-void)] via-transparent to-transparent pointer-events-none" />
 
-      <div className="container mx-auto px-4 relative z-10">
+      <div className="site-container relative z-10">
         {/* Top Separator */}
         <div className="flex justify-center mb-16">
-          <div className="w-full max-w-md h-px bg-gradient-to-r from-transparent via-[var(--color-gold)]/30 to-transparent" />
+          <div className="w-full max-w-md h-px bg-gradient-to-r from-transparent via-[var(--glass-border)] to-transparent" />
         </div>
 
         {/* Event Details */}
@@ -38,7 +38,7 @@ export default function FooterBlock() {
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
             >
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full glass-card text-gold mb-4">
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full glass-card text-pearl mb-4">
                 <detail.icon className="w-5 h-5" />
               </div>
               <p className="text-pearl-muted text-xs uppercase tracking-widest mb-1">
@@ -87,7 +87,7 @@ export default function FooterBlock() {
         {/* Bottom Separator */}
         <div className="flex items-center justify-center gap-4 mb-8">
           <div className="w-16 h-px bg-[var(--glass-border)]" />
-          <Heart className="w-4 h-4 text-gold" />
+          <Heart className="w-4 h-4 text-pearl-muted" />
           <div className="w-16 h-px bg-[var(--glass-border)]" />
         </div>
 

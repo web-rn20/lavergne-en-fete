@@ -78,42 +78,7 @@ export default function FanZoneBlock() {
       whileInView="visible"
       viewport={{ once: true, margin: '-100px' }}
     >
-      {/* Background Gradient Orbs */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div
-          className="absolute -left-32 top-1/4 w-96 h-96 rounded-full"
-          style={{
-            background: 'radial-gradient(circle, rgba(255, 45, 85, 0.08) 0%, transparent 70%)',
-          }}
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.5, 0.8, 0.5],
-          }}
-          transition={{
-            duration: 4,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-        />
-        <motion.div
-          className="absolute -right-32 bottom-1/4 w-96 h-96 rounded-full"
-          style={{
-            background: 'radial-gradient(circle, rgba(139, 92, 246, 0.08) 0%, transparent 70%)',
-          }}
-          animate={{
-            scale: [1.2, 1, 1.2],
-            opacity: [0.5, 0.8, 0.5],
-          }}
-          transition={{
-            duration: 4,
-            repeat: Infinity,
-            ease: 'easeInOut',
-            delay: 2,
-          }}
-        />
-      </div>
-
-      <div className="container mx-auto px-4 relative z-10">
+      <div className="relative z-10">
         {/* Section Header */}
         <motion.div
           className="text-center mb-12 md:mb-16"
@@ -125,9 +90,8 @@ export default function FanZoneBlock() {
           <p className="font-serif text-lg md:text-xl text-pearl-muted mb-2 italic">
             Les passions de Papa & Maman
           </p>
-          <h2 className="title-massive title-overflow">
-            <span className="text-pearl">FAN</span>
-            <span className="neon-text-gold">ZONE</span>
+          <h2 className="title-massive">
+            <span className="text-pearl">FAN ZONE</span>
           </h2>
         </motion.div>
 
@@ -143,13 +107,13 @@ export default function FanZoneBlock() {
               <div
                 className={`
                   relative glass-card p-6 md:p-8 rounded-2xl overflow-hidden
-                  ${team.color === 'red' ? 'neon-border-red' : 'neon-border-violet'}
+                  ${team.color === 'red' ? 'accent-border-red' : 'accent-border-violet'}
                 `}
               >
                 {/* Corner Badge */}
                 <div
                   className={`
-                    absolute top-0 right-0 px-4 py-2 text-xs font-bold tracking-widest
+                    absolute top-0 right-0 px-4 py-2 text-xs font-bold tracking-widest text-pearl
                     ${team.color === 'red' ? 'bg-[var(--color-stadium-red)]' : 'bg-[var(--color-tfc-violet)]'}
                   `}
                   style={{
@@ -202,7 +166,7 @@ export default function FanZoneBlock() {
                       <p
                         className={`
                           text-xl md:text-2xl font-bold
-                          ${team.color === 'red' ? 'neon-text-red' : 'neon-text-violet'}
+                          ${team.color === 'red' ? 'text-[var(--color-stadium-red)]' : 'text-[var(--color-tfc-violet)]'}
                         `}
                       >
                         {stat.value}
@@ -215,21 +179,11 @@ export default function FanZoneBlock() {
                 </div>
 
                 {/* Slogan */}
-                <motion.div
+                <div
                   className={`
                     text-center py-4 rounded-lg
                     ${team.color === 'red' ? 'bg-[var(--color-stadium-red)]/5' : 'bg-[var(--color-tfc-violet)]/5'}
                   `}
-                  animate={{
-                    boxShadow: team.color === 'red'
-                      ? ['0 0 0 rgba(255, 45, 85, 0)', '0 0 20px rgba(255, 45, 85, 0.2)', '0 0 0 rgba(255, 45, 85, 0)']
-                      : ['0 0 0 rgba(139, 92, 246, 0)', '0 0 20px rgba(139, 92, 246, 0.2)', '0 0 0 rgba(139, 92, 246, 0)'],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    ease: 'easeInOut',
-                  }}
                 >
                   <p
                     className={`
@@ -239,7 +193,7 @@ export default function FanZoneBlock() {
                   >
                     &ldquo;{team.slogan}&rdquo;
                   </p>
-                </motion.div>
+                </div>
 
                 {/* Decorative Lines */}
                 <div
@@ -250,7 +204,7 @@ export default function FanZoneBlock() {
                       : 'bg-gradient-to-r from-transparent via-[var(--color-tfc-violet)] to-transparent'
                     }
                   `}
-                  style={{ opacity: 0.5 }}
+                  style={{ opacity: 0.3 }}
                 />
               </div>
             </motion.div>
@@ -266,11 +220,11 @@ export default function FanZoneBlock() {
           transition={{ delay: 0.6 }}
         >
           <div className="inline-flex items-center gap-4">
-            <div className="w-12 h-px bg-gradient-to-r from-transparent to-[var(--color-stadium-red)]" />
+            <div className="w-12 h-px bg-gradient-to-r from-transparent to-[var(--color-stadium-red)]/50" />
             <p className="font-serif text-lg text-pearl-muted italic">
               Toulouse dans le coeur
             </p>
-            <div className="w-12 h-px bg-gradient-to-l from-transparent to-[var(--color-tfc-violet)]" />
+            <div className="w-12 h-px bg-gradient-to-l from-transparent to-[var(--color-tfc-violet)]/50" />
           </div>
         </motion.div>
       </div>

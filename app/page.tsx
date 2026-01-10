@@ -50,30 +50,24 @@ export default function Home() {
     <main ref={mainRef} className="min-h-screen bg-void overflow-hidden relative">
       {/* Fixed Background Elements with Parallax */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        {/* Large Gradient Orbs */}
+        {/* Large Gradient Orbs - Subtle */}
         <motion.div
-          className="absolute -top-1/4 -left-1/4 w-3/4 h-3/4 rounded-full opacity-30"
+          className="absolute -top-1/4 -left-1/4 w-3/4 h-3/4 rounded-full opacity-20"
           style={{
-            background: 'radial-gradient(circle, rgba(212, 175, 55, 0.05) 0%, transparent 60%)',
+            background: 'radial-gradient(circle, rgba(255, 255, 255, 0.02) 0%, transparent 60%)',
             y: bgY1,
           }}
         />
         <motion.div
-          className="absolute top-1/2 -right-1/4 w-3/4 h-3/4 rounded-full opacity-30"
+          className="absolute top-1/2 -right-1/4 w-3/4 h-3/4 rounded-full opacity-20"
           style={{
-            background: 'radial-gradient(circle, rgba(139, 92, 246, 0.03) 0%, transparent 60%)',
+            background: 'radial-gradient(circle, rgba(139, 92, 246, 0.02) 0%, transparent 60%)',
             y: bgY2,
-          }}
-        />
-        <motion.div
-          className="absolute -bottom-1/4 left-1/4 w-1/2 h-1/2 rounded-full opacity-20"
-          style={{
-            background: 'radial-gradient(circle, rgba(255, 45, 85, 0.03) 0%, transparent 60%)',
           }}
         />
 
         {/* Decorative Grid Lines */}
-        <div className="absolute inset-0 opacity-[0.02]">
+        <div className="absolute inset-0 opacity-[0.015]">
           <div
             className="h-full w-full"
             style={{
@@ -94,7 +88,7 @@ export default function Home() {
 
         {/* Bento Grid Section */}
         <section className="py-16 md:py-24">
-          <div className="container mx-auto px-4">
+          <div className="site-container">
             {/* Section Header */}
             <motion.div
               className="text-center mb-16"
@@ -107,8 +101,7 @@ export default function Home() {
                 Tout ce qu&apos;il faut savoir
               </p>
               <h2 className="title-massive">
-                <span className="text-pearl">LE</span>
-                <span className="neon-text-gold"> PROGRAMME</span>
+                <span className="text-pearl">LE PROGRAMME</span>
               </h2>
             </motion.div>
 
@@ -141,21 +134,11 @@ export default function Home() {
                 variants={itemVariants}
                 className="lg:col-span-5"
               >
-                <div className="glass-card-gold p-6 rounded-2xl h-full flex flex-col justify-center">
+                <div className="glass-card p-6 rounded-2xl h-full flex flex-col justify-center">
                   <div className="text-center">
-                    <motion.div
-                      className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[var(--color-gold)]/10 text-gold mb-4"
-                      animate={{
-                        boxShadow: [
-                          '0 0 0 rgba(212, 175, 55, 0)',
-                          '0 0 30px rgba(212, 175, 55, 0.3)',
-                          '0 0 0 rgba(212, 175, 55, 0)',
-                        ],
-                      }}
-                      transition={{ duration: 3, repeat: Infinity }}
-                    >
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[var(--glass-bg)] text-pearl mb-4">
                       <span className="text-3xl">🎉</span>
-                    </motion.div>
+                    </div>
                     <h3 className="text-2xl font-bold text-pearl mb-2">
                       Dress Code
                     </h3>
@@ -173,10 +156,14 @@ export default function Home() {
         </section>
 
         {/* Photobooth Gallery Section */}
-        <PhotoboothGallery />
+        <div className="site-container">
+          <PhotoboothGallery />
+        </div>
 
         {/* Fan Zone Section */}
-        <FanZoneBlock />
+        <div className="site-container">
+          <FanZoneBlock />
+        </div>
 
         {/* Footer */}
         <FooterBlock />
@@ -191,7 +178,7 @@ export default function Home() {
           transition={{ delay: 2, duration: 0.5 }}
         >
           <p className="text-xs text-pearl-muted">
-            <span className="text-gold">23.08.25</span> • Lavergne en Fête
+            <span className="text-pearl">23.08.25</span> • Lavergne en Fête
           </p>
         </motion.div>
       </div>

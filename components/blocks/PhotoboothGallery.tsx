@@ -83,7 +83,7 @@ export default function PhotoboothGallery() {
             transition={{ duration: 0.6 }}
           >
             <h2 className="title-massive text-pearl mb-4">
-              <span className="neon-text-gold">Photo</span>booth
+              Photobooth
             </h2>
             <p className="font-serif text-xl md:text-2xl text-pearl-muted max-w-lg mx-auto">
               Des moments précieux capturés au fil des années
