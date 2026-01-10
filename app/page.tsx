@@ -26,13 +26,13 @@ const galleryImages = [
   '/photos/IMG_0583.jpg',
 ];
 
-// Transformations pour l'effet éventail
+// Transformations pour l'effet éventail (GSAP style)
 const cardTransforms = [
-  { rotate: -12, translateX: -100, translateY: 15 },
-  { rotate: -6, translateX: -50, translateY: -5 },
-  { rotate: 0, translateX: 0, translateY: -15 },
-  { rotate: 6, translateX: 50, translateY: -5 },
-  { rotate: 12, translateX: 100, translateY: 15 },
+  'rotate(-12deg) translate(-120px)',
+  'rotate(-6deg) translate(-60px)',
+  'rotate(0deg)',
+  'rotate(6deg) translate(60px)',
+  'rotate(12deg) translate(120px)',
 ];
 
 // Options d'hébergement
@@ -152,11 +152,13 @@ export default function Home() {
             >
               <BounceCards
                 images={galleryImages}
-                containerWidth={450}
-                containerHeight={400}
-                cardWidth={180}
-                cardHeight={240}
-                transforms={cardTransforms}
+                containerWidth={500}
+                containerHeight={350}
+                transformStyles={cardTransforms}
+                animationDelay={0.5}
+                animationStagger={0.08}
+                easeType="elastic.out(1, 0.5)"
+                enableHover={true}
               />
             </motion.div>
           </div>
