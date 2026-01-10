@@ -84,17 +84,80 @@ h1, h2 {
   font-family: var(--font-montserrat);
 }
 
-/* Boutons - Style de base */
-.btn-primary {
-  background: linear-gradient(135deg, var(--brand-primary), var(--brand-alert));
-  color: var(--brand-light);
+/* Boutons - Classes utilitaires harmonisées */
+/* Base commune pour tous les boutons */
+.btn {
+  display: inline-block;
+  padding: 16px 24px; /* py-4 px-6 */
+  font-family: var(--font-montserrat);
+  font-size: 16px; /* text-base */
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  transition: all 0.3s ease;
+  letter-spacing: 0.05em;
+  border-radius: 8px; /* rounded-lg */
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+  border: none;
+  transition: all 300ms ease;
+  box-shadow: none;
 }
 
-.btn-primary:hover {
-  background: var(--brand-accent-deep);
+.btn:hover {
+  opacity: 0.9;
+  box-shadow: none;
+}
+
+/* Bouton pour fonds foncés (dans Hero, cartes sombres) */
+/* Fond clair, texte foncé */
+.btn-on-dark {
+  background-color: var(--brand-light);
+  color: var(--brand-dark);
+}
+
+.btn-on-dark:hover {
+  background-color: var(--brand-light);
+  color: var(--brand-accent-deep);
+  opacity: 0.9;
+}
+
+/* Bouton pour fonds clairs (reste de la page) */
+/* Fond foncé, texte clair */
+.btn-on-light {
+  background-color: var(--brand-accent-deep);
+  color: var(--brand-light);
+}
+
+.btn-on-light:hover {
+  background-color: var(--brand-dark);
+  color: var(--brand-light);
+  opacity: 0.9;
+}
+
+/* Bouton secondaire/outline pour fonds foncés */
+.btn-outline-on-dark {
+  background-color: transparent;
+  color: var(--brand-light);
+  border: 2px solid var(--brand-light);
+}
+
+.btn-outline-on-dark:hover {
+  background-color: var(--brand-light);
+  color: var(--brand-accent-deep);
+  opacity: 1;
+}
+
+/* Bouton secondaire/outline pour fonds clairs */
+.btn-outline-on-light {
+  background-color: transparent;
+  color: var(--brand-accent-deep);
+  border: 2px solid var(--brand-accent-deep);
+}
+
+.btn-outline-on-light:hover {
+  background-color: var(--brand-accent-deep);
+  color: var(--brand-light);
+  opacity: 1;
 }
 
 /* Focus pour les formulaires */

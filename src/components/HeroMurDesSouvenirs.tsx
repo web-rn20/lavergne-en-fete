@@ -138,16 +138,10 @@ export default function HeroMurDesSouvenirs() {
             Un anniversaire qui se fête.. même avec un an de retard
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
-              href="#rsvp"
-              className="btn-primary px-6 sm:px-8 py-3 sm:py-4 rounded-full font-montserrat font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300"
-            >
+            <a href="#rsvp" className="btn btn-on-dark">
               Confirmer ma présence
             </a>
-            <a
-              href="#programme"
-              className="px-6 sm:px-8 py-3 sm:py-4 rounded-full font-montserrat font-semibold text-base sm:text-lg border-2 border-brand-light text-brand-light hover:bg-brand-light hover:text-brand-accent-deep transition-all duration-300"
-            >
+            <a href="#programme" className="btn btn-outline-on-dark">
               Voir le programme
             </a>
           </div>
