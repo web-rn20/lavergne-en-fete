@@ -1,9 +1,8 @@
 @import "tailwindcss";
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Reenie+Beanie&display=swap");
 
 /*
- * Lavergne en Fête - Global Styles
- * Thème : Photobooth & Passion (Sport Toulousain)
+ * Lavergne en Fête - Modern Luxury Redesign
+ * Direction Artistique : Expérience Festival Premium (Style Épuré)
  */
 
 /* ========================================
@@ -11,28 +10,38 @@
    ======================================== */
 
 :root {
-  /* Couleurs principales */
-  --color-charcoal: #1a1a1a;
-  --color-charcoal-light: #2a2a2a;
-  --color-charcoal-dark: #0d0d0d;
+  /* Couleurs - Modern Luxury Palette */
+  --color-void: #0A0A0A;
+  --color-void-soft: #121212;
+  --color-void-lighter: #1A1A1A;
 
-  --color-pearl: #f5f5f5;
-  --color-pearl-muted: #e0e0e0;
+  --color-pearl: #F5F5F5;
+  --color-pearl-muted: #A0A0A0;
+  --color-pearl-dim: #606060;
 
-  --color-gold: #d4af37;
-  --color-gold-light: #e5c76b;
-  --color-gold-dark: #b8962e;
+  --color-gold: #D4AF37;
+  --color-gold-light: #E8C566;
+  --color-gold-dark: #B8962E;
 
-  /* Couleurs d'accent */
-  --color-stadium-red: #c8102e;
-  --color-tfc-violet: #5b2d8e;
+  /* Accent - Sport Colors */
+  --color-stadium-red: #FF2D55;
+  --color-tfc-violet: #8B5CF6;
 
-  /* Typographie */
-  --font-display: "Playfair Display", Georgia, serif;
-  --font-handwritten: "Reenie Beanie", cursive;
-  --font-body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  /* Glassmorphism */
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-bg-hover: rgba(255, 255, 255, 0.06);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-blur: 20px;
 
-  /* Espacements */
+  /* Typography */
+  --font-display: 'Clash Display', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* Spacing - Site Margins */
+  --margin-desktop: 104px;
+  --margin-mobile: 24px;
+
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
@@ -41,22 +50,22 @@
   --space-8: 2rem;
   --space-12: 3rem;
   --space-16: 4rem;
-
-  /* Bordures Photobooth */
-  --border-film: 8px;
-  --border-polaroid: 12px;
-
-  /* Ombres */
-  --shadow-film: 0 4px 20px rgba(0, 0, 0, 0.6);
+  --space-24: 6rem;
 
   /* Transitions */
-  --transition-fast: 150ms ease-out;
-  --transition-base: 300ms ease-out;
-  --transition-slow: 500ms ease-out;
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: 600ms cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Shadows - Clean, no glow */
+  --shadow-elevation: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+  --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --shadow-subtle: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
 /* ========================================
-   Base Styles
+   Base Styles with Paper Grain Texture
    ======================================== */
 
 html {
@@ -65,176 +74,343 @@ html {
 
 body {
   font-family: var(--font-body);
-  background-color: var(--color-charcoal);
+  background-color: var(--color-void);
   color: var(--color-pearl);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  position: relative;
+}
+
+/* Subtle Paper Grain Texture Overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.02;
+  pointer-events: none;
+  z-index: 9999;
 }
 
 /* ========================================
-   Typography
+   Site Container with Margins
    ======================================== */
 
-h1,
-h2,
-h3 {
+.site-container {
+  padding-left: var(--margin-mobile);
+  padding-right: var(--margin-mobile);
+}
+
+@media (min-width: 1024px) {
+  .site-container {
+    padding-left: var(--margin-desktop);
+    padding-right: var(--margin-desktop);
+  }
+}
+
+/* ========================================
+   Typography - Modern Luxury
+   ======================================== */
+
+h1, h2, h3 {
   font-family: var(--font-display);
-  font-weight: 700;
-  line-height: 1.2;
-}
-
-.handwritten {
-  font-family: var(--font-handwritten);
-  font-size: 1.5em;
-}
-
-/* ========================================
-   Photobooth / Film Strip Styles
-   ======================================== */
-
-.film-strip {
-  background: var(--color-charcoal-dark);
-  border: var(--border-film) solid var(--color-pearl);
-  box-shadow: var(--shadow-film);
-}
-
-.photo-frame {
-  border: var(--border-polaroid) solid var(--color-pearl);
-  background: var(--color-pearl);
-}
-
-/* Perforations de film */
-.sprocket-hole {
-  width: 12px;
-  height: 8px;
-  background: var(--color-charcoal-dark);
-  border-radius: 2px;
-}
-
-/* ========================================
-   Interactive States - Sport Accents
-   ======================================== */
-
-.accent-hover-stadium:hover {
-  border-color: var(--color-stadium-red);
-  box-shadow: 0 0 20px rgba(200, 16, 46, 0.5);
-}
-
-.accent-hover-tfc:hover {
-  border-color: var(--color-tfc-violet);
-  box-shadow: 0 0 20px rgba(91, 45, 142, 0.5);
-}
-
-.accent-hover-gold:hover {
-  border-color: var(--color-gold);
-  box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
-}
-
-/* ========================================
-   Buttons
-   ======================================== */
-
-.btn-primary {
-  background: var(--color-gold);
-  color: var(--color-charcoal);
   font-weight: 600;
-  padding: var(--space-3) var(--space-6);
-  border-radius: 4px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.font-serif {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-style: italic;
+  letter-spacing: 0.01em;
+}
+
+.title-massive {
+  font-size: clamp(3rem, 10vw, 8rem);
+  font-weight: 600;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+}
+
+.title-hero {
+  font-size: clamp(2.5rem, 8vw, 6rem);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.title-overflow {
+  margin-left: -2%;
+  margin-right: -2%;
+}
+
+/* ========================================
+   Glassmorphism Components
+   ======================================== */
+
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
   transition: all var(--transition-base);
 }
 
-.btn-primary:hover {
-  background: var(--color-gold-light);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
+.glass-card:hover {
+  background: var(--glass-bg-hover);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
-.btn-primary:active {
-  background: var(--color-gold-dark);
+/* Simple bordered card (no gold gradient) */
+.glass-card-accent {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  transition: all var(--transition-base);
+}
+
+.glass-card-accent:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* ========================================
+   Premium Buttons - Clean Style
+   ======================================== */
+
+.btn-premium {
+  position: relative;
+  background: var(--color-gold);
+  color: var(--color-void);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.875rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: var(--space-4) var(--space-8);
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  overflow: hidden;
+  transition: all var(--transition-base);
+}
+
+.btn-premium:hover {
+  background: var(--color-gold-light);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-subtle);
+}
+
+.btn-premium:active {
   transform: translateY(0);
 }
 
-/* ========================================
-   Form Styles (RSVP)
-   ======================================== */
-
-.form-input {
-  background: var(--color-pearl);
-  color: var(--color-charcoal);
-  border: 2px solid transparent;
-  padding: var(--space-3) var(--space-4);
+/* Ghost Button */
+.btn-ghost {
+  background: transparent;
+  color: var(--color-pearl);
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 0.875rem;
+  letter-spacing: 0.05em;
+  padding: var(--space-3) var(--space-6);
+  border: 1px solid var(--glass-border);
   border-radius: 4px;
-  transition: border-color var(--transition-fast);
+  cursor: pointer;
+  transition: all var(--transition-base);
 }
 
-.form-input:focus {
-  outline: none;
-  border-color: var(--color-gold);
-}
-
-.form-input::placeholder {
-  color: var(--color-pearl-muted);
+.btn-ghost:hover {
+  background: var(--glass-bg);
+  border-color: var(--color-pearl-muted);
 }
 
 /* ========================================
-   Glow Effects
+   Form Inputs - Clean Style
    ======================================== */
 
-.glow-gold {
-  text-shadow:
-    0 0 10px rgba(212, 175, 55, 0.5),
-    0 0 20px rgba(212, 175, 55, 0.3);
+.input-premium {
+  width: 100%;
+  background: var(--glass-bg);
+  color: var(--color-pearl);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  border: 1px solid var(--glass-border);
+  padding: var(--space-4) var(--space-6);
+  border-radius: 8px;
+  outline: none;
+  transition: all var(--transition-base);
 }
 
-.glow-red {
-  text-shadow:
-    0 0 10px rgba(200, 16, 46, 0.5),
-    0 0 20px rgba(200, 16, 46, 0.3);
+.input-premium::placeholder {
+  color: var(--color-pearl-dim);
 }
 
-.glow-violet {
-  text-shadow:
-    0 0 10px rgba(91, 45, 142, 0.5),
-    0 0 20px rgba(91, 45, 142, 0.3);
+.input-premium:focus {
+  border-color: var(--color-pearl-muted);
+}
+
+.input-premium:hover:not(:focus) {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Select Dropdown */
+.select-premium {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23A0A0A0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--space-4) center;
+  background-size: 20px;
+  padding-right: var(--space-12);
+}
+
+/* ========================================
+   Photo Gallery - Clean Levitation Effect
+   ======================================== */
+
+.photo-frame {
+  position: relative;
+  background: var(--color-pearl);
+  border-radius: 4px;
+  overflow: hidden;
+  transform: rotate(var(--rotation, 0deg));
+  transition: all var(--transition-smooth);
+  cursor: pointer;
+}
+
+.photo-frame:hover {
+  transform: rotate(0deg) translateY(-12px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.photo-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--transition-slow);
+}
+
+.photo-frame:hover img {
+  transform: scale(1.05);
+}
+
+/* ========================================
+   Sport Section - Subtle Accent Colors
+   ======================================== */
+
+.accent-border-red {
+  border: 1px solid var(--color-stadium-red);
+}
+
+.accent-border-violet {
+  border: 1px solid var(--color-tfc-violet);
+}
+
+.accent-text-red {
+  color: var(--color-stadium-red);
+}
+
+.accent-text-violet {
+  color: var(--color-tfc-violet);
+}
+
+/* ========================================
+   Bento Grid System
+   ======================================== */
+
+.bento-grid {
+  display: grid;
+  gap: var(--space-6);
+  grid-template-columns: repeat(12, 1fr);
+  grid-auto-rows: minmax(100px, auto);
+}
+
+@media (max-width: 1024px) {
+  .bento-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .bento-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ========================================
    Utility Classes
    ======================================== */
 
-.text-gold {
-  color: var(--color-gold);
-}
+.text-gold { color: var(--color-gold); }
+.text-pearl { color: var(--color-pearl); }
+.text-pearl-muted { color: var(--color-pearl-muted); }
+.text-stadium-red { color: var(--color-stadium-red); }
+.text-tfc-violet { color: var(--color-tfc-violet); }
 
-.text-pearl {
-  color: var(--color-pearl);
-}
-
-.bg-charcoal {
-  background-color: var(--color-charcoal);
-}
-
-.bg-charcoal-light {
-  background-color: var(--color-charcoal-light);
-}
+.bg-void { background-color: var(--color-void); }
+.bg-void-soft { background-color: var(--color-void-soft); }
+.bg-void-lighter { background-color: var(--color-void-lighter); }
 
 /* ========================================
    Animations
    ======================================== */
 
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0) rotate(0deg);
+@keyframes float-gentle {
+  0%, 100% {
+    transform: translateY(0);
   }
   50% {
-    transform: translateY(-10px) rotate(1deg);
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
 .animate-float {
-  animation: float 3s ease-in-out infinite;
+  animation: float-gentle 4s ease-in-out infinite;
+}
+
+/* ========================================
+   Scrollbar Styling
+   ======================================== */
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-void);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-void-lighter);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-pearl-dim);
+}
+
+/* ========================================
+   Selection Styling
+   ======================================== */
+
+::selection {
+  background: var(--color-pearl);
+  color: var(--color-void);
 }
 
 /* ========================================
@@ -242,12 +418,16 @@ h3 {
    ======================================== */
 
 @media (max-width: 640px) {
-  :root {
-    --border-film: 6px;
-    --border-polaroid: 8px;
+  .title-massive {
+    font-size: clamp(2.5rem, 12vw, 4rem);
   }
 
-  .handwritten {
-    font-size: 1.25em;
+  .title-hero {
+    font-size: clamp(2rem, 10vw, 3.5rem);
+  }
+
+  .title-overflow {
+    margin-left: 0;
+    margin-right: 0;
   }
 }

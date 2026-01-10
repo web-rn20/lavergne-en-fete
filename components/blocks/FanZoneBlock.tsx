@@ -1,37 +1,46 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Trophy, Heart } from 'lucide-react';
-import HandwrittenArrow from '../ui/HandwrittenArrow';
 
 interface Team {
   name: string;
+  shortName: string;
   sport: string;
-  color: string;
-  glowClass: string;
-  hoverClass: string;
   emoji: string;
   slogan: string;
+  color: 'red' | 'violet';
+  stats: {
+    label: string;
+    value: string;
+  }[];
 }
 
 const teams: Team[] = [
   {
     name: 'Stade Toulousain',
-    sport: 'Rugby',
-    color: 'stadium-red',
-    glowClass: 'glow-red',
-    hoverClass: 'accent-hover-stadium',
+    shortName: 'STADE',
+    sport: 'RUGBY',
     emoji: '🏉',
     slogan: 'Allez le Stade !',
+    color: 'red',
+    stats: [
+      { label: 'Titres', value: '22' },
+      { label: 'Légende', value: '∞' },
+      { label: 'Passion', value: '100%' },
+    ],
   },
   {
-    name: 'TFC',
-    sport: 'Football',
-    color: 'tfc-violet',
-    glowClass: 'glow-violet',
-    hoverClass: 'accent-hover-tfc',
+    name: 'Toulouse FC',
+    shortName: 'TFC',
+    sport: 'FOOTBALL',
     emoji: '⚽',
     slogan: 'Allez les Violets !',
+    color: 'violet',
+    stats: [
+      { label: 'Coeur', value: '💜' },
+      { label: 'Stadium', value: '33K' },
+      { label: 'Fierté', value: '100%' },
+    ],
   },
 ];
 
@@ -41,20 +50,21 @@ const containerVariants = {
     opacity: 1,
     transition: {
       staggerChildren: 0.2,
+      delayChildren: 0.1,
     },
   },
 };
 
 const cardVariants = {
-  hidden: { opacity: 0, scale: 0.8, rotateY: -15 },
+  hidden: { opacity: 0, y: 40, scale: 0.95 },
   visible: {
     opacity: 1,
+    y: 0,
     scale: 1,
-    rotateY: 0,
     transition: {
       type: 'spring',
       stiffness: 100,
-      damping: 15,
+      damping: 20,
     },
   },
 };
@@ -62,147 +72,160 @@ const cardVariants = {
 export default function FanZoneBlock() {
   return (
     <motion.section
-      className="relative py-12 md:py-16 overflow-hidden"
+      className="relative py-16 md:py-24 overflow-hidden"
       variants={containerVariants}
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, margin: '-100px' }}
     >
-      <div className="container mx-auto px-4">
+      <div className="relative z-10">
         {/* Section Header */}
         <motion.div
-          className="text-center mb-10"
-          initial={{ opacity: 0, y: -20 }}
+          className="text-center mb-12 md:mb-16"
+          initial={{ opacity: 0, y: -30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
         >
-          <div className="inline-flex items-center gap-3 mb-4">
-            <Trophy className="w-8 h-8 text-gold" />
-            <h2 className="font-display text-3xl md:text-4xl text-pearl">
-              Fan Zone
-            </h2>
-            <Trophy className="w-8 h-8 text-gold" />
-          </div>
-          <p className="font-handwritten text-xl text-pearl-muted">
+          <p className="font-serif text-lg md:text-xl text-pearl-muted mb-2 italic">
             Les passions de Papa & Maman
           </p>
+          <h2 className="title-massive">
+            <span className="text-pearl">FAN ZONE</span>
+          </h2>
         </motion.div>
 
-        {/* Teams Grid */}
-        <div className="grid md:grid-cols-2 gap-6 md:gap-8 max-w-4xl mx-auto">
-          {teams.map((team, index) => (
+        {/* Stadium Dashboard Grid */}
+        <div className="grid md:grid-cols-2 gap-6 md:gap-8 max-w-5xl mx-auto">
+          {teams.map((team) => (
             <motion.div
               key={team.name}
               variants={cardVariants}
               className="relative group"
             >
-              {/* Card */}
+              {/* Dashboard Card */}
               <div
-                className={`relative bg-charcoal-light border-4 border-pearl/30 rounded-sm p-6 md:p-8 transition-all duration-500 ${team.hoverClass}`}
-                style={{
-                  transform: `rotate(${index === 0 ? -2 : 2}deg)`,
-                }}
+                className={`
+                  relative glass-card p-6 md:p-8 rounded-2xl overflow-hidden
+                  ${team.color === 'red' ? 'accent-border-red' : 'accent-border-violet'}
+                `}
               >
-                {/* Decorative Corner */}
+                {/* Corner Badge */}
                 <div
-                  className={`absolute top-0 right-0 w-16 h-16 opacity-20`}
+                  className={`
+                    absolute top-0 right-0 px-4 py-2 text-xs font-bold tracking-widest text-pearl
+                    ${team.color === 'red' ? 'bg-[var(--color-stadium-red)]' : 'bg-[var(--color-tfc-violet)]'}
+                  `}
                   style={{
-                    background: `linear-gradient(135deg, transparent 50%, ${team.color === 'stadium-red' ? '#C8102E' : '#5B2D8E'} 50%)`,
+                    clipPath: 'polygon(20% 0, 100% 0, 100% 100%, 0 100%)',
                   }}
-                />
-
-                {/* Content */}
-                <div className="relative z-10">
-                  {/* Team Badge Area */}
-                  <div className="flex items-center gap-4 mb-4">
-                    <motion.div
-                      className={`w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-charcoal to-charcoal-dark border-4 flex items-center justify-center text-3xl md:text-4xl`}
-                      style={{
-                        borderColor: team.color === 'stadium-red' ? '#C8102E' : '#5B2D8E',
-                      }}
-                      whileHover={{ scale: 1.1, rotate: 360 }}
-                      transition={{ type: 'spring', stiffness: 200 }}
-                    >
-                      {team.emoji}
-                    </motion.div>
-                    <div>
-                      <h3
-                        className={`font-display text-xl md:text-2xl transition-colors ${
-                          team.color === 'stadium-red'
-                            ? 'text-pearl group-hover:text-stadium-red'
-                            : 'text-pearl group-hover:text-tfc-violet'
-                        }`}
-                      >
-                        {team.name}
-                      </h3>
-                      <p className="font-body text-sm text-pearl-muted uppercase tracking-wider">
-                        {team.sport}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Slogan */}
-                  <motion.p
-                    className={`font-handwritten text-2xl md:text-3xl text-center mt-6 ${team.glowClass}`}
-                    style={{
-                      color: team.color === 'stadium-red' ? '#C8102E' : '#5B2D8E',
-                    }}
-                    animate={{
-                      scale: [1, 1.02, 1],
-                    }}
-                    transition={{
-                      duration: 2,
-                      repeat: Infinity,
-                      ease: 'easeInOut',
-                    }}
-                  >
-                    &ldquo;{team.slogan}&rdquo;
-                  </motion.p>
-
-                  {/* Heart Icon */}
-                  <motion.div
-                    className="absolute -bottom-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ duration: 1, repeat: Infinity }}
-                  >
-                    <Heart
-                      className="w-8 h-8"
-                      style={{
-                        color: team.color === 'stadium-red' ? '#C8102E' : '#5B2D8E',
-                        fill: team.color === 'stadium-red' ? '#C8102E' : '#5B2D8E',
-                      }}
-                    />
-                  </motion.div>
+                >
+                  {team.sport}
                 </div>
 
-                {/* Photo Frame Effect */}
-                <div className="absolute inset-0 border-8 border-pearl/10 rounded-sm pointer-events-none" />
-              </div>
+                {/* Team Header */}
+                <div className="flex items-center gap-4 mb-6">
+                  {/* Emoji Badge */}
+                  <motion.div
+                    className={`
+                      w-16 h-16 md:w-20 md:h-20 rounded-xl flex items-center justify-center text-3xl md:text-4xl
+                      ${team.color === 'red' ? 'bg-[var(--color-stadium-red)]/10' : 'bg-[var(--color-tfc-violet)]/10'}
+                    `}
+                    whileHover={{ scale: 1.1, rotate: 10 }}
+                    transition={{ type: 'spring', stiffness: 300 }}
+                  >
+                    {team.emoji}
+                  </motion.div>
 
-              {/* Decorative Tape */}
-              <div
-                className={`absolute -top-2 ${index === 0 ? 'left-8' : 'right-8'} w-12 h-5 bg-gold/70 shadow-md`}
-                style={{
-                  transform: `rotate(${index === 0 ? -15 : 15}deg)`,
-                }}
-              />
+                  <div>
+                    <p
+                      className={`
+                        text-xs tracking-[0.2em] uppercase mb-1
+                        ${team.color === 'red' ? 'text-[var(--color-stadium-red)]' : 'text-[var(--color-tfc-violet)]'}
+                      `}
+                    >
+                      {team.shortName}
+                    </p>
+                    <h3 className="text-2xl md:text-3xl font-bold text-pearl leading-tight">
+                      {team.name}
+                    </h3>
+                  </div>
+                </div>
+
+                {/* Stats Dashboard */}
+                <div className="grid grid-cols-3 gap-3 mb-6">
+                  {team.stats.map((stat, i) => (
+                    <motion.div
+                      key={stat.label}
+                      className="glass-card p-3 text-center rounded-lg"
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: 0.3 + i * 0.1 }}
+                    >
+                      <p
+                        className={`
+                          text-xl md:text-2xl font-bold
+                          ${team.color === 'red' ? 'text-[var(--color-stadium-red)]' : 'text-[var(--color-tfc-violet)]'}
+                        `}
+                      >
+                        {stat.value}
+                      </p>
+                      <p className="text-xs text-pearl-muted uppercase tracking-wider mt-1">
+                        {stat.label}
+                      </p>
+                    </motion.div>
+                  ))}
+                </div>
+
+                {/* Slogan */}
+                <div
+                  className={`
+                    text-center py-4 rounded-lg
+                    ${team.color === 'red' ? 'bg-[var(--color-stadium-red)]/5' : 'bg-[var(--color-tfc-violet)]/5'}
+                  `}
+                >
+                  <p
+                    className={`
+                      font-serif text-xl md:text-2xl italic
+                      ${team.color === 'red' ? 'text-[var(--color-stadium-red)]' : 'text-[var(--color-tfc-violet)]'}
+                    `}
+                  >
+                    &ldquo;{team.slogan}&rdquo;
+                  </p>
+                </div>
+
+                {/* Decorative Lines */}
+                <div
+                  className={`
+                    absolute bottom-0 left-0 w-full h-1
+                    ${team.color === 'red'
+                      ? 'bg-gradient-to-r from-transparent via-[var(--color-stadium-red)] to-transparent'
+                      : 'bg-gradient-to-r from-transparent via-[var(--color-tfc-violet)] to-transparent'
+                    }
+                  `}
+                  style={{ opacity: 0.3 }}
+                />
+              </div>
             </motion.div>
           ))}
         </div>
 
-        {/* Connecting Element */}
+        {/* Bottom Tagline */}
         <motion.div
-          className="flex items-center justify-center mt-8 gap-4"
+          className="text-center mt-12"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          transition={{ delay: 0.5 }}
+          transition={{ delay: 0.6 }}
         >
-          <HandwrittenArrow direction="right" color="#C8102E" />
-          <span className="font-handwritten text-xl text-pearl">
-            Toulouse dans le cœur
-          </span>
-          <HandwrittenArrow direction="left" color="#5B2D8E" />
+          <div className="inline-flex items-center gap-4">
+            <div className="w-12 h-px bg-gradient-to-r from-transparent to-[var(--color-stadium-red)]/50" />
+            <p className="font-serif text-lg text-pearl-muted italic">
+              Toulouse dans le coeur
+            </p>
+            <div className="w-12 h-px bg-gradient-to-l from-transparent to-[var(--color-tfc-violet)]/50" />
+          </div>
         </motion.div>
       </div>
     </motion.section>
