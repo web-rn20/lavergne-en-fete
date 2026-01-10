@@ -113,14 +113,14 @@ export default function HeroMurDesSouvenirs({
 
       {/* Contenu du Hero centré */}
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-        <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl font-bold text-brand-dark mb-4 drop-shadow-lg">
-          30 Ans d&apos;Amour
+        <h1 className="font-serif text-4xl md:text-6xl lg:text-7xl font-bold text-brand-dark mb-4 drop-shadow-lg">
+          Véronique et Christophe
         </h1>
-        <p className="font-sans text-xl md:text-2xl text-brand-dark/80 mb-2">
-          Romain & Maxime & Jade vous invitent à célébrer
+        <p className="font-serif text-2xl md:text-3xl lg:text-4xl text-brand-accent-deep font-semibold mb-2">
+          30 ans de mariage
         </p>
-        <p className="font-sans text-lg md:text-xl text-brand-accent-deep font-semibold mb-8">
-          Les noces de perle de leurs parents
+        <p className="font-sans text-lg md:text-xl text-brand-dark/80 italic mb-8">
+          Un évènement qui se fête.. même avec un an de retard !
         </p>
         <div className="flex flex-col sm:flex-row gap-4">
           <a

@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "30 Ans de Mariage - Lavergne en Fête",
-  description: "Célébrons ensemble 30 ans d'amour et de bonheur. Rejoignez-nous le 27 juin 2026 pour une fête inoubliable.",
+  title: "Véronique et Christophe : 30 ans de mariage",
+  description: "Un évènement qui se fête.. même avec un an de retard ! Rejoignez-nous le 27 juin 2026 pour célébrer les 30 ans de mariage de Véronique et Christophe.",
   openGraph: {
-    title: "30 Ans de Mariage - Lavergne en Fête",
-    description: "Célébrons ensemble 30 ans d'amour et de bonheur. Rejoignez-nous le 27 juin 2026.",
+    title: "Véronique et Christophe : 30 ans de mariage",
+    description: "Un évènement qui se fête.. même avec un an de retard ! Rejoignez-nous le 27 juin 2026.",
     type: "website",
   },
 };
