@@ -100,11 +100,13 @@ export async function POST(request: NextRequest) {
 
     console.log("Nombre total de personnes:", nbTotal);
 
-    // Nombre de places d'hébergement demandées (seulement si "chez les Lavergne")
+    // Nombre de places d'hébergement demandées (seulement si "Maison des Lavergne")
     const nombrePlacesHebergement = hebergement ? nbTotal : 0;
 
-    // Vérification du stock d'hébergement si demandé
+    // SÉCURITÉ: La mise à jour du stock n'est appelée QUE si l'option "Maison des Lavergne" est choisie
+    // hebergement === true signifie que logement === "Maison des Lavergne"
     if (hebergement && nombrePlacesHebergement > 0) {
+      console.log("=== Hébergement 'Maison des Lavergne' demandé ===");
       console.log("Vérification du stock d'hébergement...");
       const placesRestantes = await getPlacesRestantesFromConfig();
       console.log("Places restantes:", placesRestantes, "/ Demandées:", nombrePlacesHebergement);

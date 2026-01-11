@@ -375,6 +375,7 @@ export async function getPlacesRestantesFromConfig(): Promise<number> {
 }
 
 // Mise à jour des places restantes dans l'onglet Config
+// Utilise une mise à jour directe des cellules pour éviter les erreurs de colonnes
 export async function updatePlacesRestantes(
   nombrePlaces: number
 ): Promise<boolean> {
@@ -387,26 +388,38 @@ export async function updatePlacesRestantes(
       return false;
     }
 
-    const rows = await configSheet.getRows();
-    // Flexible sur les noms de colonnes
-    const placesRow = rows.find((r: GoogleSpreadsheetRow) => {
-      const cleValue = r.get("Cle") || r.get("cle") || r.get("Clé") || r.get("clé") || "";
-      return cleValue.toString().toLowerCase().trim() === "places_restantes";
-    });
+    // Charger toutes les cellules pour pouvoir les modifier directement
+    await configSheet.loadCells();
 
-    if (placesRow) {
-      const valeurStr = placesRow.get("Valeur") || placesRow.get("valeur") || "0";
-      const currentPlaces = parseInt(valeurStr.toString(), 10);
-      // Déterminer le nom exact de la colonne à utiliser pour la mise à jour
-      const valeurColName = placesRow.get("Valeur") !== undefined ? "Valeur" : "valeur";
-      placesRow.set(valeurColName, Math.max(0, currentPlaces - nombrePlaces).toString());
-      await placesRow.save();
-      console.log("Places mises à jour:", currentPlaces, "->", currentPlaces - nombrePlaces);
-      return true;
+    // Trouver la ligne avec Places_Restantes (en parcourant la colonne A)
+    let rowIndex = -1;
+    let valeurColIndex = 1; // Par défaut colonne B (index 1)
+
+    // Chercher dans les premières lignes (en-tête + données)
+    for (let i = 0; i < 10; i++) {
+      const cellA = configSheet.getCell(i, 0); // Colonne A
+      const cellValue = cellA.value?.toString().toLowerCase().trim() || "";
+      if (cellValue === "places_restantes") {
+        rowIndex = i;
+        break;
+      }
     }
 
-    console.warn("Clé Places_Restantes non trouvée pour mise à jour");
-    return false;
+    if (rowIndex === -1) {
+      console.warn("Clé Places_Restantes non trouvée pour mise à jour");
+      return false;
+    }
+
+    // Lire et mettre à jour la cellule de la colonne Valeur (colonne B)
+    const valeurCell = configSheet.getCell(rowIndex, valeurColIndex);
+    const currentPlaces = parseInt(valeurCell.value?.toString() || "0", 10);
+    const newPlaces = Math.max(0, currentPlaces - nombrePlaces);
+
+    valeurCell.value = newPlaces;
+    await configSheet.saveUpdatedCells();
+
+    console.log("Places mises à jour:", currentPlaces, "->", newPlaces);
+    return true;
   } catch (error) {
     console.error("Erreur lors de la mise à jour des places:", error);
     return false;
@@ -421,12 +434,19 @@ export interface ReservationResult {
 }
 
 // Vérification ET mise à jour atomique des places d'hébergement
-// Cette fonction relit le stock juste avant de l'update pour éviter les race conditions
+// Utilise une mise à jour directe des cellules pour éviter les erreurs de colonnes
 export async function reserverPlacesHebergement(
   nombrePlacesDemandees: number
 ): Promise<ReservationResult> {
   try {
     console.log("=== Réservation de", nombrePlacesDemandees, "place(s) ===");
+
+    // Si 0 places demandées, pas besoin de réserver
+    if (nombrePlacesDemandees <= 0) {
+      console.log("Aucune place demandée, pas de réservation nécessaire");
+      return { success: true, placesRestantes: undefined };
+    }
+
     const doc = await getGoogleSheet();
     const configSheet = doc.sheetsByTitle["Config"];
 
@@ -435,25 +455,34 @@ export async function reserverPlacesHebergement(
       return { success: false, error: "Configuration hébergement non disponible" };
     }
 
-    // Relecture fraîche du stock
+    // Charger toutes les cellules pour mise à jour directe
     await configSheet.loadCells();
-    const rows = await configSheet.getRows();
-    // Flexible sur les noms de colonnes
-    const placesRow = rows.find((r: GoogleSpreadsheetRow) => {
-      const cleValue = r.get("Cle") || r.get("cle") || r.get("Clé") || r.get("clé") || "";
-      return cleValue.toString().toLowerCase().trim() === "places_restantes";
-    });
 
-    if (!placesRow) {
+    // Trouver la ligne avec Places_Restantes (en parcourant la colonne A)
+    let rowIndex = -1;
+    const valeurColIndex = 1; // Colonne B (index 1)
+
+    for (let i = 0; i < 10; i++) {
+      const cellA = configSheet.getCell(i, 0); // Colonne A
+      const cellValue = cellA.value?.toString().toLowerCase().trim() || "";
+      if (cellValue === "places_restantes") {
+        rowIndex = i;
+        console.log("Places_Restantes trouvé à la ligne", i + 1, "(index", i, ")");
+        break;
+      }
+    }
+
+    if (rowIndex === -1) {
       console.error("Clé Places_Restantes non trouvée - réservation refusée");
       return { success: false, error: "Configuration hébergement non disponible" };
     }
 
-    const valeurStr = placesRow.get("Valeur") || placesRow.get("valeur") || "0";
-    const placesRestantes = parseInt(valeurStr.toString(), 10);
-    console.log("Places restantes actuelles:", placesRestantes);
+    // Lire la valeur actuelle directement depuis la cellule B
+    const valeurCell = configSheet.getCell(rowIndex, valeurColIndex);
+    const placesRestantes = parseInt(valeurCell.value?.toString() || "0", 10);
+    console.log("Places restantes actuelles (cellule B" + (rowIndex + 1) + "):", placesRestantes);
 
-    // Double vérification : le stock est-il suffisant ?
+    // Vérification : le stock est-il suffisant ?
     if (placesRestantes < nombrePlacesDemandees) {
       return {
         success: false,
@@ -462,15 +491,16 @@ export async function reserverPlacesHebergement(
       };
     }
 
-    // Mise à jour atomique du stock (flexible sur le nom de colonne)
-    const valeurColName = placesRow.get("Valeur") !== undefined ? "Valeur" : "valeur";
-    placesRow.set(valeurColName, Math.max(0, placesRestantes - nombrePlacesDemandees).toString());
-    await placesRow.save();
-    console.log("Réservation effectuée. Nouvelles places restantes:", placesRestantes - nombrePlacesDemandees);
+    // Mise à jour directe de la cellule (évite l'erreur de colonne C)
+    const newPlaces = Math.max(0, placesRestantes - nombrePlacesDemandees);
+    valeurCell.value = newPlaces;
+    await configSheet.saveUpdatedCells();
+
+    console.log("Réservation effectuée. Nouvelles places restantes:", newPlaces);
 
     return {
       success: true,
-      placesRestantes: placesRestantes - nombrePlacesDemandees,
+      placesRestantes: newPlaces,
     };
   } catch (error) {
     console.error("Erreur lors de la réservation des places:", error);
