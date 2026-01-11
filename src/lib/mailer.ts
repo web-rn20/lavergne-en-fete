@@ -48,13 +48,8 @@ const colors = {
 export async function sendRSVPConfirmationEmail(
   data: RSVPEmailData
 ): Promise<boolean> {
-  // Log de débogage
-  console.log(
-    "Variables email - SMTP_EMAIL:",
-    !!process.env.SMTP_EMAIL,
-    "SMTP_PASSWORD:",
-    !!process.env.SMTP_PASSWORD
-  );
+  // Log de démarrage d'envoi
+  console.log("Tentative d'envoi avec l'adresse :", process.env.SMTP_EMAIL);
 
   try {
     const transporter = getTransporter();
@@ -191,13 +186,8 @@ export async function sendRSVPConfirmationEmail(
 export async function sendRSVPNotificationToHosts(
   data: RSVPEmailData
 ): Promise<boolean> {
-  // Log de débogage
-  console.log(
-    "Variables email - SMTP_EMAIL:",
-    !!process.env.SMTP_EMAIL,
-    "SMTP_PASSWORD:",
-    !!process.env.SMTP_PASSWORD
-  );
+  // Log de démarrage d'envoi
+  console.log("Tentative d'envoi notification admin avec l'adresse :", process.env.SMTP_EMAIL);
 
   try {
     const transporter = getTransporter();
