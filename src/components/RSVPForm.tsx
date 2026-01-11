@@ -164,6 +164,10 @@ export default function RSVPForm() {
   const [manualSearchError, setManualSearchError] = useState<string | null>(null);
   const [isSearching, setIsSearching] = useState(false);
 
+  // États pour la confirmation de modification
+  const [existingRsvpDate, setExistingRsvpDate] = useState<string | null>(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+
   // Formulaire
   const [formData, setFormData] = useState<FormData>({
     nom: "",
@@ -213,6 +217,24 @@ export default function RSVPForm() {
     }
   }, []);
 
+  // Vérification si une réponse RSVP existe déjà pour cet invité
+  const checkExistingRsvp = useCallback(async (inviteId: string) => {
+    try {
+      const response = await fetch(`/api/check-rsvp?id=${encodeURIComponent(inviteId)}`);
+      const data = await response.json();
+
+      if (data.success && data.exists) {
+        setExistingRsvpDate(data.date || "date inconnue");
+        return true;
+      }
+      setExistingRsvpDate(null);
+      return false;
+    } catch (err) {
+      console.error("Erreur lors de la vérification RSVP existant:", err);
+      return false;
+    }
+  }, []);
+
   // Initialisation
   useEffect(() => {
     const init = async () => {
@@ -224,13 +246,15 @@ export default function RSVPForm() {
       // Si un ID est présent dans l'URL, vérifier l'invité
       if (urlId) {
         await checkInviteById(urlId);
+        // Vérifier si une réponse RSVP existe déjà
+        await checkExistingRsvp(urlId);
       }
 
       setIsLoading(false);
     };
 
     init();
-  }, [urlId, checkInviteById, fetchHebergement]);
+  }, [urlId, checkInviteById, fetchHebergement, checkExistingRsvp]);
 
   // Recherche manuelle par nom/prénom
   const handleManualSearch = async () => {
@@ -256,6 +280,10 @@ export default function RSVPForm() {
           prenom: data.invite.prenom,
         }));
         setManualSearchError(null);
+        // Vérifier si une réponse RSVP existe déjà
+        if (data.invite.id) {
+          await checkExistingRsvp(data.invite.id);
+        }
       } else {
         setManualSearchError(
           "Nous n'avons pas trouvé votre nom dans notre liste d'invités. Veuillez vérifier l'orthographe ou contacter les organisateurs."
@@ -386,7 +414,7 @@ export default function RSVPForm() {
     return parts.length > 0 ? parts.join(", ") : "";
   };
 
-  // Soumission du formulaire
+  // Soumission du formulaire (avec vérification de réponse existante)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -395,10 +423,23 @@ export default function RSVPForm() {
       return;
     }
 
-    // Validation: seuls nom et prénom sont obligatoires (déjà validés via invite)
+    // Si une réponse existe déjà, afficher le modal de confirmation
+    if (existingRsvpDate && !showConfirmModal) {
+      setShowConfirmModal(true);
+      return;
+    }
+
+    // Soumettre le formulaire
+    await submitForm();
+  };
+
+  // Fonction interne de soumission (appelée après confirmation si nécessaire)
+  const submitForm = async () => {
+    if (!invite) return;
 
     setIsSubmitting(true);
     setError(null);
+    setShowConfirmModal(false);
 
     try {
       // Calculer le nombre total de personnes
@@ -504,8 +545,100 @@ export default function RSVPForm() {
     );
   }
 
+  // Fonction pour formater la date de réponse existante
+  const formatExistingDate = (dateStr: string) => {
+    try {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString("fr-FR", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch {
+      return dateStr;
+    }
+  };
+
   return (
     <SectionContainer id="rsvp" className="py-20 bg-brand-light">
+      {/* Modal de confirmation de modification */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Overlay sombre */}
+          <div
+            className="absolute inset-0 bg-brand-dark/70 backdrop-blur-sm"
+            onClick={() => setShowConfirmModal(false)}
+          />
+
+          {/* Contenu du modal */}
+          <div className="relative bg-white rounded-2xl p-6 md:p-8 max-w-md w-full shadow-2xl animate-in fade-in zoom-in duration-200">
+            {/* Icône d'alerte */}
+            <div className="text-center mb-4">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-brand-accent/20 text-brand-accent-deep">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-8 w-8"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+              </div>
+            </div>
+
+            {/* Titre avec police Oswald */}
+            <h3 className="font-oswald text-2xl md:text-3xl text-brand-dark text-center mb-4 uppercase">
+              Réponse déjà enregistrée
+            </h3>
+
+            {/* Message */}
+            <p className="text-brand-dark/80 text-center mb-2 font-montserrat">
+              Tu as déjà envoyé une réponse
+              {existingRsvpDate && existingRsvpDate !== "date inconnue" && (
+                <span className="block text-sm text-brand-dark/60 mt-1">
+                  le {formatExistingDate(existingRsvpDate)}
+                </span>
+              )}
+            </p>
+            <p className="text-brand-dark/80 text-center mb-6 font-montserrat font-medium">
+              Souhaites-tu la modifier ? Cela remplacera tes choix précédents.
+            </p>
+
+            {/* Boutons */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                type="button"
+                onClick={() => setShowConfirmModal(false)}
+                className="flex-1 py-3 px-4 border-2 border-brand-dark/20 text-brand-dark
+                         rounded-lg font-montserrat font-medium hover:bg-brand-light/50
+                         transition-all duration-200"
+              >
+                Annuler
+              </button>
+              <button
+                type="button"
+                onClick={submitForm}
+                disabled={isSubmitting}
+                className="flex-1 py-3 px-4 bg-brand-primary text-white
+                         rounded-lg font-montserrat font-semibold hover:bg-brand-primary/90
+                         disabled:opacity-50 disabled:cursor-not-allowed
+                         transition-all duration-200 shadow-lg shadow-brand-primary/30"
+              >
+                {isSubmitting ? "Envoi..." : "Oui, modifier ma réponse"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-2xl mx-auto">
         <h2 className="font-oswald text-4xl md:text-5xl text-brand-dark text-center mb-4">
           Confirmer votre présence
