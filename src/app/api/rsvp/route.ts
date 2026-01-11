@@ -7,20 +7,21 @@ import {
 } from "@/lib/google-sheets";
 import { sendRSVPConfirmationEmail } from "@/lib/resend";
 
+// Interface flexible - seuls nom et prenom sont vraiment obligatoires
 interface RSVPRequestBody {
-  inviteId: string;
+  inviteId?: string;
   nom: string;
   prenom: string;
-  email: string;
-  presence: boolean;
-  accompagnant: boolean;
+  email?: string;
+  presence?: boolean;
+  accompagnant?: boolean;
   prenomConjoint?: string;
-  enfants: boolean;
-  nombreEnfants: number;
-  prenomsEnfants: string[];
+  enfants?: boolean;
+  nombreEnfants?: number;
+  prenomsEnfants?: string[];
   regimeAlimentaire?: string;
-  hebergement: boolean; // true uniquement si "chez les Lavergne"
-  hebergementChoix: "lavergne" | "tente" | "autonome";
+  hebergement?: boolean;
+  hebergementChoix?: "lavergne" | "tente" | "autonome";
   hebergementLabel?: string;
   nbTotal?: number;
 }
@@ -29,40 +30,81 @@ export async function POST(request: NextRequest) {
   try {
     const body: RSVPRequestBody = await request.json();
 
-    // Log neutre pour debugging (pas de données sensibles en production)
-    if (process.env.NODE_ENV !== "production") {
-      console.log("API /rsvp appelée", { presence: body.presence, hebergement: body.hebergement });
+    // Log complet pour debugging (toujours actif pour diagnostiquer)
+    console.log("=== API /rsvp - Données reçues ===");
+    console.log("Body complet:", JSON.stringify(body, null, 2));
+
+    // Validation minimale : seuls nom et prénom sont obligatoires
+    const validationErrors: string[] = [];
+
+    if (!body.nom || typeof body.nom !== "string" || !body.nom.trim()) {
+      validationErrors.push("Le nom est obligatoire");
     }
 
-    // Validation des données requises
-    if (!body.inviteId || !body.nom || !body.prenom || !body.email) {
+    if (!body.prenom || typeof body.prenom !== "string" || !body.prenom.trim()) {
+      validationErrors.push("Le prénom est obligatoire");
+    }
+
+    if (validationErrors.length > 0) {
+      console.log("=== Erreur de validation ===");
+      console.log("Erreurs:", validationErrors);
       return NextResponse.json(
-        { success: false, error: "Données obligatoires manquantes" },
+        {
+          success: false,
+          error: validationErrors.join(", "),
+          details: validationErrors
+        },
         { status: 400 }
       );
     }
 
-    // Vérification que l'invité existe
-    const invite = await findInviteById(body.inviteId);
-    if (!invite) {
-      return NextResponse.json(
-        { success: false, error: "Invité non trouvé" },
-        { status: 404 }
-      );
+    // Valeurs par défaut pour les champs optionnels
+    const inviteId = body.inviteId || "";
+    const email = body.email || "";
+    const presence = body.presence !== false; // true par défaut
+    const accompagnant = body.accompagnant === true;
+    const prenomConjoint = body.prenomConjoint || "";
+    const enfants = body.enfants === true;
+    const nombreEnfants = body.nombreEnfants || 0;
+    const prenomsEnfants = body.prenomsEnfants || [];
+    const regimeAlimentaire = body.regimeAlimentaire || "";
+    const hebergement = body.hebergement === true; // true uniquement si "chez les Lavergne"
+    const hebergementChoix = body.hebergementChoix || "autonome";
+    const hebergementLabel = body.hebergementLabel || "Se débrouille";
+
+    console.log("=== Valeurs normalisées ===");
+    console.log({ inviteId, email, presence, accompagnant, enfants, nombreEnfants, hebergement, hebergementChoix });
+
+    // Vérification que l'invité existe (si un ID est fourni)
+    let invite = null;
+    if (inviteId) {
+      invite = await findInviteById(inviteId);
+      if (!invite) {
+        console.log("Invité non trouvé pour ID:", inviteId);
+        return NextResponse.json(
+          { success: false, error: "Invité non trouvé dans la liste" },
+          { status: 404 }
+        );
+      }
+      console.log("Invité trouvé:", invite.prenom, invite.nom);
     }
 
     // Calcul du nombre total de personnes
     const nbTotal =
       1 + // L'invité principal
-      (body.accompagnant && body.prenomConjoint ? 1 : 0) + // Conjoint
-      (body.enfants ? body.nombreEnfants : 0); // Enfants
+      (accompagnant && prenomConjoint ? 1 : 0) + // Conjoint
+      (enfants && nombreEnfants > 0 ? nombreEnfants : 0); // Enfants
 
-    // Nombre de places d'hébergement demandées (seulement si hébergement coché)
-    const nombrePlacesHebergement = body.hebergement ? nbTotal : 0;
+    console.log("Nombre total de personnes:", nbTotal);
 
-    // Vérification préliminaire du stock d'hébergement si demandé
-    if (body.hebergement) {
+    // Nombre de places d'hébergement demandées (seulement si "chez les Lavergne")
+    const nombrePlacesHebergement = hebergement ? nbTotal : 0;
+
+    // Vérification du stock d'hébergement si demandé
+    if (hebergement && nombrePlacesHebergement > 0) {
+      console.log("Vérification du stock d'hébergement...");
       const placesRestantes = await getPlacesRestantesFromConfig();
+      console.log("Places restantes:", placesRestantes, "/ Demandées:", nombrePlacesHebergement);
 
       if (placesRestantes < nombrePlacesHebergement) {
         return NextResponse.json(
@@ -74,19 +116,12 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
-    }
 
-    // Préparation des prénoms des enfants (concaténés avec virgule)
-    const prenomsEnfantsStr = body.enfants && body.prenomsEnfants.length > 0
-      ? body.prenomsEnfants.filter(p => p.trim()).join(", ")
-      : "";
-
-    // DOUBLE VÉRIFICATION : Si hébergement demandé, réserver atomiquement AVANT d'écrire
-    // Cela évite les race conditions si deux personnes valident en même temps
-    if (body.hebergement && nombrePlacesHebergement > 0) {
+      // Réserver atomiquement les places
       const reservationResult = await reserverPlacesHebergement(nombrePlacesHebergement);
 
       if (!reservationResult.success) {
+        console.log("Échec réservation:", reservationResult.error);
         return NextResponse.json(
           {
             success: false,
@@ -96,52 +131,67 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
+      console.log("Réservation réussie, places restantes:", reservationResult.placesRestantes);
     }
 
+    // Préparation des prénoms des enfants (concaténés avec virgule)
+    const prenomsEnfantsStr = enfants && prenomsEnfants.length > 0
+      ? prenomsEnfants.filter(p => p && p.trim()).join(", ")
+      : "";
+
     // Ajout de la réponse RSVP dans Google Sheets
-    const rsvpSuccess = await addRSVPReponse({
+    console.log("=== Écriture dans Google Sheets ===");
+    const rsvpData = {
       date: new Date().toISOString(),
-      inviteId: body.inviteId,
-      nom: body.nom,
-      prenom: body.prenom,
-      email: body.email,
-      presence: body.presence,
-      prenomConjoint: body.accompagnant ? body.prenomConjoint : undefined,
-      nombreEnfants: body.enfants ? body.nombreEnfants : 0,
+      inviteId,
+      nom: body.nom.trim(),
+      prenom: body.prenom.trim(),
+      email,
+      presence,
+      prenomConjoint: accompagnant ? prenomConjoint : undefined,
+      nombreEnfants: enfants ? nombreEnfants : 0,
       prenomsEnfants: prenomsEnfantsStr,
       nbTotal,
-      regimeAlimentaire: body.regimeAlimentaire,
-      hebergement: body.hebergement,
-      hebergementLabel: body.hebergementLabel,
+      regimeAlimentaire,
+      hebergement,
+      hebergementLabel,
       nombrePlacesHebergement,
-    });
+    };
+    console.log("Données RSVP:", JSON.stringify(rsvpData, null, 2));
+
+    const rsvpSuccess = await addRSVPReponse(rsvpData);
 
     if (!rsvpSuccess) {
-      // Note: En cas d'échec ici, le stock a déjà été décrémenté
-      // Dans un système de production, on devrait avoir une transaction ou un rollback
-      console.error("RSVP échoué après réservation des places - stock potentiellement désynchronisé");
+      console.error("RSVP échoué lors de l'écriture dans Google Sheets");
       return NextResponse.json(
-        { success: false, error: "Erreur lors de l'enregistrement" },
+        { success: false, error: "Erreur lors de l'enregistrement dans la base de données" },
         { status: 500 }
       );
     }
 
-    // Envoi de l'email de confirmation
-    const emailSuccess = await sendRSVPConfirmationEmail({
-      prenom: body.prenom,
-      nom: body.nom,
-      email: body.email,
-      prenomConjoint: body.accompagnant ? body.prenomConjoint : undefined,
-      nombreEnfants: body.enfants ? body.nombreEnfants : 0,
-      prenomsEnfants: prenomsEnfantsStr,
-      nbTotal,
-      regimeAlimentaire: body.regimeAlimentaire,
-      hebergement: body.hebergement,
-      nombrePlacesHebergement,
-    });
+    console.log("=== RSVP enregistré avec succès ===");
 
-    if (!emailSuccess) {
-      console.warn("L'email de confirmation n'a pas pu être envoyé");
+    // Envoi de l'email de confirmation (si email fourni)
+    let emailSuccess = false;
+    if (email) {
+      emailSuccess = await sendRSVPConfirmationEmail({
+        prenom: body.prenom.trim(),
+        nom: body.nom.trim(),
+        email,
+        prenomConjoint: accompagnant ? prenomConjoint : undefined,
+        nombreEnfants: enfants ? nombreEnfants : 0,
+        prenomsEnfants: prenomsEnfantsStr,
+        nbTotal,
+        regimeAlimentaire,
+        hebergement,
+        nombrePlacesHebergement,
+      });
+
+      if (!emailSuccess) {
+        console.warn("L'email de confirmation n'a pas pu être envoyé");
+      } else {
+        console.log("Email de confirmation envoyé");
+      }
     }
 
     return NextResponse.json({
@@ -151,9 +201,17 @@ export async function POST(request: NextRequest) {
       emailEnvoye: emailSuccess,
     });
   } catch (error) {
-    console.error("Erreur API RSVP:", error);
+    console.error("=== Erreur API RSVP ===");
+    console.error("Type d'erreur:", error instanceof Error ? error.constructor.name : typeof error);
+    console.error("Message:", error instanceof Error ? error.message : String(error));
+    console.error("Stack:", error instanceof Error ? error.stack : "N/A");
+
     return NextResponse.json(
-      { success: false, error: "Erreur serveur" },
+      {
+        success: false,
+        error: "Erreur serveur lors du traitement de la demande",
+        details: error instanceof Error ? error.message : "Erreur inconnue"
+      },
       { status: 500 }
     );
   }
