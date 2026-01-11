@@ -60,18 +60,23 @@ export async function getGoogleSheet(): Promise<GoogleSpreadsheet> {
   return doc;
 }
 
+// Helper pour récupérer l'ID d'une ligne (supporte "id" et "ID_Invité")
+function getRowId(row: GoogleSpreadsheetRow): string | undefined {
+  return row.get("ID_Invité") || row.get("id") || row.get("ID_Invite");
+}
+
 // Recherche d'un invité par son ID unique
 export async function findInviteById(
   inviteId: string
 ): Promise<Invite | null> {
   try {
     const doc = await getGoogleSheet();
-    const sheet = doc.sheetsByIndex[0]; // Première feuille = liste des invités
+    const sheet = doc.sheetsByTitle["Liste_Invites"] || doc.sheetsByIndex[0];
 
     const rows = await sheet.getRows();
     const row = rows.find(
       (r: GoogleSpreadsheetRow) =>
-        r.get("id")?.toString().toUpperCase() === inviteId.toUpperCase()
+        getRowId(r)?.toString().toLowerCase().trim() === inviteId.toLowerCase().trim()
     );
 
     if (!row) {
@@ -79,23 +84,23 @@ export async function findInviteById(
     }
 
     return {
-      id: row.get("id"),
-      nom: row.get("nom"),
-      prenom: row.get("prenom"),
-      email: row.get("email"),
-      telephone: row.get("telephone"),
-      conjoint: row.get("conjoint"),
-      enfants: row.get("enfants"),
-      nombreEnfants: parseInt(row.get("nombreEnfants") || "0", 10),
-      regimeAlimentaire: row.get("regimeAlimentaire"),
-      hebergement: row.get("hebergement") === "true",
+      id: getRowId(row) || "",
+      nom: row.get("Nom") || row.get("nom") || "",
+      prenom: row.get("Prénom") || row.get("prenom") || "",
+      email: row.get("Email") || row.get("email") || "",
+      telephone: row.get("Téléphone") || row.get("telephone"),
+      conjoint: row.get("Conjoint") || row.get("conjoint"),
+      enfants: row.get("Enfants") || row.get("enfants"),
+      nombreEnfants: parseInt(row.get("Nombre_Enfants") || row.get("nombreEnfants") || "0", 10),
+      regimeAlimentaire: row.get("Régime_Alimentaire") || row.get("regimeAlimentaire"),
+      hebergement: (row.get("Hébergement") || row.get("hebergement")) === "true",
       nombrePlacesHebergement: parseInt(
-        row.get("nombrePlacesHebergement") || "0",
+        row.get("Nombre_Places_Hébergement") || row.get("nombrePlacesHebergement") || "0",
         10
       ),
-      message: row.get("message"),
-      confirme: row.get("confirme") === "true",
-      dateConfirmation: row.get("dateConfirmation"),
+      message: row.get("Message") || row.get("message"),
+      confirme: (row.get("Confirmé") || row.get("confirme")) === "true",
+      dateConfirmation: row.get("Date_Confirmation") || row.get("dateConfirmation"),
     };
   } catch (error) {
     console.error("Erreur lors de la recherche de l'invité:", error);
@@ -110,12 +115,12 @@ export async function updateInviteConfirmation(
 ): Promise<boolean> {
   try {
     const doc = await getGoogleSheet();
-    const sheet = doc.sheetsByIndex[0];
+    const sheet = doc.sheetsByTitle["Liste_Invites"] || doc.sheetsByIndex[0];
 
     const rows = await sheet.getRows();
     const row = rows.find(
       (r: GoogleSpreadsheetRow) =>
-        r.get("id")?.toString().toUpperCase() === inviteId.toUpperCase()
+        getRowId(r)?.toString().toLowerCase().trim() === inviteId.toLowerCase().trim()
     );
 
     if (!row) {
@@ -213,5 +218,252 @@ export async function getLivreOrMessages(): Promise<
   } catch (error) {
     console.error("Erreur lors de la récupération du livre d'or:", error);
     return [];
+  }
+}
+
+// Helper pour récupérer le nom d'une ligne (supporte "nom" et "Nom")
+function getRowNom(row: GoogleSpreadsheetRow): string {
+  return (row.get("Nom") || row.get("nom") || "").toString();
+}
+
+// Helper pour récupérer le prénom d'une ligne (supporte "prenom" et "Prénom")
+function getRowPrenom(row: GoogleSpreadsheetRow): string {
+  return (row.get("Prénom") || row.get("prenom") || "").toString();
+}
+
+// Recherche d'un invité par nom et prénom (saisie manuelle)
+export async function findInviteByName(
+  nom: string,
+  prenom: string
+): Promise<Invite | null> {
+  try {
+    const doc = await getGoogleSheet();
+    const sheet = doc.sheetsByTitle["Liste_Invites"] || doc.sheetsByIndex[0];
+
+    const rows = await sheet.getRows();
+    const row = rows.find(
+      (r: GoogleSpreadsheetRow) =>
+        getRowNom(r).toLowerCase().trim() === nom.toLowerCase().trim() &&
+        getRowPrenom(r).toLowerCase().trim() === prenom.toLowerCase().trim()
+    );
+
+    if (!row) {
+      return null;
+    }
+
+    return {
+      id: getRowId(row) || "",
+      nom: getRowNom(row),
+      prenom: getRowPrenom(row),
+      email: row.get("Email") || row.get("email") || "",
+      telephone: row.get("Téléphone") || row.get("telephone"),
+      conjoint: row.get("Conjoint") || row.get("conjoint"),
+      enfants: row.get("Enfants") || row.get("enfants"),
+      nombreEnfants: parseInt(row.get("Nombre_Enfants") || row.get("nombreEnfants") || "0", 10),
+      regimeAlimentaire: row.get("Régime_Alimentaire") || row.get("regimeAlimentaire"),
+      hebergement: (row.get("Hébergement") || row.get("hebergement")) === "true",
+      nombrePlacesHebergement: parseInt(
+        row.get("Nombre_Places_Hébergement") || row.get("nombrePlacesHebergement") || "0",
+        10
+      ),
+      message: row.get("Message") || row.get("message"),
+      confirme: (row.get("Confirmé") || row.get("confirme")) === "true",
+      dateConfirmation: row.get("Date_Confirmation") || row.get("dateConfirmation"),
+    };
+  } catch (error) {
+    console.error("Erreur lors de la recherche par nom:", error);
+    return null;
+  }
+}
+
+// Récupération des places restantes depuis l'onglet Config
+export async function getPlacesRestantesFromConfig(): Promise<number> {
+  try {
+    const doc = await getGoogleSheet();
+    const configSheet = doc.sheetsByTitle["Config"];
+
+    if (!configSheet) {
+      // Fallback vers la méthode de calcul si pas d'onglet Config
+      return getHebergementPlacesRestantes();
+    }
+
+    const rows = await configSheet.getRows();
+    const placesRow = rows.find(
+      (r: GoogleSpreadsheetRow) => r.get("cle") === "Places_Restantes"
+    );
+
+    if (placesRow) {
+      return parseInt(placesRow.get("valeur") || "0", 10);
+    }
+
+    // Fallback si pas de clé Places_Restantes
+    return getHebergementPlacesRestantes();
+  } catch (error) {
+    console.error("Erreur lors de la lecture de Config:", error);
+    return 0;
+  }
+}
+
+// Mise à jour des places restantes dans l'onglet Config
+export async function updatePlacesRestantes(
+  nombrePlaces: number
+): Promise<boolean> {
+  try {
+    const doc = await getGoogleSheet();
+    const configSheet = doc.sheetsByTitle["Config"];
+
+    if (!configSheet) {
+      console.warn("Onglet Config non trouvé");
+      return false;
+    }
+
+    const rows = await configSheet.getRows();
+    const placesRow = rows.find(
+      (r: GoogleSpreadsheetRow) => r.get("cle") === "Places_Restantes"
+    );
+
+    if (placesRow) {
+      const currentPlaces = parseInt(placesRow.get("valeur") || "0", 10);
+      placesRow.set("valeur", Math.max(0, currentPlaces - nombrePlaces).toString());
+      await placesRow.save();
+      return true;
+    }
+
+    return false;
+  } catch (error) {
+    console.error("Erreur lors de la mise à jour des places:", error);
+    return false;
+  }
+}
+
+// Interface pour le résultat de la réservation atomique
+export interface ReservationResult {
+  success: boolean;
+  placesRestantes?: number;
+  error?: string;
+}
+
+// Vérification ET mise à jour atomique des places d'hébergement
+// Cette fonction relit le stock juste avant de l'update pour éviter les race conditions
+export async function reserverPlacesHebergement(
+  nombrePlacesDemandees: number
+): Promise<ReservationResult> {
+  try {
+    const doc = await getGoogleSheet();
+    const configSheet = doc.sheetsByTitle["Config"];
+
+    if (!configSheet) {
+      // Fallback: pas d'onglet Config, on ne peut pas gérer le stock
+      console.warn("Onglet Config non trouvé, réservation impossible à vérifier");
+      return { success: true };
+    }
+
+    // Relecture fraîche du stock
+    await configSheet.loadCells();
+    const rows = await configSheet.getRows();
+    const placesRow = rows.find(
+      (r: GoogleSpreadsheetRow) => r.get("cle") === "Places_Restantes"
+    );
+
+    if (!placesRow) {
+      console.warn("Clé Places_Restantes non trouvée");
+      return { success: true };
+    }
+
+    const placesRestantes = parseInt(placesRow.get("valeur") || "0", 10);
+
+    // Double vérification : le stock est-il suffisant ?
+    if (placesRestantes < nombrePlacesDemandees) {
+      return {
+        success: false,
+        placesRestantes,
+        error: `Désolé, il ne reste que ${placesRestantes} place(s) d'hébergement disponible(s).`,
+      };
+    }
+
+    // Mise à jour atomique du stock
+    placesRow.set("valeur", Math.max(0, placesRestantes - nombrePlacesDemandees).toString());
+    await placesRow.save();
+
+    return {
+      success: true,
+      placesRestantes: placesRestantes - nombrePlacesDemandees,
+    };
+  } catch (error) {
+    console.error("Erreur lors de la réservation des places:", error);
+    return {
+      success: false,
+      error: "Erreur lors de la vérification du stock d'hébergement",
+    };
+  }
+}
+
+// Interface pour une réponse RSVP
+export interface RSVPReponse {
+  date: string;
+  inviteId: string;
+  nom: string;
+  prenom: string;
+  email: string;
+  presence: boolean;
+  prenomConjoint?: string;
+  nombreEnfants: number;
+  prenomsEnfants?: string;
+  nbTotal: number;
+  regimeAlimentaire?: string;
+  hebergement: boolean;
+  nombrePlacesHebergement: number;
+}
+
+// Ajout d'une réponse RSVP
+export async function addRSVPReponse(
+  reponse: RSVPReponse
+): Promise<boolean> {
+  try {
+    const doc = await getGoogleSheet();
+    let rsvpSheet = doc.sheetsByTitle["RSVP_Reponses"];
+
+    // Créer l'onglet s'il n'existe pas
+    if (!rsvpSheet) {
+      rsvpSheet = await doc.addSheet({
+        title: "RSVP_Reponses",
+        headerValues: [
+          "date",
+          "inviteId",
+          "nom",
+          "prenom",
+          "email",
+          "presence",
+          "prenomConjoint",
+          "nombreEnfants",
+          "prenomsEnfants",
+          "nbTotal",
+          "regimeAlimentaire",
+          "hebergement",
+          "nombrePlacesHebergement",
+        ],
+      });
+    }
+
+    await rsvpSheet.addRow({
+      date: reponse.date,
+      inviteId: reponse.inviteId,
+      nom: reponse.nom,
+      prenom: reponse.prenom,
+      email: reponse.email,
+      presence: reponse.presence ? "Oui" : "Non",
+      prenomConjoint: reponse.prenomConjoint || "",
+      nombreEnfants: reponse.nombreEnfants.toString(),
+      prenomsEnfants: reponse.prenomsEnfants || "",
+      nbTotal: reponse.nbTotal.toString(),
+      regimeAlimentaire: reponse.regimeAlimentaire || "",
+      hebergement: reponse.hebergement ? "Oui" : "Non",
+      nombrePlacesHebergement: reponse.nombrePlacesHebergement.toString(),
+    });
+
+    return true;
+  } catch (error) {
+    console.error("Erreur lors de l'ajout de la réponse RSVP:", error);
+    return false;
   }
 }

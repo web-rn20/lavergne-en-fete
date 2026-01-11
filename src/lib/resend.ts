@@ -61,8 +61,38 @@ const emailStyles = {
   `,
 };
 
-// Email de confirmation pour l'invité
+// Interface pour les données RSVP complètes
+export interface RSVPEmailData {
+  prenom: string;
+  nom: string;
+  email: string;
+  prenomConjoint?: string;
+  nombreEnfants: number;
+  prenomsEnfants?: string;
+  nbTotal: number;
+  regimeAlimentaire?: string;
+  hebergement: boolean;
+  nombrePlacesHebergement: number;
+}
+
+// Email de confirmation pour l'invité (version simple)
 export async function sendConfirmationEmail(invite: Invite): Promise<boolean> {
+  return sendRSVPConfirmationEmail({
+    prenom: invite.prenom,
+    nom: invite.nom,
+    email: invite.email,
+    prenomConjoint: invite.conjoint,
+    nombreEnfants: invite.nombreEnfants || 0,
+    prenomsEnfants: invite.enfants,
+    nbTotal: 1 + (invite.conjoint ? 1 : 0) + (invite.nombreEnfants || 0),
+    regimeAlimentaire: invite.regimeAlimentaire,
+    hebergement: invite.hebergement || false,
+    nombrePlacesHebergement: invite.nombrePlacesHebergement || 0,
+  });
+}
+
+// Email de confirmation RSVP personnalisé avec récapitulatif complet
+export async function sendRSVPConfirmationEmail(data: RSVPEmailData): Promise<boolean> {
   try {
     const resend = getResendClient();
     const fromEmail = process.env.RESEND_FROM_EMAIL;
@@ -72,10 +102,26 @@ export async function sendConfirmationEmail(invite: Invite): Promise<boolean> {
       throw new Error("Variable d'environnement RESEND_FROM_EMAIL manquante.");
     }
 
+    // Construction du récapitulatif
+    const recapItems: string[] = [];
+    recapItems.push(`<strong>${data.prenom} ${data.nom}</strong>`);
+
+    if (data.prenomConjoint) {
+      recapItems.push(`Accompagné(e) de : ${data.prenomConjoint}`);
+    }
+
+    if (data.nombreEnfants > 0 && data.prenomsEnfants) {
+      recapItems.push(`${data.nombreEnfants} enfant(s) : ${data.prenomsEnfants}`);
+    }
+
+    const recapHtml = recapItems.map(item =>
+      `<p style="margin: 8px 0; color: #22181c;">${item}</p>`
+    ).join("");
+
     const { error } = await resend.emails.send({
       from: fromEmail,
-      to: invite.email,
-      subject: "On a bien noté ! RDV le 27 juin 2026",
+      to: data.email,
+      subject: "On a bien noté ! RDV le 27 juin 2026 🥂",
       html: `
         <!DOCTYPE html>
         <html lang="fr">
@@ -91,29 +137,48 @@ export async function sendConfirmationEmail(invite: Invite): Promise<boolean> {
             </div>
 
             <div style="${emailStyles.content}">
-              <h2 style="color: #22181c; font-family: 'Playfair Display', Georgia, serif;">
-                Merci ${invite.prenom} !
+              <h2 style="color: #22181c; font-family: 'Playfair Display', Georgia, serif; margin-bottom: 20px;">
+                Merci ${data.prenom} !
               </h2>
 
               <p style="color: #22181c; line-height: 1.6;">
                 Nous avons bien enregistré votre confirmation de présence pour la célébration
-                des 30 ans de mariage de nos parents.
+                des 30 ans de mariage de Véronique et Christophe.
               </p>
 
               <div style="background-color: #f6e8ea; padding: 20px; border-radius: 12px; margin: 20px 0;">
-                <p style="margin: 0; color: #5a0001; font-weight: 600;">
-                  Date : Samedi 27 juin 2026
+                <p style="margin: 0 0 15px 0; color: #5a0001; font-weight: 600; font-size: 16px;">
+                  📅 Samedi 27 juin 2026
                 </p>
-                ${invite.hebergement ? `
-                <p style="margin: 10px 0 0 0; color: #22181c;">
-                  Hébergement confirmé pour ${invite.nombrePlacesHebergement} personne(s)
-                </p>
+
+                <div style="border-top: 1px solid rgba(90, 0, 1, 0.2); padding-top: 15px; margin-top: 15px;">
+                  <p style="margin: 0 0 10px 0; color: #5a0001; font-weight: 600; font-size: 14px; text-transform: uppercase;">
+                    Récapitulatif de votre groupe (${data.nbTotal} personne${data.nbTotal > 1 ? 's' : ''})
+                  </p>
+                  ${recapHtml}
+                </div>
+
+                ${data.regimeAlimentaire ? `
+                <div style="border-top: 1px solid rgba(90, 0, 1, 0.2); padding-top: 15px; margin-top: 15px;">
+                  <p style="margin: 0 0 5px 0; color: #5a0001; font-weight: 600; font-size: 14px;">
+                    🍽️ Régime alimentaire / Allergies
+                  </p>
+                  <p style="margin: 0; color: #22181c; font-style: italic;">${data.regimeAlimentaire}</p>
+                </div>
+                ` : ""}
+
+                ${data.hebergement ? `
+                <div style="border-top: 1px solid rgba(90, 0, 1, 0.2); padding-top: 15px; margin-top: 15px;">
+                  <p style="margin: 0; color: #22181c;">
+                    🏠 <strong>Hébergement chez Granny confirmé</strong> pour ${data.nombrePlacesHebergement} personne${data.nombrePlacesHebergement > 1 ? 's' : ''}
+                  </p>
+                </div>
                 ` : ""}
               </div>
 
               <p style="color: #22181c; line-height: 1.6;">
                 Vous recevrez prochainement plus de détails sur le lieu exact et le programme
-                de la journée.
+                de la journée. On a hâte de vous voir !
               </p>
 
               <div style="text-align: center; margin-top: 30px;">
@@ -124,7 +189,7 @@ export async function sendConfirmationEmail(invite: Invite): Promise<boolean> {
             </div>
 
             <div style="${emailStyles.footer}">
-              <p>Avec amour, Romain, Maxime & Jade</p>
+              <p>Avec amour, Romain, Maxime & Jade 💕</p>
               <p>Cet email a été envoyé automatiquement suite à votre confirmation.</p>
             </div>
           </div>
