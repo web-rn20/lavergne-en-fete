@@ -28,9 +28,15 @@ export interface Invite {
 // Création du client JWT pour l'authentification
 function getJWT(): JWT {
   const serviceAccountEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-  // IMPORTANT: Le .replace(/\\n/g, "\n") corrige le format de la clé privée sur Vercel
-  // car les variables d'environnement encodent les sauts de ligne comme \\n
-  const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n");
+  // IMPORTANT: Nettoyage ultra-robuste de la clé privée pour Vercel
+  // - .replace(/\\n/g, '\n') transforme les faux sauts de ligne en vrais
+  // - .replace(/"/g, '') supprime les éventuels guillemets parasites
+  const privateKey = process.env.GOOGLE_PRIVATE_KEY
+    ? process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n').replace(/"/g, '')
+    : undefined;
+
+  // Log pour debug (sans afficher la clé elle-même)
+  console.log('Clé privée préparée, longueur:', privateKey?.length);
 
   if (!serviceAccountEmail) {
     console.error("ERREUR: GOOGLE_SERVICE_ACCOUNT_EMAIL manquante");
