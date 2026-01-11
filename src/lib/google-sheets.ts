@@ -549,6 +549,114 @@ export async function reserverPlacesHebergement(
   }
 }
 
+// ============================================================================
+// NOUVELLE FONCTION: Recalcul total du stock d'hébergement
+// Parcourt TOUTES les réponses RSVP pour garantir l'exactitude des compteurs
+// Cette méthode est "auto-correctrice" : elle corrige les erreurs passées
+// ============================================================================
+export async function recalculerStockHebergement(): Promise<ReservationResult> {
+  try {
+    console.log("=== RECALCUL TOTAL du stock d'hébergement ===");
+
+    const doc = await getGoogleSheet();
+
+    // 1. Lire toutes les réponses RSVP
+    const rsvpSheet = doc.sheetsByTitle["RSVP_Reponses"];
+    if (!rsvpSheet) {
+      console.log("Onglet RSVP_Reponses non trouvé - pas de réponses à compter");
+      // Continuer pour mettre à jour Config avec 0 places occupées
+    }
+
+    let totalPlacesOccupees = 0;
+
+    if (rsvpSheet) {
+      const rsvpRows = await rsvpSheet.getRows();
+      console.log("Nombre de réponses RSVP:", rsvpRows.length);
+
+      // Parcourir chaque réponse et sommer Nb_Total où Logement = "Maison des Lavergne"
+      for (const row of rsvpRows) {
+        const logement = row.get("Logement") || "";
+        const nbTotalStr = row.get("Nb_Total") || "0";
+        const nbTotal = parseInt(nbTotalStr.toString(), 10) || 0;
+
+        // Vérifier si le logement est "Maison des Lavergne" (flexible sur la casse)
+        if (logement.toString().toLowerCase().includes("maison des lavergne")) {
+          totalPlacesOccupees += nbTotal;
+          console.log(`  - ${row.get("Prénom")} ${row.get("Nom")}: ${nbTotal} place(s) à la Maison`);
+        }
+      }
+
+      console.log("TOTAL Places occupées (Maison des Lavergne):", totalPlacesOccupees);
+    }
+
+    // 2. Lire Stock_Total_Maison depuis Config et mettre à jour les compteurs
+    const configSheet = doc.sheetsByTitle["Config"];
+
+    if (!configSheet) {
+      console.error("Onglet Config non trouvé - impossible de mettre à jour");
+      return { success: false, error: "Configuration hébergement non disponible" };
+    }
+
+    // Charger les cellules pour mise à jour directe
+    await configSheet.loadCells();
+
+    // Trouver les 3 lignes nécessaires
+    let stockTotalRowIndex = -1;
+    let occupeesRowIndex = -1;
+    let restantesRowIndex = -1;
+    const valeurColIndex = 1; // Colonne B
+
+    for (let i = 0; i < 10; i++) {
+      const cellA = configSheet.getCell(i, 0);
+      const cellValue = cellA.value?.toString().toLowerCase().trim() || "";
+
+      if (cellValue === "stock_total_maison") stockTotalRowIndex = i;
+      if (cellValue === "places_occupees") occupeesRowIndex = i;
+      if (cellValue === "places_restantes") restantesRowIndex = i;
+    }
+
+    if (stockTotalRowIndex === -1 || occupeesRowIndex === -1 || restantesRowIndex === -1) {
+      console.error("Configuration incomplète dans Config");
+      return { success: false, error: "Configuration hébergement incomplète" };
+    }
+
+    // Lire Stock_Total_Maison
+    const stockTotalCell = configSheet.getCell(stockTotalRowIndex, valeurColIndex);
+    const stockTotal = parseInt(stockTotalCell.value?.toString() || "0", 10);
+
+    // Calculer les nouvelles valeurs
+    const newPlacesRestantes = Math.max(0, stockTotal - totalPlacesOccupees);
+
+    // Mettre à jour Places_Occupees et Places_Restantes
+    const occupeesCell = configSheet.getCell(occupeesRowIndex, valeurColIndex);
+    const restantesCell = configSheet.getCell(restantesRowIndex, valeurColIndex);
+
+    const oldOccupees = parseInt(occupeesCell.value?.toString() || "0", 10);
+    const oldRestantes = parseInt(restantesCell.value?.toString() || "0", 10);
+
+    occupeesCell.value = totalPlacesOccupees;
+    restantesCell.value = newPlacesRestantes;
+
+    await configSheet.saveUpdatedCells();
+
+    console.log("=== Mise à jour Config (RECALCUL) ===");
+    console.log("  Stock_Total_Maison:", stockTotal);
+    console.log("  Places_Occupees:", oldOccupees, "->", totalPlacesOccupees);
+    console.log("  Places_Restantes:", oldRestantes, "->", newPlacesRestantes);
+
+    return {
+      success: true,
+      placesRestantes: newPlacesRestantes,
+    };
+  } catch (error) {
+    console.error("Erreur lors du recalcul du stock:", error);
+    return {
+      success: false,
+      error: "Erreur lors du recalcul du stock d'hébergement",
+    };
+  }
+}
+
 // Interface pour une réponse RSVP
 export interface RSVPReponse {
   date: string;

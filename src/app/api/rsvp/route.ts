@@ -3,7 +3,7 @@ import {
   findInviteById,
   addRSVPReponse,
   getPlacesRestantesFromConfig,
-  reserverPlacesHebergement,
+  recalculerStockHebergement,
 } from "@/lib/google-sheets";
 import { sendRSVPConfirmationEmail } from "@/lib/resend";
 
@@ -103,14 +103,16 @@ export async function POST(request: NextRequest) {
     // Nombre de places d'hébergement demandées (seulement si "Maison des Lavergne")
     const nombrePlacesHebergement = hebergement ? nbTotal : 0;
 
-    // SÉCURITÉ: La mise à jour du stock n'est appelée QUE si l'option "Maison des Lavergne" est choisie
-    // hebergement === true signifie que logement === "Maison des Lavergne"
+    // VALIDATION PRÉALABLE: Vérifier qu'il y a assez de places AVANT d'enregistrer
+    // (Le recalcul total sera fait APRÈS l'enregistrement pour corriger les compteurs)
     if (hebergement && nombrePlacesHebergement > 0) {
       console.log("=== Hébergement 'Maison des Lavergne' demandé ===");
-      console.log("Vérification du stock d'hébergement...");
+      console.log("Vérification préalable du stock...");
       const placesRestantes = await getPlacesRestantesFromConfig();
-      console.log("Places restantes:", placesRestantes, "/ Demandées:", nombrePlacesHebergement);
+      console.log("Places restantes actuelles:", placesRestantes, "/ Demandées:", nombrePlacesHebergement);
 
+      // Note: On vérifie seulement, pas de mise à jour ici
+      // Le recalcul total sera fait après l'ajout de la réponse
       if (placesRestantes < nombrePlacesHebergement) {
         return NextResponse.json(
           {
@@ -121,22 +123,7 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
-
-      // Réserver atomiquement les places
-      const reservationResult = await reserverPlacesHebergement(nombrePlacesHebergement);
-
-      if (!reservationResult.success) {
-        console.log("Échec réservation:", reservationResult.error);
-        return NextResponse.json(
-          {
-            success: false,
-            error: reservationResult.error,
-            placesRestantes: reservationResult.placesRestantes,
-          },
-          { status: 400 }
-        );
-      }
-      console.log("Réservation réussie, places restantes:", reservationResult.placesRestantes);
+      console.log("Validation OK, places suffisantes");
     }
 
     // Préparation des prénoms des enfants (concaténés avec virgule)
@@ -175,6 +162,17 @@ export async function POST(request: NextRequest) {
     }
 
     console.log("=== RSVP enregistré avec succès ===");
+
+    // RECALCUL TOTAL du stock d'hébergement (méthode auto-correctrice)
+    // Parcourt TOUTES les réponses RSVP pour garantir l'exactitude des compteurs
+    console.log("=== Recalcul total du stock d'hébergement ===");
+    const recalculResult = await recalculerStockHebergement();
+    if (recalculResult.success) {
+      console.log("Stock recalculé avec succès, places restantes:", recalculResult.placesRestantes);
+    } else {
+      // Log l'erreur mais ne bloque pas la réponse (le RSVP est déjà enregistré)
+      console.warn("Attention: Recalcul du stock échoué:", recalculResult.error);
+    }
 
     // Envoi de l'email de confirmation (si email fourni)
     let emailSuccess = false;
