@@ -140,7 +140,7 @@ export async function sendRSVPConfirmationEmail(data: RSVPEmailData): Promise<bo
               </h2>
 
               <p style="color: #22181c; line-height: 1.6;">
-                Nous avons bien enregistré votre confirmation de présence pour la célébration
+                On a bien enregistré ta confirmation de présence pour la célébration
                 des 30 ans de mariage de Véronique et Christophe.
               </p>
 
@@ -151,7 +151,7 @@ export async function sendRSVPConfirmationEmail(data: RSVPEmailData): Promise<bo
 
                 <div style="border-top: 1px solid rgba(90, 0, 1, 0.2); padding-top: 15px; margin-top: 15px;">
                   <p style="margin: 0 0 10px 0; color: #5a0001; font-weight: 600; font-size: 14px; text-transform: uppercase;">
-                    Récapitulatif de votre groupe (${data.nbTotal} personne${data.nbTotal > 1 ? 's' : ''})
+                    Récapitulatif de ton groupe (${data.nbTotal} personne${data.nbTotal > 1 ? 's' : ''})
                   </p>
                   ${recapHtml}
                 </div>
@@ -175,8 +175,8 @@ export async function sendRSVPConfirmationEmail(data: RSVPEmailData): Promise<bo
               </div>
 
               <p style="color: #22181c; line-height: 1.6;">
-                Vous recevrez prochainement plus de détails sur le lieu exact et le programme
-                de la journée. On a hâte de vous voir !
+                Tu recevras prochainement plus de détails sur le lieu exact et le programme
+                de la journée. On a hâte de te voir !
               </p>
 
               <div style="text-align: center; margin-top: 30px;">
@@ -188,7 +188,7 @@ export async function sendRSVPConfirmationEmail(data: RSVPEmailData): Promise<bo
 
             <div style="${emailStyles.footer}">
               <p>Avec amour, Romain, Maxime & Jade 💕</p>
-              <p>Cet email a été envoyé automatiquement suite à votre confirmation.</p>
+              <p>Cet email a été envoyé automatiquement suite à ta confirmation.</p>
             </div>
           </div>
         </body>
@@ -204,6 +204,132 @@ export async function sendRSVPConfirmationEmail(data: RSVPEmailData): Promise<bo
     return true;
   } catch (error) {
     console.error("Erreur lors de l'envoi de l'email de confirmation:", error);
+    return false;
+  }
+}
+
+// Email récapitulatif pour les hôtes lors d'un nouveau RSVP
+export async function sendRSVPNotificationToHosts(data: RSVPEmailData): Promise<boolean> {
+  try {
+    const resend = getResendClient();
+    const fromEmail = process.env.RESEND_FROM_EMAIL;
+    const adminEmails = process.env.ADMIN_EMAILS?.split(",").map((e) => e.trim());
+
+    if (!fromEmail) {
+      throw new Error("Variable d'environnement RESEND_FROM_EMAIL manquante.");
+    }
+
+    if (!adminEmails || adminEmails.length === 0) {
+      console.warn("Aucun email admin configuré, notification ignorée.");
+      return true;
+    }
+
+    // Construction du récapitulatif
+    const recapRows: string[] = [];
+    recapRows.push(`
+      <tr>
+        <td style="padding: 8px 0; color: #5a0001; font-weight: 600;">Invité principal</td>
+        <td style="padding: 8px 0; color: #22181c;">${data.prenom} ${data.nom}</td>
+      </tr>
+    `);
+
+    if (data.email) {
+      recapRows.push(`
+        <tr>
+          <td style="padding: 8px 0; color: #5a0001; font-weight: 600;">Email</td>
+          <td style="padding: 8px 0; color: #22181c;">${data.email}</td>
+        </tr>
+      `);
+    }
+
+    if (data.prenomConjoint) {
+      recapRows.push(`
+        <tr>
+          <td style="padding: 8px 0; color: #5a0001; font-weight: 600;">Accompagné(e) de</td>
+          <td style="padding: 8px 0; color: #22181c;">${data.prenomConjoint}</td>
+        </tr>
+      `);
+    }
+
+    if (data.nombreEnfants > 0) {
+      recapRows.push(`
+        <tr>
+          <td style="padding: 8px 0; color: #5a0001; font-weight: 600;">Enfants</td>
+          <td style="padding: 8px 0; color: #22181c;">${data.nombreEnfants} (${data.prenomsEnfants || "non précisé"})</td>
+        </tr>
+      `);
+    }
+
+    recapRows.push(`
+      <tr>
+        <td style="padding: 8px 0; color: #5a0001; font-weight: 600;">Nombre total</td>
+        <td style="padding: 8px 0; color: #22181c; font-weight: 600;">${data.nbTotal} personne${data.nbTotal > 1 ? "s" : ""}</td>
+      </tr>
+    `);
+
+    if (data.regimeAlimentaire) {
+      recapRows.push(`
+        <tr>
+          <td style="padding: 8px 0; color: #5a0001; font-weight: 600;">Régimes / Allergies</td>
+          <td style="padding: 8px 0; color: #22181c;">${data.regimeAlimentaire}</td>
+        </tr>
+      `);
+    }
+
+    if (data.hebergementLabel) {
+      recapRows.push(`
+        <tr>
+          <td style="padding: 8px 0; color: #5a0001; font-weight: 600;">Hébergement</td>
+          <td style="padding: 8px 0; color: #22181c;">${data.hebergementLabel}</td>
+        </tr>
+      `);
+    }
+
+    const { error } = await resend.emails.send({
+      from: fromEmail,
+      to: adminEmails,
+      subject: `Nouveau RSVP : ${data.prenom} ${data.nom} (${data.nbTotal} pers.)`,
+      html: `
+        <!DOCTYPE html>
+        <html lang="fr">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="margin: 0; padding: 0; background-color: #f6e8ea;">
+          <div style="${emailStyles.container}">
+            <div style="${emailStyles.header}">
+              <h1 style="${emailStyles.title}">Nouvelle réponse RSVP !</h1>
+              <p style="${emailStyles.subtitle}">30 Ans d'Amour - Les noces de perle</p>
+            </div>
+
+            <div style="${emailStyles.content}">
+              <h2 style="color: #22181c; font-family: 'Playfair Display', Georgia, serif; margin-bottom: 20px;">
+                ${data.prenom} ${data.nom} a confirmé sa présence
+              </h2>
+
+              <table style="width: 100%; border-collapse: collapse;">
+                ${recapRows.join("")}
+              </table>
+            </div>
+
+            <div style="${emailStyles.footer}">
+              <p>Date de confirmation : ${new Date().toLocaleString("fr-FR")}</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+    });
+
+    if (error) {
+      console.error("Erreur lors de l'envoi de la notification aux hôtes:", error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Erreur lors de l'envoi de la notification aux hôtes:", error);
     return false;
   }
 }
