@@ -471,6 +471,7 @@ export interface RSVPReponse {
   nbTotal: number;
   regimeAlimentaire?: string;
   hebergement: boolean;
+  hebergementLabel?: string; // "Chez les Lavergne", "Tente dans le jardin", "Se débrouille"
   nombrePlacesHebergement: number;
 }
 
@@ -499,6 +500,7 @@ export async function addRSVPReponse(
           "nbTotal",
           "regimeAlimentaire",
           "hebergement",
+          "hebergementLabel",
           "nombrePlacesHebergement",
         ],
       });
@@ -517,6 +519,7 @@ export async function addRSVPReponse(
       nbTotal: reponse.nbTotal.toString(),
       regimeAlimentaire: reponse.regimeAlimentaire || "",
       hebergement: reponse.hebergement ? "Oui" : "Non",
+      hebergementLabel: reponse.hebergementLabel || "",
       nombrePlacesHebergement: reponse.nombrePlacesHebergement.toString(),
     });
 

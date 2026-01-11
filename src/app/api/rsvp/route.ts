@@ -19,7 +19,10 @@ interface RSVPRequestBody {
   nombreEnfants: number;
   prenomsEnfants: string[];
   regimeAlimentaire?: string;
-  hebergement: boolean;
+  hebergement: boolean; // true uniquement si "chez les Lavergne"
+  hebergementChoix: "lavergne" | "tente" | "autonome";
+  hebergementLabel?: string;
+  nbTotal?: number;
 }
 
 export async function POST(request: NextRequest) {
@@ -109,6 +112,7 @@ export async function POST(request: NextRequest) {
       nbTotal,
       regimeAlimentaire: body.regimeAlimentaire,
       hebergement: body.hebergement,
+      hebergementLabel: body.hebergementLabel,
       nombrePlacesHebergement,
     });
 
