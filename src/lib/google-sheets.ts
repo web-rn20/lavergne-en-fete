@@ -336,10 +336,10 @@ export async function findInviteByName(
 }
 
 // Récupération des places restantes depuis l'onglet Config
-// IMPORTANT: Lit la valeur associée à la clé "Places_Restantes" dans l'onglet Config
+// LOGIQUE: Calcule Places_Restantes = Places_Totales - Places_Occupees
 export async function getPlacesRestantesFromConfig(): Promise<number> {
   try {
-    console.log("=== Lecture Places_Restantes depuis Config ===");
+    console.log("=== Calcul Places_Restantes depuis Config ===");
     const doc = await getGoogleSheet();
     const configSheet = doc.sheetsByTitle["Config"];
 
@@ -351,23 +351,27 @@ export async function getPlacesRestantesFromConfig(): Promise<number> {
     const rows = await configSheet.getRows();
     console.log("Nombre de lignes dans Config:", rows.length);
 
-    // Chercher la ligne avec la clé "Places_Restantes" (flexible sur la casse)
-    const placesRow = rows.find((r: GoogleSpreadsheetRow) => {
-      // Essayer différentes variantes de noms de colonnes pour la clé
-      const cleValue = r.get("Cle") || r.get("cle") || r.get("Clé") || r.get("clé") || "";
-      return cleValue.toString().toLowerCase().trim() === "places_restantes";
-    });
+    // Chercher Places_Occupees et Places_Totales
+    let placesOccupees = 0;
+    let placesTotales = 20; // Valeur par défaut
 
-    if (placesRow) {
-      // Essayer différentes variantes pour la colonne valeur
-      const valeurStr = placesRow.get("Valeur") || placesRow.get("valeur") || "0";
-      const places = parseInt(valeurStr.toString(), 10);
-      console.log("Places_Restantes trouvé:", places);
-      return isNaN(places) ? 0 : places;
+    for (const r of rows) {
+      const cleValue = (r.get("Cle") || r.get("cle") || r.get("Clé") || r.get("clé") || "").toString().toLowerCase().trim();
+      const valeurStr = (r.get("Valeur") || r.get("valeur") || "0").toString();
+
+      if (cleValue === "places_occupees") {
+        placesOccupees = parseInt(valeurStr, 10) || 0;
+        console.log("Places_Occupees trouvé:", placesOccupees);
+      }
+      if (cleValue === "places_totales") {
+        placesTotales = parseInt(valeurStr, 10) || 20;
+        console.log("Places_Totales trouvé:", placesTotales);
+      }
     }
 
-    console.warn("Clé 'Places_Restantes' non trouvée dans Config - retourne 0");
-    return 0;
+    const placesRestantes = Math.max(0, placesTotales - placesOccupees);
+    console.log("Places restantes calculées:", placesRestantes, "(", placesTotales, "-", placesOccupees, ")");
+    return placesRestantes;
   } catch (error) {
     console.error("Erreur lors de la lecture de Config:", error);
     return 0; // Retourne 0 par sécurité en cas d'erreur
@@ -435,6 +439,7 @@ export interface ReservationResult {
 
 // Vérification ET mise à jour atomique des places d'hébergement
 // Utilise une mise à jour directe des cellules pour éviter les erreurs de colonnes
+// LOGIQUE: On INCRÉMENTE Places_Occupees (et non décrémente Places_Restantes)
 export async function reserverPlacesHebergement(
   nombrePlacesDemandees: number
 ): Promise<ReservationResult> {
@@ -458,29 +463,45 @@ export async function reserverPlacesHebergement(
     // Charger toutes les cellules pour mise à jour directe
     await configSheet.loadCells();
 
-    // Trouver la ligne avec Places_Restantes (en parcourant la colonne A)
-    let rowIndex = -1;
+    // Trouver la ligne avec Places_Occupees (en parcourant la colonne A)
+    let occupeesRowIndex = -1;
+    let totalesRowIndex = -1;
     const valeurColIndex = 1; // Colonne B (index 1)
 
     for (let i = 0; i < 10; i++) {
       const cellA = configSheet.getCell(i, 0); // Colonne A
       const cellValue = cellA.value?.toString().toLowerCase().trim() || "";
-      if (cellValue === "places_restantes") {
-        rowIndex = i;
-        console.log("Places_Restantes trouvé à la ligne", i + 1, "(index", i, ")");
-        break;
+      if (cellValue === "places_occupees") {
+        occupeesRowIndex = i;
+        console.log("Places_Occupees trouvé à la ligne", i + 1, "(index", i, ")");
+      }
+      if (cellValue === "places_totales") {
+        totalesRowIndex = i;
+        console.log("Places_Totales trouvé à la ligne", i + 1, "(index", i, ")");
       }
     }
 
-    if (rowIndex === -1) {
-      console.error("Clé Places_Restantes non trouvée - réservation refusée");
+    if (occupeesRowIndex === -1) {
+      console.error("Clé Places_Occupees non trouvée - réservation refusée");
       return { success: false, error: "Configuration hébergement non disponible" };
     }
 
-    // Lire la valeur actuelle directement depuis la cellule B
-    const valeurCell = configSheet.getCell(rowIndex, valeurColIndex);
-    const placesRestantes = parseInt(valeurCell.value?.toString() || "0", 10);
-    console.log("Places restantes actuelles (cellule B" + (rowIndex + 1) + "):", placesRestantes);
+    // Lire la valeur actuelle de Places_Occupees
+    const occupeesCell = configSheet.getCell(occupeesRowIndex, valeurColIndex);
+    const placesOccupees = parseInt(occupeesCell.value?.toString() || "0", 10);
+    console.log("Places occupées actuelles (cellule B" + (occupeesRowIndex + 1) + "):", placesOccupees);
+
+    // Lire le total de places disponibles (si configuré)
+    let placesTotales = 20; // Valeur par défaut
+    if (totalesRowIndex !== -1) {
+      const totalesCell = configSheet.getCell(totalesRowIndex, valeurColIndex);
+      placesTotales = parseInt(totalesCell.value?.toString() || "20", 10);
+      console.log("Places totales (cellule B" + (totalesRowIndex + 1) + "):", placesTotales);
+    }
+
+    // Calcul des places restantes pour vérification
+    const placesRestantes = placesTotales - placesOccupees;
+    console.log("Places restantes calculées:", placesRestantes);
 
     // Vérification : le stock est-il suffisant ?
     if (placesRestantes < nombrePlacesDemandees) {
@@ -491,16 +512,19 @@ export async function reserverPlacesHebergement(
       };
     }
 
-    // Mise à jour directe de la cellule (évite l'erreur de colonne C)
-    const newPlaces = Math.max(0, placesRestantes - nombrePlacesDemandees);
-    valeurCell.value = newPlaces;
+    // INCRÉMENTATION de Places_Occupees (et non décrémentation)
+    const newPlacesOccupees = placesOccupees + nombrePlacesDemandees;
+    occupeesCell.value = newPlacesOccupees;
     await configSheet.saveUpdatedCells();
 
-    console.log("Réservation effectuée. Nouvelles places restantes:", newPlaces);
+    console.log("Mise à jour Config - Nouvelle valeur pour Places_Occupees:", newPlacesOccupees);
+
+    // Calcul des places restantes après réservation
+    const newPlacesRestantes = placesTotales - newPlacesOccupees;
 
     return {
       success: true,
-      placesRestantes: newPlaces,
+      placesRestantes: newPlacesRestantes,
     };
   } catch (error) {
     console.error("Erreur lors de la réservation des places:", error);
