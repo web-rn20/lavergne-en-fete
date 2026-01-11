@@ -28,9 +28,15 @@ export interface Invite {
 // Création du client JWT pour l'authentification
 function getJWT(): JWT {
   const serviceAccountEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-  // IMPORTANT: Le .replace(/\\n/g, "\n") corrige le format de la clé privée sur Vercel
-  // car les variables d'environnement encodent les sauts de ligne comme \\n
-  const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n");
+  // IMPORTANT: Nettoyage ultra-robuste de la clé privée pour Vercel
+  // - .replace(/\\n/g, '\n') transforme les faux sauts de ligne en vrais
+  // - .replace(/"/g, '') supprime les éventuels guillemets parasites
+  const privateKey = process.env.GOOGLE_PRIVATE_KEY
+    ? process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n').replace(/"/g, '')
+    : undefined;
+
+  // Log pour debug (sans afficher la clé elle-même)
+  console.log('Clé privée préparée, longueur:', privateKey?.length);
 
   if (!serviceAccountEmail) {
     console.error("ERREUR: GOOGLE_SERVICE_ACCOUNT_EMAIL manquante");
@@ -330,34 +336,46 @@ export async function findInviteByName(
 }
 
 // Récupération des places restantes depuis l'onglet Config
+// LOGIQUE: Lit directement la valeur de la clé "Places_Restantes" dans Config
 export async function getPlacesRestantesFromConfig(): Promise<number> {
   try {
+    console.log("=== Lecture Places_Restantes depuis Config ===");
     const doc = await getGoogleSheet();
     const configSheet = doc.sheetsByTitle["Config"];
 
     if (!configSheet) {
-      // Fallback vers la méthode de calcul si pas d'onglet Config
-      return getHebergementPlacesRestantes();
+      console.error("Onglet 'Config' non trouvé - retourne 0 par sécurité");
+      return 0;
     }
 
-    const rows = await configSheet.getRows();
-    const placesRow = rows.find(
-      (r: GoogleSpreadsheetRow) => r.get("cle") === "Places_Restantes"
-    );
+    // Charger les cellules pour lire directement
+    await configSheet.loadCells();
 
-    if (placesRow) {
-      return parseInt(placesRow.get("valeur") || "0", 10);
+    // Chercher la ligne avec Places_Restantes (colonne A = Clé)
+    const valeurColIndex = 1; // Colonne B (index 1)
+
+    for (let i = 0; i < 10; i++) {
+      const cellA = configSheet.getCell(i, 0); // Colonne A (Clé)
+      const cellValue = cellA.value?.toString().toLowerCase().trim() || "";
+
+      if (cellValue === "places_restantes") {
+        const valeurCell = configSheet.getCell(i, valeurColIndex);
+        const placesRestantes = parseInt(valeurCell.value?.toString() || "0", 10);
+        console.log("Places_Restantes trouvé à la ligne", i + 1, ":", placesRestantes);
+        return Math.max(0, placesRestantes);
+      }
     }
 
-    // Fallback si pas de clé Places_Restantes
-    return getHebergementPlacesRestantes();
+    console.warn("Clé 'Places_Restantes' non trouvée dans Config - retourne 0");
+    return 0;
   } catch (error) {
     console.error("Erreur lors de la lecture de Config:", error);
-    return 0;
+    return 0; // Retourne 0 par sécurité en cas d'erreur
   }
 }
 
 // Mise à jour des places restantes dans l'onglet Config
+// Utilise une mise à jour directe des cellules pour éviter les erreurs de colonnes
 export async function updatePlacesRestantes(
   nombrePlaces: number
 ): Promise<boolean> {
@@ -370,19 +388,38 @@ export async function updatePlacesRestantes(
       return false;
     }
 
-    const rows = await configSheet.getRows();
-    const placesRow = rows.find(
-      (r: GoogleSpreadsheetRow) => r.get("cle") === "Places_Restantes"
-    );
+    // Charger toutes les cellules pour pouvoir les modifier directement
+    await configSheet.loadCells();
 
-    if (placesRow) {
-      const currentPlaces = parseInt(placesRow.get("valeur") || "0", 10);
-      placesRow.set("valeur", Math.max(0, currentPlaces - nombrePlaces).toString());
-      await placesRow.save();
-      return true;
+    // Trouver la ligne avec Places_Restantes (en parcourant la colonne A)
+    let rowIndex = -1;
+    let valeurColIndex = 1; // Par défaut colonne B (index 1)
+
+    // Chercher dans les premières lignes (en-tête + données)
+    for (let i = 0; i < 10; i++) {
+      const cellA = configSheet.getCell(i, 0); // Colonne A
+      const cellValue = cellA.value?.toString().toLowerCase().trim() || "";
+      if (cellValue === "places_restantes") {
+        rowIndex = i;
+        break;
+      }
     }
 
-    return false;
+    if (rowIndex === -1) {
+      console.warn("Clé Places_Restantes non trouvée pour mise à jour");
+      return false;
+    }
+
+    // Lire et mettre à jour la cellule de la colonne Valeur (colonne B)
+    const valeurCell = configSheet.getCell(rowIndex, valeurColIndex);
+    const currentPlaces = parseInt(valeurCell.value?.toString() || "0", 10);
+    const newPlaces = Math.max(0, currentPlaces - nombrePlaces);
+
+    valeurCell.value = newPlaces;
+    await configSheet.saveUpdatedCells();
+
+    console.log("Places mises à jour:", currentPlaces, "->", newPlaces);
+    return true;
   } catch (error) {
     console.error("Erreur lors de la mise à jour des places:", error);
     return false;
@@ -397,56 +434,225 @@ export interface ReservationResult {
 }
 
 // Vérification ET mise à jour atomique des places d'hébergement
-// Cette fonction relit le stock juste avant de l'update pour éviter les race conditions
+// LOGIQUE SYNCHRONISÉE avec 3 clés dans Config:
+//   - Stock_Total_Maison : plafond (ex: 6)
+//   - Places_Occupees : compteur de réservations (ex: 0)
+//   - Places_Restantes : résultat (Stock - Occupé)
+// Utilise une mise à jour directe des cellules (colonne B uniquement) pour éviter l'erreur 400
 export async function reserverPlacesHebergement(
   nombrePlacesDemandees: number
 ): Promise<ReservationResult> {
   try {
+    console.log("=== Réservation de", nombrePlacesDemandees, "place(s) ===");
+
+    // Si 0 places demandées, pas besoin de réserver
+    if (nombrePlacesDemandees <= 0) {
+      console.log("Aucune place demandée, pas de réservation nécessaire");
+      return { success: true, placesRestantes: undefined };
+    }
+
     const doc = await getGoogleSheet();
     const configSheet = doc.sheetsByTitle["Config"];
 
     if (!configSheet) {
-      // Fallback: pas d'onglet Config, on ne peut pas gérer le stock
-      console.warn("Onglet Config non trouvé, réservation impossible à vérifier");
-      return { success: true };
+      console.error("Onglet Config non trouvé - réservation refusée");
+      return { success: false, error: "Configuration hébergement non disponible" };
     }
 
-    // Relecture fraîche du stock
+    // Charger toutes les cellules pour lecture et mise à jour directe
     await configSheet.loadCells();
-    const rows = await configSheet.getRows();
-    const placesRow = rows.find(
-      (r: GoogleSpreadsheetRow) => r.get("cle") === "Places_Restantes"
-    );
 
-    if (!placesRow) {
-      console.warn("Clé Places_Restantes non trouvée");
-      return { success: true };
+    // Trouver les 3 lignes nécessaires (en parcourant la colonne A = Clé)
+    let stockTotalRowIndex = -1;
+    let occupeesRowIndex = -1;
+    let restantesRowIndex = -1;
+    const valeurColIndex = 1; // Colonne B (index 1) = Valeur
+
+    for (let i = 0; i < 10; i++) {
+      const cellA = configSheet.getCell(i, 0); // Colonne A (Clé)
+      const cellValue = cellA.value?.toString().toLowerCase().trim() || "";
+
+      if (cellValue === "stock_total_maison") {
+        stockTotalRowIndex = i;
+        console.log("Stock_Total_Maison trouvé à la ligne", i + 1);
+      }
+      if (cellValue === "places_occupees") {
+        occupeesRowIndex = i;
+        console.log("Places_Occupees trouvé à la ligne", i + 1);
+      }
+      if (cellValue === "places_restantes") {
+        restantesRowIndex = i;
+        console.log("Places_Restantes trouvé à la ligne", i + 1);
+      }
     }
 
-    const placesRestantes = parseInt(placesRow.get("valeur") || "0", 10);
+    // Validation: les 3 clés doivent exister
+    if (stockTotalRowIndex === -1 || occupeesRowIndex === -1 || restantesRowIndex === -1) {
+      console.error("Configuration incomplète dans Config:");
+      console.error("  Stock_Total_Maison:", stockTotalRowIndex !== -1 ? "OK" : "MANQUANT");
+      console.error("  Places_Occupees:", occupeesRowIndex !== -1 ? "OK" : "MANQUANT");
+      console.error("  Places_Restantes:", restantesRowIndex !== -1 ? "OK" : "MANQUANT");
+      return { success: false, error: "Configuration hébergement incomplète" };
+    }
 
-    // Double vérification : le stock est-il suffisant ?
+    // LECTURE des 3 valeurs
+    const stockTotalCell = configSheet.getCell(stockTotalRowIndex, valeurColIndex);
+    const occupeesCell = configSheet.getCell(occupeesRowIndex, valeurColIndex);
+    const restantesCell = configSheet.getCell(restantesRowIndex, valeurColIndex);
+
+    const stockTotal = parseInt(stockTotalCell.value?.toString() || "0", 10);
+    const placesOccupees = parseInt(occupeesCell.value?.toString() || "0", 10);
+    const placesRestantes = parseInt(restantesCell.value?.toString() || "0", 10);
+
+    console.log("=== État actuel Config ===");
+    console.log("  Stock_Total_Maison:", stockTotal);
+    console.log("  Places_Occupees:", placesOccupees);
+    console.log("  Places_Restantes:", placesRestantes);
+
+    // VALIDATION: Places_Restantes >= nbTotal demandé
     if (placesRestantes < nombrePlacesDemandees) {
+      console.log("REFUSÉ: Pas assez de places (restantes:", placesRestantes, ", demandées:", nombrePlacesDemandees, ")");
       return {
         success: false,
         placesRestantes,
-        error: `Désolé, il ne reste que ${placesRestantes} place(s) d'hébergement disponible(s).`,
+        error: `Plus assez de places ! Il ne reste que ${placesRestantes} place(s) d'hébergement.`,
       };
     }
 
-    // Mise à jour atomique du stock
-    placesRow.set("valeur", Math.max(0, placesRestantes - nombrePlacesDemandees).toString());
-    await placesRow.save();
+    // MISE À JOUR (écriture dans colonne B uniquement pour éviter erreur 400)
+    const newPlacesOccupees = placesOccupees + nombrePlacesDemandees;
+    const newPlacesRestantes = stockTotal - newPlacesOccupees;
+
+    // Mettre à jour Places_Occupees
+    occupeesCell.value = newPlacesOccupees;
+
+    // Mettre à jour Places_Restantes (recalculé)
+    restantesCell.value = newPlacesRestantes;
+
+    // Sauvegarder les cellules modifiées
+    await configSheet.saveUpdatedCells();
+
+    console.log("=== Mise à jour Config effectuée ===");
+    console.log("  Places_Occupees:", placesOccupees, "->", newPlacesOccupees);
+    console.log("  Places_Restantes:", placesRestantes, "->", newPlacesRestantes);
 
     return {
       success: true,
-      placesRestantes: placesRestantes - nombrePlacesDemandees,
+      placesRestantes: newPlacesRestantes,
     };
   } catch (error) {
     console.error("Erreur lors de la réservation des places:", error);
     return {
       success: false,
       error: "Erreur lors de la vérification du stock d'hébergement",
+    };
+  }
+}
+
+// ============================================================================
+// NOUVELLE FONCTION: Recalcul total du stock d'hébergement
+// Parcourt TOUTES les réponses RSVP pour garantir l'exactitude des compteurs
+// Cette méthode est "auto-correctrice" : elle corrige les erreurs passées
+// ============================================================================
+export async function recalculerStockHebergement(): Promise<ReservationResult> {
+  try {
+    console.log("=== RECALCUL TOTAL du stock d'hébergement ===");
+
+    const doc = await getGoogleSheet();
+
+    // 1. Lire toutes les réponses RSVP
+    const rsvpSheet = doc.sheetsByTitle["RSVP_Reponses"];
+    if (!rsvpSheet) {
+      console.log("Onglet RSVP_Reponses non trouvé - pas de réponses à compter");
+      // Continuer pour mettre à jour Config avec 0 places occupées
+    }
+
+    let totalPlacesOccupees = 0;
+
+    if (rsvpSheet) {
+      const rsvpRows = await rsvpSheet.getRows();
+      console.log("Nombre de réponses RSVP:", rsvpRows.length);
+
+      // Parcourir chaque réponse et sommer Nb_Total où Logement = "Maison des Lavergne"
+      for (const row of rsvpRows) {
+        const logement = row.get("Logement") || "";
+        const nbTotalStr = row.get("Nb_Total") || "0";
+        const nbTotal = parseInt(nbTotalStr.toString(), 10) || 0;
+
+        // Vérifier si le logement est "Maison des Lavergne" (flexible sur la casse)
+        if (logement.toString().toLowerCase().includes("maison des lavergne")) {
+          totalPlacesOccupees += nbTotal;
+          console.log(`  - ${row.get("Prénom")} ${row.get("Nom")}: ${nbTotal} place(s) à la Maison`);
+        }
+      }
+
+      console.log("TOTAL Places occupées (Maison des Lavergne):", totalPlacesOccupees);
+    }
+
+    // 2. Lire Stock_Total_Maison depuis Config et mettre à jour les compteurs
+    const configSheet = doc.sheetsByTitle["Config"];
+
+    if (!configSheet) {
+      console.error("Onglet Config non trouvé - impossible de mettre à jour");
+      return { success: false, error: "Configuration hébergement non disponible" };
+    }
+
+    // Charger les cellules pour mise à jour directe
+    await configSheet.loadCells();
+
+    // Trouver les 3 lignes nécessaires
+    let stockTotalRowIndex = -1;
+    let occupeesRowIndex = -1;
+    let restantesRowIndex = -1;
+    const valeurColIndex = 1; // Colonne B
+
+    for (let i = 0; i < 10; i++) {
+      const cellA = configSheet.getCell(i, 0);
+      const cellValue = cellA.value?.toString().toLowerCase().trim() || "";
+
+      if (cellValue === "stock_total_maison") stockTotalRowIndex = i;
+      if (cellValue === "places_occupees") occupeesRowIndex = i;
+      if (cellValue === "places_restantes") restantesRowIndex = i;
+    }
+
+    if (stockTotalRowIndex === -1 || occupeesRowIndex === -1 || restantesRowIndex === -1) {
+      console.error("Configuration incomplète dans Config");
+      return { success: false, error: "Configuration hébergement incomplète" };
+    }
+
+    // Lire Stock_Total_Maison
+    const stockTotalCell = configSheet.getCell(stockTotalRowIndex, valeurColIndex);
+    const stockTotal = parseInt(stockTotalCell.value?.toString() || "0", 10);
+
+    // Calculer les nouvelles valeurs
+    const newPlacesRestantes = Math.max(0, stockTotal - totalPlacesOccupees);
+
+    // Mettre à jour Places_Occupees et Places_Restantes
+    const occupeesCell = configSheet.getCell(occupeesRowIndex, valeurColIndex);
+    const restantesCell = configSheet.getCell(restantesRowIndex, valeurColIndex);
+
+    const oldOccupees = parseInt(occupeesCell.value?.toString() || "0", 10);
+    const oldRestantes = parseInt(restantesCell.value?.toString() || "0", 10);
+
+    occupeesCell.value = totalPlacesOccupees;
+    restantesCell.value = newPlacesRestantes;
+
+    await configSheet.saveUpdatedCells();
+
+    console.log("=== Mise à jour Config (RECALCUL) ===");
+    console.log("  Stock_Total_Maison:", stockTotal);
+    console.log("  Places_Occupees:", oldOccupees, "->", totalPlacesOccupees);
+    console.log("  Places_Restantes:", oldRestantes, "->", newPlacesRestantes);
+
+    return {
+      success: true,
+      placesRestantes: newPlacesRestantes,
+    };
+  } catch (error) {
+    console.error("Erreur lors du recalcul du stock:", error);
+    return {
+      success: false,
+      error: "Erreur lors du recalcul du stock d'hébergement",
     };
   }
 }
@@ -459,16 +665,18 @@ export interface RSVPReponse {
   prenom: string;
   email: string;
   presence: boolean;
+  accompagnant: boolean;
   prenomConjoint?: string;
   nombreEnfants: number;
   prenomsEnfants?: string;
   nbTotal: number;
-  regimeAlimentaire?: string;
-  hebergement: boolean;
-  nombrePlacesHebergement: number;
+  regimes?: string;    // Synthèse des régimes de tout le groupe (ex: "Moi: Vegan, Léo: Halal")
+  allergies?: string;  // Synthèse des allergies de tout le groupe (ex: "Moi: Noix, Clara: Gluten")
+  logement?: string;   // "Maison des Lavergne", "Tente dans le jardin", "Se débrouille"
 }
 
 // Ajout d'une réponse RSVP
+// IMPORTANT: Les clés de l'objet doivent correspondre EXACTEMENT aux en-têtes du Google Sheet
 export async function addRSVPReponse(
   reponse: RSVPReponse
 ): Promise<boolean> {
@@ -476,44 +684,54 @@ export async function addRSVPReponse(
     const doc = await getGoogleSheet();
     let rsvpSheet = doc.sheetsByTitle["RSVP_Reponses"];
 
-    // Créer l'onglet s'il n'existe pas
+    // Créer l'onglet s'il n'existe pas avec les bons en-têtes
     if (!rsvpSheet) {
+      console.log("Création de l'onglet RSVP_Reponses avec les en-têtes corrects...");
       rsvpSheet = await doc.addSheet({
         title: "RSVP_Reponses",
         headerValues: [
-          "date",
-          "inviteId",
-          "nom",
-          "prenom",
-          "email",
-          "presence",
-          "prenomConjoint",
-          "nombreEnfants",
-          "prenomsEnfants",
-          "nbTotal",
-          "regimeAlimentaire",
-          "hebergement",
-          "nombrePlacesHebergement",
+          "Date",
+          "ID_Invité",
+          "Nom",
+          "Prénom",
+          "Présence",
+          "Accompagnant",
+          "Prénom Conjoint",
+          "Nb Enfants",
+          "Prénoms Enfants",
+          "Régimes",
+          "Allergies",
+          "Logement",
+          "Nb_Total",
         ],
       });
     }
 
-    await rsvpSheet.addRow({
-      date: reponse.date,
-      inviteId: reponse.inviteId,
-      nom: reponse.nom,
-      prenom: reponse.prenom,
-      email: reponse.email,
-      presence: reponse.presence ? "Oui" : "Non",
-      prenomConjoint: reponse.prenomConjoint || "",
-      nombreEnfants: reponse.nombreEnfants.toString(),
-      prenomsEnfants: reponse.prenomsEnfants || "",
-      nbTotal: reponse.nbTotal.toString(),
-      regimeAlimentaire: reponse.regimeAlimentaire || "",
-      hebergement: reponse.hebergement ? "Oui" : "Non",
-      nombrePlacesHebergement: reponse.nombrePlacesHebergement.toString(),
-    });
+    // Préparer l'objet avec les clés correspondant EXACTEMENT aux en-têtes du Sheet
+    // Toutes les valeurs undefined/null sont remplacées par "" pour éviter les erreurs
+    const rowData: Record<string, string> = {
+      "Date": reponse.date || "",
+      "ID_Invité": reponse.inviteId || "",
+      "Nom": reponse.nom || "",
+      "Prénom": reponse.prenom || "",
+      "Présence": reponse.presence ? "Oui" : "Non",
+      "Accompagnant": reponse.accompagnant ? "Oui" : "Non",
+      "Prénom Conjoint": reponse.prenomConjoint || "",
+      "Nb Enfants": reponse.nombreEnfants?.toString() || "0",
+      "Prénoms Enfants": reponse.prenomsEnfants || "",
+      "Régimes": reponse.regimes || "",
+      "Allergies": reponse.allergies || "",
+      "Logement": reponse.logement || "Se débrouille",
+      "Nb_Total": reponse.nbTotal?.toString() || "1",
+    };
 
+    // Debug: afficher l'objet envoyé au Sheet
+    console.log("=== Objet envoyé au Sheet ===");
+    console.log(JSON.stringify(rowData, null, 2));
+
+    await rsvpSheet.addRow(rowData);
+
+    console.log("Ligne ajoutée avec succès dans RSVP_Reponses");
     return true;
   } catch (error) {
     console.error("Erreur lors de l'ajout de la réponse RSVP:", error);

@@ -13,6 +13,13 @@ interface InviteData {
   confirme: boolean;
 }
 
+// Type pour les besoins alimentaires d'une personne
+interface BesoinsAlimentaires {
+  regime: "normal" | "vegetarien" | "vegan" | "halal" | "autre";
+  regimeAutre: string;
+  allergies: string;
+}
+
 interface FormData {
   nom: string;
   prenom: string;
@@ -21,8 +28,12 @@ interface FormData {
   enfants: boolean;
   nombreEnfants: number;
   prenomsEnfants: string[];
-  regimeAlimentaire: string;
-  hebergement: boolean;
+  // Besoins alimentaires par personne
+  besoinsInvite: BesoinsAlimentaires;
+  besoinsConjoint: BesoinsAlimentaires;
+  besoinsEnfants: BesoinsAlimentaires[];
+  // Nouvelle logique hébergement
+  hebergementChoix: "lavergne" | "tente" | "autonome";
 }
 
 // Liste des hôtels partenaires
@@ -43,6 +54,100 @@ const hotelsPartenaires = [
     lien: "#",
   },
 ];
+
+// Options de régime alimentaire
+const regimeOptions = [
+  { value: "normal", label: "Pas de régime spécial" },
+  { value: "vegetarien", label: "Végétarien" },
+  { value: "vegan", label: "Vegan" },
+  { value: "halal", label: "Halal" },
+  { value: "autre", label: "Autre" },
+];
+
+// Valeurs par défaut pour les besoins alimentaires
+const defaultBesoins: BesoinsAlimentaires = {
+  regime: "normal",
+  regimeAutre: "",
+  allergies: "",
+};
+
+// Composant pour un bloc de besoins alimentaires
+function BlocBesoinsAlimentaires({
+  titre,
+  besoins,
+  onChange,
+}: {
+  titre: string;
+  besoins: BesoinsAlimentaires;
+  onChange: (besoins: BesoinsAlimentaires) => void;
+}) {
+  return (
+    <div className="p-4 bg-brand-light/30 rounded-lg space-y-4">
+      <h4 className="font-montserrat font-semibold text-brand-dark text-sm">
+        {titre}
+      </h4>
+
+      <div>
+        <label className="block text-sm font-medium text-brand-dark mb-1 font-montserrat">
+          Régime alimentaire
+        </label>
+        <select
+          value={besoins.regime}
+          onChange={(e) =>
+            onChange({
+              ...besoins,
+              regime: e.target.value as BesoinsAlimentaires["regime"],
+              regimeAutre: e.target.value !== "autre" ? "" : besoins.regimeAutre,
+            })
+          }
+          className="w-full px-4 py-3 border border-brand-light rounded-lg bg-white text-brand-dark
+                   font-montserrat focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20
+                   transition-all duration-200"
+        >
+          {regimeOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {besoins.regime === "autre" && (
+        <div>
+          <label className="block text-sm font-medium text-brand-dark mb-1 font-montserrat">
+            Préciser le régime
+          </label>
+          <input
+            type="text"
+            value={besoins.regimeAutre}
+            onChange={(e) =>
+              onChange({ ...besoins, regimeAutre: e.target.value })
+            }
+            className="w-full px-4 py-3 border border-brand-light rounded-lg bg-white text-brand-dark
+                     font-montserrat focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20
+                     transition-all duration-200"
+            placeholder="Précisez votre régime..."
+          />
+        </div>
+      )}
+
+      <div>
+        <label className="block text-sm font-medium text-brand-dark mb-1 font-montserrat">
+          Allergies alimentaires
+        </label>
+        <input
+          type="text"
+          value={besoins.allergies}
+          onChange={(e) => onChange({ ...besoins, allergies: e.target.value })}
+          className="w-full px-4 py-3 border border-brand-light rounded-lg bg-white text-brand-dark
+                   font-montserrat focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20
+                   transition-all duration-200"
+          placeholder="Arachides, fruits de mer, gluten..."
+        />
+      </div>
+    </div>
+  );
+}
 
 export default function RSVPForm() {
   const searchParams = useSearchParams();
@@ -68,8 +173,10 @@ export default function RSVPForm() {
     enfants: false,
     nombreEnfants: 1,
     prenomsEnfants: [""],
-    regimeAlimentaire: "",
-    hebergement: false,
+    besoinsInvite: { ...defaultBesoins },
+    besoinsConjoint: { ...defaultBesoins },
+    besoinsEnfants: [{ ...defaultBesoins }],
+    hebergementChoix: "autonome",
   });
 
   // Vérification de l'invité par ID
@@ -165,21 +272,25 @@ export default function RSVPForm() {
   // Mise à jour du nombre d'enfants
   const handleNombreEnfantsChange = (value: number) => {
     const newPrenomsEnfants = [...formData.prenomsEnfants];
+    const newBesoinsEnfants = [...formData.besoinsEnfants];
 
     if (value > newPrenomsEnfants.length) {
       // Ajouter des champs vides
       for (let i = newPrenomsEnfants.length; i < value; i++) {
         newPrenomsEnfants.push("");
+        newBesoinsEnfants.push({ ...defaultBesoins });
       }
     } else {
       // Réduire le tableau
       newPrenomsEnfants.splice(value);
+      newBesoinsEnfants.splice(value);
     }
 
     setFormData((prev) => ({
       ...prev,
       nombreEnfants: value,
       prenomsEnfants: newPrenomsEnfants,
+      besoinsEnfants: newBesoinsEnfants,
     }));
   };
 
@@ -193,6 +304,88 @@ export default function RSVPForm() {
     }));
   };
 
+  // Mise à jour des besoins d'un enfant
+  const handleBesoinsEnfantChange = (index: number, besoins: BesoinsAlimentaires) => {
+    const newBesoinsEnfants = [...formData.besoinsEnfants];
+    newBesoinsEnfants[index] = besoins;
+    setFormData((prev) => ({
+      ...prev,
+      besoinsEnfants: newBesoinsEnfants,
+    }));
+  };
+
+  // Fonction pour formater les RÉGIMES pour le Google Sheet (colonne Régimes)
+  const formatRegimesForSheet = (): string => {
+    const parts: string[] = [];
+
+    // Invité principal
+    const inviteRegime = formData.besoinsInvite.regime === "autre"
+      ? formData.besoinsInvite.regimeAutre
+      : regimeOptions.find((o) => o.value === formData.besoinsInvite.regime)?.label;
+
+    if (inviteRegime && inviteRegime !== "Pas de régime spécial") {
+      parts.push(`${invite?.prenom || "Moi"}: ${inviteRegime}`);
+    }
+
+    // Conjoint
+    if (formData.accompagnant && formData.prenomConjoint) {
+      const conjointRegime = formData.besoinsConjoint.regime === "autre"
+        ? formData.besoinsConjoint.regimeAutre
+        : regimeOptions.find((o) => o.value === formData.besoinsConjoint.regime)?.label;
+
+      if (conjointRegime && conjointRegime !== "Pas de régime spécial") {
+        parts.push(`${formData.prenomConjoint}: ${conjointRegime}`);
+      }
+    }
+
+    // Enfants
+    if (formData.enfants) {
+      formData.prenomsEnfants.forEach((prenom, index) => {
+        const enfantBesoins = formData.besoinsEnfants[index];
+        if (enfantBesoins) {
+          const enfantRegime = enfantBesoins.regime === "autre"
+            ? enfantBesoins.regimeAutre
+            : regimeOptions.find((o) => o.value === enfantBesoins.regime)?.label;
+          const enfantNom = prenom || `Enfant ${index + 1}`;
+
+          if (enfantRegime && enfantRegime !== "Pas de régime spécial") {
+            parts.push(`${enfantNom}: ${enfantRegime}`);
+          }
+        }
+      });
+    }
+
+    return parts.length > 0 ? parts.join(", ") : "";
+  };
+
+  // Fonction pour formater les ALLERGIES pour le Google Sheet (colonne Allergies)
+  const formatAllergiesForSheet = (): string => {
+    const parts: string[] = [];
+
+    // Invité principal
+    if (formData.besoinsInvite.allergies) {
+      parts.push(`${invite?.prenom || "Moi"}: ${formData.besoinsInvite.allergies}`);
+    }
+
+    // Conjoint
+    if (formData.accompagnant && formData.prenomConjoint && formData.besoinsConjoint.allergies) {
+      parts.push(`${formData.prenomConjoint}: ${formData.besoinsConjoint.allergies}`);
+    }
+
+    // Enfants
+    if (formData.enfants) {
+      formData.prenomsEnfants.forEach((prenom, index) => {
+        const enfantBesoins = formData.besoinsEnfants[index];
+        if (enfantBesoins && enfantBesoins.allergies) {
+          const enfantNom = prenom || `Enfant ${index + 1}`;
+          parts.push(`${enfantNom}: ${enfantBesoins.allergies}`);
+        }
+      });
+    }
+
+    return parts.length > 0 ? parts.join(", ") : "";
+  };
+
   // Soumission du formulaire
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -202,10 +395,35 @@ export default function RSVPForm() {
       return;
     }
 
+    // Validation: seuls nom et prénom sont obligatoires (déjà validés via invite)
+
     setIsSubmitting(true);
     setError(null);
 
     try {
+      // Calculer le nombre total de personnes
+      const nbTotal =
+        1 + // Invité principal
+        (formData.accompagnant && formData.prenomConjoint ? 1 : 0) +
+        (formData.enfants ? formData.nombreEnfants : 0);
+
+      // Déterminer si on demande l'hébergement à la Maison des Lavergne
+      const demandeHebergementLavergne = formData.hebergementChoix === "lavergne";
+
+      // Formater l'option logement pour le sheet
+      let logement = "";
+      switch (formData.hebergementChoix) {
+        case "lavergne":
+          logement = "Maison des Lavergne";
+          break;
+        case "tente":
+          logement = "Tente dans le jardin";
+          break;
+        case "autonome":
+          logement = "Se débrouille";
+          break;
+      }
+
       const response = await fetch("/api/rsvp", {
         method: "POST",
         headers: {
@@ -222,8 +440,11 @@ export default function RSVPForm() {
           enfants: formData.enfants,
           nombreEnfants: formData.nombreEnfants,
           prenomsEnfants: formData.prenomsEnfants,
-          regimeAlimentaire: formData.regimeAlimentaire,
-          hebergement: formData.hebergement,
+          regimes: formatRegimesForSheet(),     // Synthèse des régimes
+          allergies: formatAllergiesForSheet(), // Synthèse des allergies
+          hebergement: demandeHebergementLavergne, // true uniquement si "Maison des Lavergne"
+          logement,
+          nbTotal,
         }),
       });
 
@@ -261,19 +482,19 @@ export default function RSVPForm() {
     return (
       <SectionContainer id="rsvp" className="py-20 bg-brand-light">
         <div className="max-w-2xl mx-auto text-center">
-          <div className="bg-white rounded-2xl p-8 md:p-12 shadow-sm">
+          <div className="bg-white rounded-2xl p-8 md:p-12">
             <div className="text-6xl mb-6">🎉</div>
-            <h2 className="font-meow text-4xl md:text-5xl text-brand-primary mb-4">
+            <h2 className="font-oswald text-4xl md:text-5xl text-brand-primary mb-4 uppercase">
               Merci {invite?.prenom} !
             </h2>
-            <p className="text-brand-dark text-lg mb-6">
-              Votre présence a été confirmée avec succès.
+            <p className="text-brand-dark text-lg mb-6 font-montserrat">
+              Ta réponse a bien été enregistrée. On a vraiment hâte de te retrouver le 27 juin 2026 pour fêter ça !
             </p>
-            <p className="text-brand-dark/70">
-              Vous allez recevoir un email de confirmation avec le récapitulatif de vos choix.
+            <p className="text-brand-dark/70 font-montserrat">
+              Tu vas recevoir un email de confirmation avec le récapitulatif de tes choix.
             </p>
             <div className="mt-8 p-4 bg-brand-light rounded-xl">
-              <p className="text-brand-accent-deep font-semibold">
+              <p className="text-brand-accent-deep font-semibold font-montserrat">
                 Rendez-vous le 27 juin 2026 !
               </p>
             </div>
@@ -296,13 +517,13 @@ export default function RSVPForm() {
             Bonjour {invite.prenom} !
           </p>
         ) : (
-          <p className="text-brand-dark/70 text-center mb-8">
+          <p className="text-brand-dark/70 text-center mb-8 font-montserrat">
             Veuillez vous identifier pour confirmer votre présence
           </p>
         )}
 
-        <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm">
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="bg-white rounded-2xl p-6 md:p-8">
+          <form onSubmit={handleSubmit} className="space-y-6 font-montserrat">
             {/* Section Identification */}
             <div className="space-y-4">
               <h3 className="font-oswald text-xl text-brand-dark border-b border-brand-light pb-2">
@@ -315,7 +536,7 @@ export default function RSVPForm() {
                     htmlFor="nom"
                     className="block text-sm font-medium text-brand-dark mb-1"
                   >
-                    Nom
+                    Nom <span className="text-brand-alert">*</span>
                   </label>
                   <input
                     type="text"
@@ -330,6 +551,7 @@ export default function RSVPForm() {
                              disabled:bg-brand-light/50 disabled:cursor-not-allowed
                              transition-all duration-200"
                     placeholder="Votre nom"
+                    required
                   />
                 </div>
 
@@ -338,7 +560,7 @@ export default function RSVPForm() {
                     htmlFor="prenom"
                     className="block text-sm font-medium text-brand-dark mb-1"
                   >
-                    Prénom
+                    Prénom <span className="text-brand-alert">*</span>
                   </label>
                   <input
                     type="text"
@@ -353,6 +575,7 @@ export default function RSVPForm() {
                              disabled:bg-brand-light/50 disabled:cursor-not-allowed
                              transition-all duration-200"
                     placeholder="Votre prénom"
+                    required
                   />
                 </div>
               </div>
@@ -407,6 +630,7 @@ export default function RSVPForm() {
                           ...prev,
                           accompagnant: e.target.checked,
                           prenomConjoint: e.target.checked ? prev.prenomConjoint : "",
+                          besoinsConjoint: e.target.checked ? prev.besoinsConjoint : { ...defaultBesoins },
                         }))
                       }
                       className="w-5 h-5 rounded border-brand-light text-brand-primary
@@ -416,28 +640,41 @@ export default function RSVPForm() {
                   </label>
 
                   {formData.accompagnant && (
-                    <div className="ml-8">
-                      <label
-                        htmlFor="prenomConjoint"
-                        className="block text-sm font-medium text-brand-dark mb-1"
-                      >
-                        Prénom du conjoint
-                      </label>
-                      <input
-                        type="text"
-                        id="prenomConjoint"
-                        value={formData.prenomConjoint}
-                        onChange={(e) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            prenomConjoint: e.target.value,
-                          }))
-                        }
-                        className="w-full px-4 py-3 border border-brand-light rounded-lg bg-white text-brand-dark
-                                 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20
-                                 transition-all duration-200"
-                        placeholder="Prénom de votre conjoint(e)"
-                      />
+                    <div className="ml-8 space-y-4">
+                      <div>
+                        <label
+                          htmlFor="prenomConjoint"
+                          className="block text-sm font-medium text-brand-dark mb-1"
+                        >
+                          Prénom du conjoint
+                        </label>
+                        <input
+                          type="text"
+                          id="prenomConjoint"
+                          value={formData.prenomConjoint}
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              prenomConjoint: e.target.value,
+                            }))
+                          }
+                          className="w-full px-4 py-3 border border-brand-light rounded-lg bg-white text-brand-dark
+                                   focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20
+                                   transition-all duration-200"
+                          placeholder="Prénom de votre conjoint(e)"
+                        />
+                      </div>
+
+                      {/* Besoins alimentaires du conjoint */}
+                      {formData.prenomConjoint && (
+                        <BlocBesoinsAlimentaires
+                          titre={`Besoins spécifiques de ${formData.prenomConjoint}`}
+                          besoins={formData.besoinsConjoint}
+                          onChange={(besoins) =>
+                            setFormData((prev) => ({ ...prev, besoinsConjoint: besoins }))
+                          }
+                        />
+                      )}
                     </div>
                   )}
                 </div>
@@ -458,6 +695,7 @@ export default function RSVPForm() {
                           enfants: e.target.checked,
                           nombreEnfants: e.target.checked ? 1 : 0,
                           prenomsEnfants: e.target.checked ? [""] : [],
+                          besoinsEnfants: e.target.checked ? [{ ...defaultBesoins }] : [],
                         }))
                       }
                       className="w-5 h-5 rounded border-brand-light text-brand-primary
@@ -493,27 +731,38 @@ export default function RSVPForm() {
                         </select>
                       </div>
 
-                      <div className="space-y-3">
+                      <div className="space-y-6">
                         {formData.prenomsEnfants.map((prenom, index) => (
-                          <div key={index}>
-                            <label
-                              htmlFor={`enfant-${index}`}
-                              className="block text-sm font-medium text-brand-dark mb-1"
-                            >
-                              Prénom de l&apos;enfant {index + 1}
-                            </label>
-                            <input
-                              type="text"
-                              id={`enfant-${index}`}
-                              value={prenom}
-                              onChange={(e) =>
-                                handlePrenomEnfantChange(index, e.target.value)
-                              }
-                              className="w-full px-4 py-3 border border-brand-light rounded-lg bg-white text-brand-dark
-                                       focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20
-                                       transition-all duration-200"
-                              placeholder={`Prénom de l'enfant ${index + 1}`}
-                            />
+                          <div key={index} className="space-y-3">
+                            <div>
+                              <label
+                                htmlFor={`enfant-${index}`}
+                                className="block text-sm font-medium text-brand-dark mb-1"
+                              >
+                                Prénom de l&apos;enfant {index + 1}
+                              </label>
+                              <input
+                                type="text"
+                                id={`enfant-${index}`}
+                                value={prenom}
+                                onChange={(e) =>
+                                  handlePrenomEnfantChange(index, e.target.value)
+                                }
+                                className="w-full px-4 py-3 border border-brand-light rounded-lg bg-white text-brand-dark
+                                         focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20
+                                         transition-all duration-200"
+                                placeholder={`Prénom de l'enfant ${index + 1}`}
+                              />
+                            </div>
+
+                            {/* Besoins alimentaires de l'enfant */}
+                            {prenom && (
+                              <BlocBesoinsAlimentaires
+                                titre={`Besoins spécifiques de ${prenom}`}
+                                besoins={formData.besoinsEnfants[index] || defaultBesoins}
+                                onChange={(besoins) => handleBesoinsEnfantChange(index, besoins)}
+                              />
+                            )}
                           </div>
                         ))}
                       </div>
@@ -521,35 +770,19 @@ export default function RSVPForm() {
                   )}
                 </div>
 
-                {/* Section Régime Alimentaire */}
+                {/* Section Besoins Alimentaires - Invité Principal */}
                 <div className="space-y-4">
                   <h3 className="font-oswald text-xl text-brand-dark border-b border-brand-light pb-2">
-                    Régime alimentaire
+                    Vos besoins alimentaires
                   </h3>
 
-                  <div>
-                    <label
-                      htmlFor="regimeAlimentaire"
-                      className="block text-sm font-medium text-brand-dark mb-1"
-                    >
-                      Allergies ou régimes particuliers (pour tout le groupe)
-                    </label>
-                    <textarea
-                      id="regimeAlimentaire"
-                      value={formData.regimeAlimentaire}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          regimeAlimentaire: e.target.value,
-                        }))
-                      }
-                      rows={3}
-                      className="w-full px-4 py-3 border border-brand-light rounded-lg bg-white text-brand-dark
-                               focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20
-                               transition-all duration-200 resize-none"
-                      placeholder="Végétarien, sans gluten, allergie aux fruits de mer..."
-                    />
-                  </div>
+                  <BlocBesoinsAlimentaires
+                    titre={`Besoins spécifiques de ${invite.prenom}`}
+                    besoins={formData.besoinsInvite}
+                    onChange={(besoins) =>
+                      setFormData((prev) => ({ ...prev, besoinsInvite: besoins }))
+                    }
+                  />
                 </div>
 
                 {/* Section Hébergement */}
@@ -558,38 +791,85 @@ export default function RSVPForm() {
                     Hébergement
                   </h3>
 
-                  {hebergementDisponible ? (
-                    <>
-                      <div className="p-4 bg-brand-light/50 rounded-lg">
-                        <p className="text-brand-dark text-sm">
-                          <span className="font-semibold">{placesRestantes} places</span> encore
-                          disponibles chez Granny
+                  <p className="text-brand-dark/70 text-sm mb-4">
+                    Comment souhaitez-vous vous loger pour la nuit ?
+                  </p>
+
+                  <div className="space-y-3">
+                    {/* Option 1: Maison des Lavergne (si disponible) */}
+                    {hebergementDisponible && placesRestantes > 0 && (
+                      <label className="flex items-start gap-3 p-4 border border-brand-light rounded-lg cursor-pointer hover:border-brand-primary/50 transition-colors">
+                        <input
+                          type="radio"
+                          name="hebergement"
+                          value="lavergne"
+                          checked={formData.hebergementChoix === "lavergne"}
+                          onChange={() =>
+                            setFormData((prev) => ({ ...prev, hebergementChoix: "lavergne" }))
+                          }
+                          className="mt-1 w-5 h-5 text-brand-primary focus:ring-brand-primary"
+                        />
+                        <div>
+                          <span className="text-brand-dark font-medium">
+                            Dormir à la Maison des Lavergne
+                          </span>
+                          <p className="text-brand-dark/60 text-sm mt-1">
+                            {placesRestantes} place{placesRestantes > 1 ? "s" : ""} disponible{placesRestantes > 1 ? "s" : ""}
+                          </p>
+                        </div>
+                      </label>
+                    )}
+
+                    {/* Option 2: Tente dans le jardin */}
+                    <label className="flex items-start gap-3 p-4 border border-brand-light rounded-lg cursor-pointer hover:border-brand-primary/50 transition-colors">
+                      <input
+                        type="radio"
+                        name="hebergement"
+                        value="tente"
+                        checked={formData.hebergementChoix === "tente"}
+                        onChange={() =>
+                          setFormData((prev) => ({ ...prev, hebergementChoix: "tente" }))
+                        }
+                        className="mt-1 w-5 h-5 text-brand-primary focus:ring-brand-primary"
+                      />
+                      <div>
+                        <span className="text-brand-dark font-medium">
+                          Planter la tente dans le jardin
+                        </span>
+                        <p className="text-brand-dark/60 text-sm mt-1">
+                          Espace disponible pour les campeurs
                         </p>
                       </div>
+                    </label>
 
-                      <label className="flex items-center gap-3 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={formData.hebergement}
-                          onChange={(e) =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              hebergement: e.target.checked,
-                            }))
-                          }
-                          className="w-5 h-5 rounded border-brand-light text-brand-primary
-                                   focus:ring-brand-primary focus:ring-offset-0"
-                        />
-                        <span className="text-brand-dark">Dormir chez Granny</span>
-                      </label>
-                    </>
-                  ) : (
-                    <div className="p-4 bg-brand-alert/10 rounded-lg">
-                      <p className="text-brand-alert font-medium mb-3">
-                        Hébergement chez Granny complet
-                      </p>
-                      <p className="text-brand-dark/70 text-sm mb-4">
-                        Voici quelques hôtels à proximité :
+                    {/* Option 3: Je me débrouille */}
+                    <label className="flex items-start gap-3 p-4 border border-brand-light rounded-lg cursor-pointer hover:border-brand-primary/50 transition-colors">
+                      <input
+                        type="radio"
+                        name="hebergement"
+                        value="autonome"
+                        checked={formData.hebergementChoix === "autonome"}
+                        onChange={() =>
+                          setFormData((prev) => ({ ...prev, hebergementChoix: "autonome" }))
+                        }
+                        className="mt-1 w-5 h-5 text-brand-primary focus:ring-brand-primary"
+                      />
+                      <div>
+                        <span className="text-brand-dark font-medium">
+                          Je me débrouille pour me loger
+                        </span>
+                        <p className="text-brand-dark/60 text-sm mt-1">
+                          Hôtel, famille, amis...
+                        </p>
+                      </div>
+                    </label>
+                  </div>
+
+                  {/* Liste des hôtels si autonome */}
+                  {formData.hebergementChoix === "autonome" && (
+                    <div className="mt-4 p-4 bg-brand-light/50 rounded-lg">
+                      <p className="text-brand-dark font-medium mb-3 text-sm">
+                        Quelques hôtels à proximité :
                       </p>
                       <ul className="space-y-2">
                         {hotelsPartenaires.map((hotel, index) => (
@@ -607,6 +887,15 @@ export default function RSVPForm() {
                           </li>
                         ))}
                       </ul>
+                    </div>
+                  )}
+
+                  {/* Message si hébergement complet */}
+                  {!hebergementDisponible && (
+                    <div className="p-4 bg-brand-alert/10 rounded-lg">
+                      <p className="text-brand-alert font-medium text-sm">
+                        L&apos;hébergement à la Maison des Lavergne est complet.
+                      </p>
                     </div>
                   )}
                 </div>
