@@ -1,8 +1,24 @@
+import { Suspense } from "react";
 import HeroMurDesSouvenirs from "@/components/HeroMurDesSouvenirs";
 import Countdown from "@/components/Countdown";
 import FamilyPhotos from "@/components/FamilyPhotos";
 import MusicProgramming from "@/components/MusicProgramming";
+import RSVPForm from "@/components/RSVPForm";
 import SectionContainer from "@/components/SectionContainer";
+
+// Fallback pour le chargement du formulaire RSVP
+function RSVPFormFallback() {
+  return (
+    <SectionContainer id="rsvp" className="py-20 bg-brand-light">
+      <div className="max-w-2xl mx-auto text-center">
+        <div className="animate-pulse">
+          <div className="h-12 bg-brand-dark/10 rounded-lg w-3/4 mx-auto mb-8"></div>
+          <div className="h-6 bg-brand-dark/10 rounded w-1/2 mx-auto"></div>
+        </div>
+      </div>
+    </SectionContainer>
+  );
+}
 
 export default function Home() {
   return (
@@ -19,16 +35,10 @@ export default function Home() {
       {/* Programmation Musicale - La Scène de Granny */}
       <MusicProgramming />
 
-      <SectionContainer id="rsvp" className="py-20 bg-brand-light">
-        <div className="max-w-2xl mx-auto text-center">
-          <h2 className="font-serif text-4xl md:text-5xl text-brand-dark mb-8">
-            Confirmer votre présence
-          </h2>
-          <p className="text-brand-dark/70 mb-8">
-            Formulaire RSVP à implémenter avec ID unique...
-          </p>
-        </div>
-      </SectionContainer>
+      {/* Formulaire RSVP - Confirmation de présence */}
+      <Suspense fallback={<RSVPFormFallback />}>
+        <RSVPForm />
+      </Suspense>
 
       <SectionContainer id="logistique" className="py-20 bg-brand-accent-deep">
         <div className="max-w-4xl mx-auto text-center">
