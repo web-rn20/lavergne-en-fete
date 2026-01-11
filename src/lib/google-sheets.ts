@@ -675,7 +675,10 @@ export interface RSVPReponse {
   logement?: string;   // "Maison des Lavergne", "Tente dans le jardin", "Se débrouille"
 }
 
-// Ajout d'une réponse RSVP
+// Ajout ou mise à jour d'une réponse RSVP
+// LOGIQUE INTELLIGENTE:
+//   - Si l'ID_Invité existe déjà → mise à jour de la ligne existante
+//   - Si l'ID_Invité n'existe pas → ajout d'une nouvelle ligne en bas avec addRow
 // IMPORTANT: Les clés de l'objet doivent correspondre EXACTEMENT aux en-têtes du Google Sheet
 export async function addRSVPReponse(
   reponse: RSVPReponse
@@ -726,15 +729,59 @@ export async function addRSVPReponse(
     };
 
     // Debug: afficher l'objet envoyé au Sheet
-    console.log("=== Objet envoyé au Sheet ===");
+    console.log("=== Objet RSVP préparé ===");
     console.log(JSON.stringify(rowData, null, 2));
 
-    await rsvpSheet.addRow(rowData);
+    // LOGIQUE D'ÉCRITURE INTELLIGENTE:
+    // Chercher si l'ID_Invité existe déjà dans RSVP_Reponses
+    const rows = await rsvpSheet.getRows();
+    const searchId = (reponse.inviteId || "").toLowerCase().trim();
 
-    console.log("Ligne ajoutée avec succès dans RSVP_Reponses");
+    let existingRow: GoogleSpreadsheetRow | undefined = undefined;
+
+    // Ne chercher que si l'inviteId est fourni et non vide
+    if (searchId) {
+      existingRow = rows.find((row) => {
+        const rowId = row.get("ID_Invité") || row.get("ID_Invite") || "";
+        return rowId.toString().toLowerCase().trim() === searchId;
+      });
+    }
+
+    const idExiste = existingRow !== undefined;
+
+    // Log de sécurité pour traçabilité
+    console.log(idExiste ? "Mise à jour de la ligne existante" : "Ajout d'une nouvelle ligne");
+
+    if (idExiste && existingRow) {
+      // MISE À JOUR de la ligne existante
+      console.log("=== Mise à jour de la réponse existante pour ID:", searchId, "===");
+
+      // Mettre à jour chaque champ de la ligne
+      existingRow.set("Date", rowData["Date"]);
+      existingRow.set("Nom", rowData["Nom"]);
+      existingRow.set("Prénom", rowData["Prénom"]);
+      existingRow.set("Présence", rowData["Présence"]);
+      existingRow.set("Accompagnant", rowData["Accompagnant"]);
+      existingRow.set("Prénom Conjoint", rowData["Prénom Conjoint"]);
+      existingRow.set("Nb Enfants", rowData["Nb Enfants"]);
+      existingRow.set("Prénoms Enfants", rowData["Prénoms Enfants"]);
+      existingRow.set("Régimes", rowData["Régimes"]);
+      existingRow.set("Allergies", rowData["Allergies"]);
+      existingRow.set("Logement", rowData["Logement"]);
+      existingRow.set("Nb_Total", rowData["Nb_Total"]);
+
+      await existingRow.save();
+      console.log("Ligne mise à jour avec succès dans RSVP_Reponses");
+    } else {
+      // AJOUT d'une nouvelle ligne en bas du tableau avec addRow
+      console.log("=== Ajout d'une nouvelle ligne dans RSVP_Reponses ===");
+      await rsvpSheet.addRow(rowData);
+      console.log("Nouvelle ligne ajoutée avec succès dans RSVP_Reponses");
+    }
+
     return true;
   } catch (error) {
-    console.error("Erreur lors de l'ajout de la réponse RSVP:", error);
+    console.error("Erreur lors de l'ajout/mise à jour de la réponse RSVP:", error);
     return false;
   }
 }
