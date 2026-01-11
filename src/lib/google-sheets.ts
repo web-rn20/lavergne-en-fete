@@ -79,9 +79,28 @@ export async function getGoogleSheet(): Promise<GoogleSpreadsheet> {
   return doc;
 }
 
-// Helper pour récupérer l'ID d'une ligne (supporte "id" et "ID_Invité")
+// Helper pour récupérer l'ID d'une ligne (supporte plusieurs variantes de noms de colonnes)
 function getRowId(row: GoogleSpreadsheetRow): string | undefined {
-  return row.get("ID_Invité") || row.get("id") || row.get("ID_Invite");
+  // Variantes possibles du nom de colonne ID (avec/sans accents, différentes casses)
+  const idVariants = [
+    "ID_Invité",
+    "ID_Invite",
+    "id_invité",
+    "id_invite",
+    "Id_Invite",
+    "id",
+    "ID",
+    "Id",
+  ];
+
+  for (const variant of idVariants) {
+    const value = row.get(variant);
+    if (value !== undefined && value !== null && value !== "") {
+      return value.toString().trim();
+    }
+  }
+
+  return undefined;
 }
 
 // Recherche d'un invité par son ID unique
@@ -89,18 +108,33 @@ export async function findInviteById(
   inviteId: string
 ): Promise<Invite | null> {
   try {
+    // Normalisation de l'ID recherché
+    const searchId = inviteId.toLowerCase().trim();
+    console.log("[findInviteById] Recherche de l'ID:", searchId);
+
     const doc = await getGoogleSheet();
     const sheet = doc.sheetsByTitle["Liste_Invites"] || doc.sheetsByIndex[0];
+    console.log("[findInviteById] Feuille utilisée:", sheet.title);
 
     const rows = await sheet.getRows();
-    const row = rows.find(
-      (r: GoogleSpreadsheetRow) =>
-        getRowId(r)?.toString().toLowerCase().trim() === inviteId.toLowerCase().trim()
-    );
+    console.log("[findInviteById] Nombre de lignes:", rows.length);
+
+    // Debug: afficher les IDs disponibles (uniquement les 5 premiers pour éviter les logs trop longs)
+    const availableIds = rows.slice(0, 5).map((r) => getRowId(r)).filter(Boolean);
+    console.log("[findInviteById] Premiers IDs disponibles:", availableIds);
+
+    const row = rows.find((r: GoogleSpreadsheetRow) => {
+      const rowId = getRowId(r);
+      if (!rowId) return false;
+      return rowId.toLowerCase().trim() === searchId;
+    });
 
     if (!row) {
+      console.log("[findInviteById] Aucun invité trouvé pour:", searchId);
       return null;
     }
+
+    console.log("[findInviteById] Invité trouvé!");
 
     return {
       id: getRowId(row) || "",
