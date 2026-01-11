@@ -1,6 +1,7 @@
 import HeroMurDesSouvenirs from "@/components/HeroMurDesSouvenirs";
 import Countdown from "@/components/Countdown";
 import FamilyPhotos from "@/components/FamilyPhotos";
+import MusicProgramming from "@/components/MusicProgramming";
 import SectionContainer from "@/components/SectionContainer";
 
 export default function Home() {
@@ -15,16 +16,8 @@ export default function Home() {
       {/* Photos de Famille - Section avec cartes animées */}
       <FamilyPhotos />
 
-      <SectionContainer id="programme" className="py-20 bg-brand-dark">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="font-serif text-4xl md:text-5xl text-brand-light mb-8">
-            Programme Musical
-          </h2>
-          <p className="text-brand-light/70">
-            Section musique à implémenter (Watts UP, Steliophonie, Groupe mystère)...
-          </p>
-        </div>
-      </SectionContainer>
+      {/* Programmation Musicale - La Scène de Granny */}
+      <MusicProgramming />
 
       <SectionContainer id="rsvp" className="py-20 bg-brand-light">
         <div className="max-w-2xl mx-auto text-center">
