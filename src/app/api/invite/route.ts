@@ -8,6 +8,9 @@ export async function GET(request: NextRequest) {
     const nom = searchParams.get("nom");
     const prenom = searchParams.get("prenom");
 
+    // Log pour debugging sur Vercel
+    console.log("API call received for ID:", id, "| nom:", nom, "| prenom:", prenom);
+
     // Recherche par ID
     if (id) {
       const invite = await findInviteById(id);

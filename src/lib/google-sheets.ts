@@ -28,13 +28,25 @@ export interface Invite {
 // Création du client JWT pour l'authentification
 function getJWT(): JWT {
   const serviceAccountEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+  // IMPORTANT: Le .replace(/\\n/g, "\n") corrige le format de la clé privée sur Vercel
+  // car les variables d'environnement encodent les sauts de ligne comme \\n
   const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n");
 
-  if (!serviceAccountEmail || !privateKey) {
+  if (!serviceAccountEmail) {
+    console.error("ERREUR: GOOGLE_SERVICE_ACCOUNT_EMAIL manquante");
     throw new Error(
-      "Variables d'environnement Google manquantes. Vérifiez GOOGLE_SERVICE_ACCOUNT_EMAIL et GOOGLE_PRIVATE_KEY."
+      "Variable d'environnement GOOGLE_SERVICE_ACCOUNT_EMAIL manquante. Vérifiez la configuration Vercel."
     );
   }
+
+  if (!privateKey) {
+    console.error("ERREUR: GOOGLE_PRIVATE_KEY manquante");
+    throw new Error(
+      "Variable d'environnement GOOGLE_PRIVATE_KEY manquante. Vérifiez la configuration Vercel."
+    );
+  }
+
+  console.log("JWT créé pour:", serviceAccountEmail);
 
   return new JWT({
     email: serviceAccountEmail,
@@ -48,14 +60,19 @@ export async function getGoogleSheet(): Promise<GoogleSpreadsheet> {
   const spreadsheetId = process.env.GOOGLE_SPREADSHEET_ID;
 
   if (!spreadsheetId) {
+    console.error("ERREUR: Variable d'environnement GOOGLE_SPREADSHEET_ID manquante. Veuillez la configurer dans les settings Vercel.");
     throw new Error(
       "Variable d'environnement GOOGLE_SPREADSHEET_ID manquante."
     );
   }
 
+  console.log("Connexion à Google Sheets avec ID:", spreadsheetId.substring(0, 8) + "...");
+
   const jwt = getJWT();
   const doc = new GoogleSpreadsheet(spreadsheetId, jwt);
   await doc.loadInfo();
+
+  console.log("Connexion Google Sheets réussie, document:", doc.title);
 
   return doc;
 }

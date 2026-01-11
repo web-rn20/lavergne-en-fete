@@ -23,6 +23,7 @@ const bands: Band[] = [
     image: '/photos/musique/steliophonie.jpg',
     badges: ['Rock'],
     description: "Un groupe de rock survitaminé prêt à faire vibrer les murs de chez Granny avec une énergie contagieuse.",
+    isPlaceholder: true,
   },
   {
     name: 'À venir...',

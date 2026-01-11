@@ -26,6 +26,9 @@ export async function POST(request: NextRequest) {
   try {
     const body: RSVPRequestBody = await request.json();
 
+    // Log pour debugging sur Vercel
+    console.log("RSVP API call received for inviteId:", body.inviteId);
+
     // Validation des données requises
     if (!body.inviteId || !body.nom || !body.prenom || !body.email) {
       return NextResponse.json(
