@@ -26,6 +26,11 @@ export async function POST(request: NextRequest) {
   try {
     const body: RSVPRequestBody = await request.json();
 
+    // Log neutre pour debugging (pas de données sensibles en production)
+    if (process.env.NODE_ENV !== "production") {
+      console.log("API /rsvp appelée", { presence: body.presence, hebergement: body.hebergement });
+    }
+
     // Validation des données requises
     if (!body.inviteId || !body.nom || !body.prenom || !body.email) {
       return NextResponse.json(

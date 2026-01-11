@@ -8,16 +8,23 @@ export async function GET(request: NextRequest) {
     const nom = searchParams.get("nom");
     const prenom = searchParams.get("prenom");
 
+    // Log pour debugging sur Vercel (mode recherche uniquement, pas de données sensibles)
+    console.log("[API /invite] Appel reçu - mode:", id ? "ID" : (nom && prenom ? "NOM" : "INVALIDE"));
+
     // Recherche par ID
     if (id) {
+      console.log("[API /invite] Recherche par ID, longueur:", id.length);
       const invite = await findInviteById(id);
 
       if (!invite) {
+        console.log("[API /invite] Résultat: non trouvé");
         return NextResponse.json(
           { success: false, error: "Invité non trouvé" },
           { status: 404 }
         );
       }
+
+      console.log("[API /invite] Résultat: trouvé");
 
       // Ne pas renvoyer l'email complet pour des raisons de confidentialité
       return NextResponse.json({

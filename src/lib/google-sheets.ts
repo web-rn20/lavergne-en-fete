@@ -28,12 +28,26 @@ export interface Invite {
 // Création du client JWT pour l'authentification
 function getJWT(): JWT {
   const serviceAccountEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+  // IMPORTANT: Le .replace(/\\n/g, "\n") corrige le format de la clé privée sur Vercel
+  // car les variables d'environnement encodent les sauts de ligne comme \\n
   const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n");
 
-  if (!serviceAccountEmail || !privateKey) {
+  if (!serviceAccountEmail) {
+    console.error("ERREUR: GOOGLE_SERVICE_ACCOUNT_EMAIL manquante");
     throw new Error(
-      "Variables d'environnement Google manquantes. Vérifiez GOOGLE_SERVICE_ACCOUNT_EMAIL et GOOGLE_PRIVATE_KEY."
+      "Variable d'environnement GOOGLE_SERVICE_ACCOUNT_EMAIL manquante. Vérifiez la configuration Vercel."
     );
+  }
+
+  if (!privateKey) {
+    console.error("ERREUR: GOOGLE_PRIVATE_KEY manquante");
+    throw new Error(
+      "Variable d'environnement GOOGLE_PRIVATE_KEY manquante. Vérifiez la configuration Vercel."
+    );
+  }
+
+  if (process.env.NODE_ENV !== "production") {
+    console.log("Authentification Google Sheets initialisée.");
   }
 
   return new JWT({
@@ -48,6 +62,7 @@ export async function getGoogleSheet(): Promise<GoogleSpreadsheet> {
   const spreadsheetId = process.env.GOOGLE_SPREADSHEET_ID;
 
   if (!spreadsheetId) {
+    console.error("ERREUR: Variable d'environnement GOOGLE_SPREADSHEET_ID manquante. Veuillez la configurer dans les settings Vercel.");
     throw new Error(
       "Variable d'environnement GOOGLE_SPREADSHEET_ID manquante."
     );
@@ -57,12 +72,35 @@ export async function getGoogleSheet(): Promise<GoogleSpreadsheet> {
   const doc = new GoogleSpreadsheet(spreadsheetId, jwt);
   await doc.loadInfo();
 
+  if (process.env.NODE_ENV !== "production") {
+    console.log("Connexion Google Sheets réussie.");
+  }
+
   return doc;
 }
 
-// Helper pour récupérer l'ID d'une ligne (supporte "id" et "ID_Invité")
+// Helper pour récupérer l'ID d'une ligne (supporte plusieurs variantes de noms de colonnes)
 function getRowId(row: GoogleSpreadsheetRow): string | undefined {
-  return row.get("ID_Invité") || row.get("id") || row.get("ID_Invite");
+  // Variantes possibles du nom de colonne ID (avec/sans accents, différentes casses)
+  const idVariants = [
+    "ID_Invité",
+    "ID_Invite",
+    "id_invité",
+    "id_invite",
+    "Id_Invite",
+    "id",
+    "ID",
+    "Id",
+  ];
+
+  for (const variant of idVariants) {
+    const value = row.get(variant);
+    if (value !== undefined && value !== null && value !== "") {
+      return value.toString().trim();
+    }
+  }
+
+  return undefined;
 }
 
 // Recherche d'un invité par son ID unique
@@ -70,18 +108,33 @@ export async function findInviteById(
   inviteId: string
 ): Promise<Invite | null> {
   try {
+    // Normalisation de l'ID recherché
+    const searchId = inviteId.toLowerCase().trim();
+    console.log("[findInviteById] Recherche de l'ID:", searchId);
+
     const doc = await getGoogleSheet();
     const sheet = doc.sheetsByTitle["Liste_Invites"] || doc.sheetsByIndex[0];
+    console.log("[findInviteById] Feuille utilisée:", sheet.title);
 
     const rows = await sheet.getRows();
-    const row = rows.find(
-      (r: GoogleSpreadsheetRow) =>
-        getRowId(r)?.toString().toLowerCase().trim() === inviteId.toLowerCase().trim()
-    );
+    console.log("[findInviteById] Nombre de lignes:", rows.length);
+
+    // Debug: afficher les IDs disponibles (uniquement les 5 premiers pour éviter les logs trop longs)
+    const availableIds = rows.slice(0, 5).map((r) => getRowId(r)).filter(Boolean);
+    console.log("[findInviteById] Premiers IDs disponibles:", availableIds);
+
+    const row = rows.find((r: GoogleSpreadsheetRow) => {
+      const rowId = getRowId(r);
+      if (!rowId) return false;
+      return rowId.toLowerCase().trim() === searchId;
+    });
 
     if (!row) {
+      console.log("[findInviteById] Aucun invité trouvé pour:", searchId);
       return null;
     }
+
+    console.log("[findInviteById] Invité trouvé!");
 
     return {
       id: getRowId(row) || "",
