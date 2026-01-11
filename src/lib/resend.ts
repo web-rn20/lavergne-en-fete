@@ -210,17 +210,20 @@ export async function sendRSVPConfirmationEmail(data: RSVPEmailData): Promise<bo
 
 // Email récapitulatif pour les hôtes lors d'un nouveau RSVP
 export async function sendRSVPNotificationToHosts(data: RSVPEmailData): Promise<boolean> {
+  // Log de débogage (sans afficher les valeurs pour la sécurité)
+  console.log('Variables détectées - From:', !!process.env.RESEND_FROM_EMAIL, 'To Admin:', !!process.env.HOST_EMAIL, 'API Key:', !!process.env.RESEND_API_KEY);
+
   try {
     const resend = getResendClient();
     const fromEmail = process.env.RESEND_FROM_EMAIL;
-    const adminEmails = process.env.ADMIN_EMAILS?.split(",").map((e) => e.trim());
+    const hostEmails = process.env.HOST_EMAIL?.split(",").map((e) => e.trim());
 
     if (!fromEmail) {
       throw new Error("Variable d'environnement RESEND_FROM_EMAIL manquante.");
     }
 
-    if (!adminEmails || adminEmails.length === 0) {
-      console.warn("Aucun email admin configuré, notification ignorée.");
+    if (!hostEmails || hostEmails.length === 0) {
+      console.warn("Variable HOST_EMAIL non configurée, notification aux hôtes ignorée.");
       return true;
     }
 
@@ -287,7 +290,7 @@ export async function sendRSVPNotificationToHosts(data: RSVPEmailData): Promise<
 
     const { error } = await resend.emails.send({
       from: fromEmail,
-      to: adminEmails,
+      to: hostEmails,
       subject: `Nouveau RSVP : ${data.prenom} ${data.nom} (${data.nbTotal} pers.)`,
       html: `
         <!DOCTYPE html>
@@ -339,7 +342,7 @@ export async function sendAdminAlertEmail(invite: Invite): Promise<boolean> {
   try {
     const resend = getResendClient();
     const fromEmail = process.env.RESEND_FROM_EMAIL;
-    const adminEmails = process.env.ADMIN_EMAILS?.split(",").map((e) =>
+    const hostEmails = process.env.HOST_EMAIL?.split(",").map((e) =>
       e.trim()
     );
 
@@ -347,14 +350,14 @@ export async function sendAdminAlertEmail(invite: Invite): Promise<boolean> {
       throw new Error("Variable d'environnement RESEND_FROM_EMAIL manquante.");
     }
 
-    if (!adminEmails || adminEmails.length === 0) {
-      console.warn("Aucun email admin configuré, notification ignorée.");
+    if (!hostEmails || hostEmails.length === 0) {
+      console.warn("Variable HOST_EMAIL non configurée, notification ignorée.");
       return true;
     }
 
     const { error } = await resend.emails.send({
       from: fromEmail,
-      to: adminEmails,
+      to: hostEmails,
       subject: `Nouvelle inscription RSVP : ${invite.prenom} ${invite.nom}`,
       html: `
         <!DOCTYPE html>
