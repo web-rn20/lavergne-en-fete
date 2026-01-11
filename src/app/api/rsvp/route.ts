@@ -5,7 +5,7 @@ import {
   getPlacesRestantesFromConfig,
   recalculerStockHebergement,
 } from "@/lib/google-sheets";
-import { sendRSVPConfirmationEmail } from "@/lib/resend";
+import { sendRSVPConfirmationEmail, sendRSVPNotificationToHosts } from "@/lib/resend";
 
 // Interface flexible - seuls nom et prenom sont vraiment obligatoires
 interface RSVPRequestBody {
@@ -174,28 +174,45 @@ export async function POST(request: NextRequest) {
       console.warn("Attention: Recalcul du stock échoué:", recalculResult.error);
     }
 
-    // Envoi de l'email de confirmation (si email fourni)
+    // Données communes pour les emails
+    const regimeEtAllergies = [regimes, allergies].filter(s => s).join(" | ");
+    const emailData = {
+      prenom: body.prenom.trim(),
+      nom: body.nom.trim(),
+      email,
+      prenomConjoint: accompagnant ? prenomConjoint : undefined,
+      nombreEnfants: enfants ? nombreEnfants : 0,
+      prenomsEnfants: prenomsEnfantsStr,
+      nbTotal,
+      regimeAlimentaire: regimeEtAllergies,
+      hebergementLabel: logement,
+    };
+
+    // Envoi de l'email de confirmation à l'invité (si email fourni)
     let emailSuccess = false;
     if (email) {
-      // Combiner régimes et allergies pour l'email
-      const regimeEtAllergies = [regimes, allergies].filter(s => s).join(" | ");
-      emailSuccess = await sendRSVPConfirmationEmail({
-        prenom: body.prenom.trim(),
-        nom: body.nom.trim(),
-        email,
-        prenomConjoint: accompagnant ? prenomConjoint : undefined,
-        nombreEnfants: enfants ? nombreEnfants : 0,
-        prenomsEnfants: prenomsEnfantsStr,
-        nbTotal,
-        regimeAlimentaire: regimeEtAllergies, // Combiné pour l'email
-        hebergementLabel: logement,
-      });
-
-      if (!emailSuccess) {
-        console.warn("L'email de confirmation n'a pas pu être envoyé");
-      } else {
-        console.log("Email de confirmation envoyé");
+      try {
+        emailSuccess = await sendRSVPConfirmationEmail(emailData);
+        if (!emailSuccess) {
+          console.warn("L'email de confirmation n'a pas pu être envoyé");
+        } else {
+          console.log("Email de confirmation envoyé à l'invité");
+        }
+      } catch (emailError) {
+        console.error("Erreur lors de l'envoi de l'email à l'invité:", emailError);
       }
+    }
+
+    // Envoi de la notification aux hôtes (indépendant de l'email invité)
+    try {
+      const hostNotificationSuccess = await sendRSVPNotificationToHosts(emailData);
+      if (!hostNotificationSuccess) {
+        console.warn("La notification aux hôtes n'a pas pu être envoyée");
+      } else {
+        console.log("Notification envoyée aux hôtes");
+      }
+    } catch (hostEmailError) {
+      console.error("Erreur lors de l'envoi de la notification aux hôtes:", hostEmailError);
     }
 
     return NextResponse.json({
