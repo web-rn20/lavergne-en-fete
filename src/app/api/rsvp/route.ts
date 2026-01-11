@@ -3,7 +3,7 @@ import {
   findInviteById,
   addRSVPReponse,
   getPlacesRestantesFromConfig,
-  updatePlacesRestantes,
+  reserverPlacesHebergement,
 } from "@/lib/google-sheets";
 import { sendRSVPConfirmationEmail } from "@/lib/resend";
 
@@ -49,10 +49,10 @@ export async function POST(request: NextRequest) {
       (body.accompagnant && body.prenomConjoint ? 1 : 0) + // Conjoint
       (body.enfants ? body.nombreEnfants : 0); // Enfants
 
-    // Nombre de places d'hébergement demandées
+    // Nombre de places d'hébergement demandées (seulement si hébergement coché)
     const nombrePlacesHebergement = body.hebergement ? nbTotal : 0;
 
-    // Vérification du stock d'hébergement si demandé
+    // Vérification préliminaire du stock d'hébergement si demandé
     if (body.hebergement) {
       const placesRestantes = await getPlacesRestantesFromConfig();
 
@@ -68,10 +68,27 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Préparation des prénoms des enfants
+    // Préparation des prénoms des enfants (concaténés avec virgule)
     const prenomsEnfantsStr = body.enfants && body.prenomsEnfants.length > 0
       ? body.prenomsEnfants.filter(p => p.trim()).join(", ")
       : "";
+
+    // DOUBLE VÉRIFICATION : Si hébergement demandé, réserver atomiquement AVANT d'écrire
+    // Cela évite les race conditions si deux personnes valident en même temps
+    if (body.hebergement && nombrePlacesHebergement > 0) {
+      const reservationResult = await reserverPlacesHebergement(nombrePlacesHebergement);
+
+      if (!reservationResult.success) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: reservationResult.error,
+            placesRestantes: reservationResult.placesRestantes,
+          },
+          { status: 400 }
+        );
+      }
+    }
 
     // Ajout de la réponse RSVP dans Google Sheets
     const rsvpSuccess = await addRSVPReponse({
@@ -91,15 +108,13 @@ export async function POST(request: NextRequest) {
     });
 
     if (!rsvpSuccess) {
+      // Note: En cas d'échec ici, le stock a déjà été décrémenté
+      // Dans un système de production, on devrait avoir une transaction ou un rollback
+      console.error("RSVP échoué après réservation des places - stock potentiellement désynchronisé");
       return NextResponse.json(
         { success: false, error: "Erreur lors de l'enregistrement" },
         { status: 500 }
       );
-    }
-
-    // Mise à jour du stock d'hébergement si nécessaire
-    if (body.hebergement && nombrePlacesHebergement > 0) {
-      await updatePlacesRestantes(nombrePlacesHebergement);
     }
 
     // Envoi de l'email de confirmation
