@@ -482,16 +482,16 @@ export default function RSVPForm() {
     return (
       <SectionContainer id="rsvp" className="py-20 bg-brand-light">
         <div className="max-w-2xl mx-auto text-center">
-          <div className="bg-white rounded-2xl p-8 md:p-12 shadow-sm">
+          <div className="bg-white rounded-2xl p-8 md:p-12">
             <div className="text-6xl mb-6">🎉</div>
-            <h2 className="font-meow text-4xl md:text-5xl text-brand-primary mb-4">
+            <h2 className="font-oswald text-4xl md:text-5xl text-brand-primary mb-4 uppercase">
               Merci {invite?.prenom} !
             </h2>
             <p className="text-brand-dark text-lg mb-6 font-montserrat">
-              Votre présence a été confirmée avec succès.
+              Ta réponse a bien été enregistrée. On a vraiment hâte de te retrouver le 27 juin 2026 pour fêter ça !
             </p>
             <p className="text-brand-dark/70 font-montserrat">
-              Vous allez recevoir un email de confirmation avec le récapitulatif de vos choix.
+              Tu vas recevoir un email de confirmation avec le récapitulatif de tes choix.
             </p>
             <div className="mt-8 p-4 bg-brand-light rounded-xl">
               <p className="text-brand-accent-deep font-semibold font-montserrat">
@@ -522,7 +522,7 @@ export default function RSVPForm() {
           </p>
         )}
 
-        <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm">
+        <div className="bg-white rounded-2xl p-6 md:p-8">
           <form onSubmit={handleSubmit} className="space-y-6 font-montserrat">
             {/* Section Identification */}
             <div className="space-y-4">
