@@ -5,7 +5,7 @@ import {
   getPlacesRestantesFromConfig,
   recalculerStockHebergement,
 } from "@/lib/google-sheets";
-import { sendRSVPConfirmationEmail, sendRSVPNotificationToHosts } from "@/lib/resend";
+import { sendRSVPConfirmationEmail, sendRSVPNotificationToHosts } from "@/lib/mailer";
 
 // Interface flexible - seuls nom et prenom sont vraiment obligatoires
 interface RSVPRequestBody {
