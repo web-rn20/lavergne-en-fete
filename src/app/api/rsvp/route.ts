@@ -148,14 +148,13 @@ export async function POST(request: NextRequest) {
       prenom: body.prenom.trim(),
       email,
       presence,
-      prenomConjoint: accompagnant ? prenomConjoint : undefined,
+      accompagnant, // Nouveau champ pour la colonne "Accompagnant"
+      prenomConjoint: accompagnant ? prenomConjoint : "",
       nombreEnfants: enfants ? nombreEnfants : 0,
       prenomsEnfants: prenomsEnfantsStr,
       nbTotal,
       regimeAlimentaire,
-      hebergement,
-      hebergementLabel,
-      nombrePlacesHebergement,
+      hebergementLabel, // Contient le choix: "Dormir chez les Lavergne", "Tente dans le jardin", "Se débrouille"
     };
     console.log("Données RSVP:", JSON.stringify(rsvpData, null, 2));
 
@@ -183,8 +182,7 @@ export async function POST(request: NextRequest) {
         prenomsEnfants: prenomsEnfantsStr,
         nbTotal,
         regimeAlimentaire,
-        hebergement,
-        nombrePlacesHebergement,
+        hebergementLabel, // Le choix d'hébergement en texte
       });
 
       if (!emailSuccess) {

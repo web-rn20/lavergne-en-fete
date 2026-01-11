@@ -465,17 +465,17 @@ export interface RSVPReponse {
   prenom: string;
   email: string;
   presence: boolean;
+  accompagnant: boolean;
   prenomConjoint?: string;
   nombreEnfants: number;
   prenomsEnfants?: string;
   nbTotal: number;
   regimeAlimentaire?: string;
-  hebergement: boolean;
-  hebergementLabel?: string; // "Chez les Lavergne", "Tente dans le jardin", "Se débrouille"
-  nombrePlacesHebergement: number;
+  hebergementLabel?: string; // "Dormir chez les Lavergne", "Tente dans le jardin", "Se débrouille"
 }
 
 // Ajout d'une réponse RSVP
+// IMPORTANT: Les clés de l'objet doivent correspondre EXACTEMENT aux en-têtes du Google Sheet
 export async function addRSVPReponse(
   reponse: RSVPReponse
 ): Promise<boolean> {
@@ -483,46 +483,52 @@ export async function addRSVPReponse(
     const doc = await getGoogleSheet();
     let rsvpSheet = doc.sheetsByTitle["RSVP_Reponses"];
 
-    // Créer l'onglet s'il n'existe pas
+    // Créer l'onglet s'il n'existe pas avec les bons en-têtes
     if (!rsvpSheet) {
+      console.log("Création de l'onglet RSVP_Reponses avec les en-têtes corrects...");
       rsvpSheet = await doc.addSheet({
         title: "RSVP_Reponses",
         headerValues: [
-          "date",
-          "inviteId",
-          "nom",
-          "prenom",
-          "email",
-          "presence",
-          "prenomConjoint",
-          "nombreEnfants",
-          "prenomsEnfants",
-          "nbTotal",
-          "regimeAlimentaire",
-          "hebergement",
-          "hebergementLabel",
-          "nombrePlacesHebergement",
+          "Date",
+          "ID_Invité",
+          "Nom",
+          "Prénom",
+          "Présence",
+          "Accompagnant",
+          "Prénom Conjoint",
+          "Nb Enfants",
+          "Prénoms Enfants",
+          "Régimes et Allergies",
+          "Hébergement",
+          "Nb_Total",
         ],
       });
     }
 
-    await rsvpSheet.addRow({
-      date: reponse.date,
-      inviteId: reponse.inviteId,
-      nom: reponse.nom,
-      prenom: reponse.prenom,
-      email: reponse.email,
-      presence: reponse.presence ? "Oui" : "Non",
-      prenomConjoint: reponse.prenomConjoint || "",
-      nombreEnfants: reponse.nombreEnfants.toString(),
-      prenomsEnfants: reponse.prenomsEnfants || "",
-      nbTotal: reponse.nbTotal.toString(),
-      regimeAlimentaire: reponse.regimeAlimentaire || "",
-      hebergement: reponse.hebergement ? "Oui" : "Non",
-      hebergementLabel: reponse.hebergementLabel || "",
-      nombrePlacesHebergement: reponse.nombrePlacesHebergement.toString(),
-    });
+    // Préparer l'objet avec les clés correspondant EXACTEMENT aux en-têtes du Sheet
+    // Toutes les valeurs undefined/null sont remplacées par "" pour éviter les erreurs
+    const rowData: Record<string, string> = {
+      "Date": reponse.date || "",
+      "ID_Invité": reponse.inviteId || "",
+      "Nom": reponse.nom || "",
+      "Prénom": reponse.prenom || "",
+      "Présence": reponse.presence ? "Oui" : "Non",
+      "Accompagnant": reponse.accompagnant ? "Oui" : "Non",
+      "Prénom Conjoint": reponse.prenomConjoint || "",
+      "Nb Enfants": reponse.nombreEnfants?.toString() || "0",
+      "Prénoms Enfants": reponse.prenomsEnfants || "",
+      "Régimes et Allergies": reponse.regimeAlimentaire || "",
+      "Hébergement": reponse.hebergementLabel || "Se débrouille",
+      "Nb_Total": reponse.nbTotal?.toString() || "1",
+    };
 
+    // Debug: afficher l'objet envoyé au Sheet
+    console.log("=== Objet envoyé au Sheet ===");
+    console.log(JSON.stringify(rowData, null, 2));
+
+    await rsvpSheet.addRow(rowData);
+
+    console.log("Ligne ajoutée avec succès dans RSVP_Reponses");
     return true;
   } catch (error) {
     console.error("Erreur lors de l'ajout de la réponse RSVP:", error);
