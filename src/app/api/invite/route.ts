@@ -8,8 +8,10 @@ export async function GET(request: NextRequest) {
     const nom = searchParams.get("nom");
     const prenom = searchParams.get("prenom");
 
-    // Log pour debugging sur Vercel
-    console.log("API call received for ID:", id, "| nom:", nom, "| prenom:", prenom);
+    // Log neutre pour debugging (pas de données sensibles en production)
+    if (process.env.NODE_ENV !== "production") {
+      console.log("API /invite appelée avec paramètres:", { hasId: !!id, hasNom: !!nom, hasPrenom: !!prenom });
+    }
 
     // Recherche par ID
     if (id) {

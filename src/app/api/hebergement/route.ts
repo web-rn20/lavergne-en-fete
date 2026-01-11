@@ -3,8 +3,10 @@ import { getPlacesRestantesFromConfig } from "@/lib/google-sheets";
 
 export async function GET() {
   try {
-    // Log pour debugging sur Vercel
-    console.log("Hebergement API call received");
+    // Log neutre (pas de données sensibles)
+    if (process.env.NODE_ENV !== "production") {
+      console.log("API /hebergement appelée");
+    }
 
     const placesRestantes = await getPlacesRestantesFromConfig();
 

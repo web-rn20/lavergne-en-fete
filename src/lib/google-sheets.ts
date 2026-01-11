@@ -46,7 +46,9 @@ function getJWT(): JWT {
     );
   }
 
-  console.log("JWT créé pour:", serviceAccountEmail);
+  if (process.env.NODE_ENV !== "production") {
+    console.log("Authentification Google Sheets initialisée.");
+  }
 
   return new JWT({
     email: serviceAccountEmail,
@@ -66,13 +68,13 @@ export async function getGoogleSheet(): Promise<GoogleSpreadsheet> {
     );
   }
 
-  console.log("Connexion à Google Sheets avec ID:", spreadsheetId.substring(0, 8) + "...");
-
   const jwt = getJWT();
   const doc = new GoogleSpreadsheet(spreadsheetId, jwt);
   await doc.loadInfo();
 
-  console.log("Connexion Google Sheets réussie, document:", doc.title);
+  if (process.env.NODE_ENV !== "production") {
+    console.log("Connexion Google Sheets réussie.");
+  }
 
   return doc;
 }
