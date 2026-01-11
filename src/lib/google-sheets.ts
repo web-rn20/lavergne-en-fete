@@ -336,30 +336,41 @@ export async function findInviteByName(
 }
 
 // Récupération des places restantes depuis l'onglet Config
+// IMPORTANT: Lit la valeur associée à la clé "Places_Restantes" dans l'onglet Config
 export async function getPlacesRestantesFromConfig(): Promise<number> {
   try {
+    console.log("=== Lecture Places_Restantes depuis Config ===");
     const doc = await getGoogleSheet();
     const configSheet = doc.sheetsByTitle["Config"];
 
     if (!configSheet) {
-      // Fallback vers la méthode de calcul si pas d'onglet Config
-      return getHebergementPlacesRestantes();
+      console.error("Onglet 'Config' non trouvé - retourne 0 par sécurité");
+      return 0;
     }
 
     const rows = await configSheet.getRows();
-    const placesRow = rows.find(
-      (r: GoogleSpreadsheetRow) => r.get("cle") === "Places_Restantes"
-    );
+    console.log("Nombre de lignes dans Config:", rows.length);
+
+    // Chercher la ligne avec la clé "Places_Restantes" (flexible sur la casse)
+    const placesRow = rows.find((r: GoogleSpreadsheetRow) => {
+      // Essayer différentes variantes de noms de colonnes pour la clé
+      const cleValue = r.get("Cle") || r.get("cle") || r.get("Clé") || r.get("clé") || "";
+      return cleValue.toString().toLowerCase().trim() === "places_restantes";
+    });
 
     if (placesRow) {
-      return parseInt(placesRow.get("valeur") || "0", 10);
+      // Essayer différentes variantes pour la colonne valeur
+      const valeurStr = placesRow.get("Valeur") || placesRow.get("valeur") || "0";
+      const places = parseInt(valeurStr.toString(), 10);
+      console.log("Places_Restantes trouvé:", places);
+      return isNaN(places) ? 0 : places;
     }
 
-    // Fallback si pas de clé Places_Restantes
-    return getHebergementPlacesRestantes();
+    console.warn("Clé 'Places_Restantes' non trouvée dans Config - retourne 0");
+    return 0;
   } catch (error) {
     console.error("Erreur lors de la lecture de Config:", error);
-    return 0;
+    return 0; // Retourne 0 par sécurité en cas d'erreur
   }
 }
 
@@ -377,17 +388,24 @@ export async function updatePlacesRestantes(
     }
 
     const rows = await configSheet.getRows();
-    const placesRow = rows.find(
-      (r: GoogleSpreadsheetRow) => r.get("cle") === "Places_Restantes"
-    );
+    // Flexible sur les noms de colonnes
+    const placesRow = rows.find((r: GoogleSpreadsheetRow) => {
+      const cleValue = r.get("Cle") || r.get("cle") || r.get("Clé") || r.get("clé") || "";
+      return cleValue.toString().toLowerCase().trim() === "places_restantes";
+    });
 
     if (placesRow) {
-      const currentPlaces = parseInt(placesRow.get("valeur") || "0", 10);
-      placesRow.set("valeur", Math.max(0, currentPlaces - nombrePlaces).toString());
+      const valeurStr = placesRow.get("Valeur") || placesRow.get("valeur") || "0";
+      const currentPlaces = parseInt(valeurStr.toString(), 10);
+      // Déterminer le nom exact de la colonne à utiliser pour la mise à jour
+      const valeurColName = placesRow.get("Valeur") !== undefined ? "Valeur" : "valeur";
+      placesRow.set(valeurColName, Math.max(0, currentPlaces - nombrePlaces).toString());
       await placesRow.save();
+      console.log("Places mises à jour:", currentPlaces, "->", currentPlaces - nombrePlaces);
       return true;
     }
 
+    console.warn("Clé Places_Restantes non trouvée pour mise à jour");
     return false;
   } catch (error) {
     console.error("Erreur lors de la mise à jour des places:", error);
@@ -408,28 +426,32 @@ export async function reserverPlacesHebergement(
   nombrePlacesDemandees: number
 ): Promise<ReservationResult> {
   try {
+    console.log("=== Réservation de", nombrePlacesDemandees, "place(s) ===");
     const doc = await getGoogleSheet();
     const configSheet = doc.sheetsByTitle["Config"];
 
     if (!configSheet) {
-      // Fallback: pas d'onglet Config, on ne peut pas gérer le stock
-      console.warn("Onglet Config non trouvé, réservation impossible à vérifier");
-      return { success: true };
+      console.error("Onglet Config non trouvé - réservation refusée");
+      return { success: false, error: "Configuration hébergement non disponible" };
     }
 
     // Relecture fraîche du stock
     await configSheet.loadCells();
     const rows = await configSheet.getRows();
-    const placesRow = rows.find(
-      (r: GoogleSpreadsheetRow) => r.get("cle") === "Places_Restantes"
-    );
+    // Flexible sur les noms de colonnes
+    const placesRow = rows.find((r: GoogleSpreadsheetRow) => {
+      const cleValue = r.get("Cle") || r.get("cle") || r.get("Clé") || r.get("clé") || "";
+      return cleValue.toString().toLowerCase().trim() === "places_restantes";
+    });
 
     if (!placesRow) {
-      console.warn("Clé Places_Restantes non trouvée");
-      return { success: true };
+      console.error("Clé Places_Restantes non trouvée - réservation refusée");
+      return { success: false, error: "Configuration hébergement non disponible" };
     }
 
-    const placesRestantes = parseInt(placesRow.get("valeur") || "0", 10);
+    const valeurStr = placesRow.get("Valeur") || placesRow.get("valeur") || "0";
+    const placesRestantes = parseInt(valeurStr.toString(), 10);
+    console.log("Places restantes actuelles:", placesRestantes);
 
     // Double vérification : le stock est-il suffisant ?
     if (placesRestantes < nombrePlacesDemandees) {
@@ -440,9 +462,11 @@ export async function reserverPlacesHebergement(
       };
     }
 
-    // Mise à jour atomique du stock
-    placesRow.set("valeur", Math.max(0, placesRestantes - nombrePlacesDemandees).toString());
+    // Mise à jour atomique du stock (flexible sur le nom de colonne)
+    const valeurColName = placesRow.get("Valeur") !== undefined ? "Valeur" : "valeur";
+    placesRow.set(valeurColName, Math.max(0, placesRestantes - nombrePlacesDemandees).toString());
     await placesRow.save();
+    console.log("Réservation effectuée. Nouvelles places restantes:", placesRestantes - nombrePlacesDemandees);
 
     return {
       success: true,
@@ -470,8 +494,9 @@ export interface RSVPReponse {
   nombreEnfants: number;
   prenomsEnfants?: string;
   nbTotal: number;
-  regimeAlimentaire?: string;
-  hebergementLabel?: string; // "Dormir chez les Lavergne", "Tente dans le jardin", "Se débrouille"
+  regimes?: string;    // Synthèse des régimes de tout le groupe (ex: "Moi: Vegan, Léo: Halal")
+  allergies?: string;  // Synthèse des allergies de tout le groupe (ex: "Moi: Noix, Clara: Gluten")
+  logement?: string;   // "Maison des Lavergne", "Tente dans le jardin", "Se débrouille"
 }
 
 // Ajout d'une réponse RSVP
@@ -498,8 +523,9 @@ export async function addRSVPReponse(
           "Prénom Conjoint",
           "Nb Enfants",
           "Prénoms Enfants",
-          "Régimes et Allergies",
-          "Hébergement",
+          "Régimes",
+          "Allergies",
+          "Logement",
           "Nb_Total",
         ],
       });
@@ -517,8 +543,9 @@ export async function addRSVPReponse(
       "Prénom Conjoint": reponse.prenomConjoint || "",
       "Nb Enfants": reponse.nombreEnfants?.toString() || "0",
       "Prénoms Enfants": reponse.prenomsEnfants || "",
-      "Régimes et Allergies": reponse.regimeAlimentaire || "",
-      "Hébergement": reponse.hebergementLabel || "Se débrouille",
+      "Régimes": reponse.regimes || "",
+      "Allergies": reponse.allergies || "",
+      "Logement": reponse.logement || "Se débrouille",
       "Nb_Total": reponse.nbTotal?.toString() || "1",
     };
 

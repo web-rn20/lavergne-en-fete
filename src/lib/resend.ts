@@ -71,7 +71,7 @@ export interface RSVPEmailData {
   prenomsEnfants?: string;
   nbTotal: number;
   regimeAlimentaire?: string;
-  hebergementLabel?: string; // "Dormir chez les Lavergne", "Tente dans le jardin", "Se débrouille"
+  hebergementLabel?: string; // "Maison des Lavergne", "Tente dans le jardin", "Se débrouille"
 }
 
 // Email de confirmation pour l'invité (version simple)
@@ -85,7 +85,7 @@ export async function sendConfirmationEmail(invite: Invite): Promise<boolean> {
     prenomsEnfants: invite.enfants,
     nbTotal: 1 + (invite.conjoint ? 1 : 0) + (invite.nombreEnfants || 0),
     regimeAlimentaire: invite.regimeAlimentaire,
-    hebergementLabel: invite.hebergement ? "Dormir chez les Lavergne" : "Se débrouille",
+    hebergementLabel: invite.hebergement ? "Maison des Lavergne" : "Se débrouille",
   });
 }
 

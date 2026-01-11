@@ -19,10 +19,12 @@ interface RSVPRequestBody {
   enfants?: boolean;
   nombreEnfants?: number;
   prenomsEnfants?: string[];
-  regimeAlimentaire?: string;
-  hebergement?: boolean;
-  hebergementChoix?: "lavergne" | "tente" | "autonome";
-  hebergementLabel?: string;
+  // Nouveaux champs séparés pour régimes et allergies
+  regimes?: string;    // Synthèse des régimes (ex: "Moi: Vegan, Léo: Halal")
+  allergies?: string;  // Synthèse des allergies (ex: "Moi: Noix, Clara: Gluten")
+  // Hébergement
+  hebergement?: boolean; // true uniquement si "Maison des Lavergne"
+  logement?: string;     // "Maison des Lavergne", "Tente dans le jardin", "Se débrouille"
   nbTotal?: number;
 }
 
@@ -67,13 +69,14 @@ export async function POST(request: NextRequest) {
     const enfants = body.enfants === true;
     const nombreEnfants = body.nombreEnfants || 0;
     const prenomsEnfants = body.prenomsEnfants || [];
-    const regimeAlimentaire = body.regimeAlimentaire || "";
-    const hebergement = body.hebergement === true; // true uniquement si "chez les Lavergne"
-    const hebergementChoix = body.hebergementChoix || "autonome";
-    const hebergementLabel = body.hebergementLabel || "Se débrouille";
+    // Nouveaux champs séparés
+    const regimes = body.regimes || "";
+    const allergies = body.allergies || "";
+    const hebergement = body.hebergement === true; // true uniquement si "Maison des Lavergne"
+    const logement = body.logement || "Se débrouille";
 
     console.log("=== Valeurs normalisées ===");
-    console.log({ inviteId, email, presence, accompagnant, enfants, nombreEnfants, hebergement, hebergementChoix });
+    console.log({ inviteId, email, presence, accompagnant, enfants, nombreEnfants, hebergement, logement });
 
     // Vérification que l'invité existe (si un ID est fourni)
     let invite = null;
@@ -148,13 +151,14 @@ export async function POST(request: NextRequest) {
       prenom: body.prenom.trim(),
       email,
       presence,
-      accompagnant, // Nouveau champ pour la colonne "Accompagnant"
+      accompagnant,
       prenomConjoint: accompagnant ? prenomConjoint : "",
       nombreEnfants: enfants ? nombreEnfants : 0,
       prenomsEnfants: prenomsEnfantsStr,
       nbTotal,
-      regimeAlimentaire,
-      hebergementLabel, // Contient le choix: "Dormir chez les Lavergne", "Tente dans le jardin", "Se débrouille"
+      regimes,     // Synthèse des régimes de tout le groupe
+      allergies,   // Synthèse des allergies de tout le groupe
+      logement,    // "Maison des Lavergne", "Tente dans le jardin", "Se débrouille"
     };
     console.log("Données RSVP:", JSON.stringify(rsvpData, null, 2));
 
@@ -173,6 +177,8 @@ export async function POST(request: NextRequest) {
     // Envoi de l'email de confirmation (si email fourni)
     let emailSuccess = false;
     if (email) {
+      // Combiner régimes et allergies pour l'email
+      const regimeEtAllergies = [regimes, allergies].filter(s => s).join(" | ");
       emailSuccess = await sendRSVPConfirmationEmail({
         prenom: body.prenom.trim(),
         nom: body.nom.trim(),
@@ -181,8 +187,8 @@ export async function POST(request: NextRequest) {
         nombreEnfants: enfants ? nombreEnfants : 0,
         prenomsEnfants: prenomsEnfantsStr,
         nbTotal,
-        regimeAlimentaire,
-        hebergementLabel, // Le choix d'hébergement en texte
+        regimeAlimentaire: regimeEtAllergies, // Combiné pour l'email
+        hebergementLabel: logement,
       });
 
       if (!emailSuccess) {

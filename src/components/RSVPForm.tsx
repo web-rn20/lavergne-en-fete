@@ -314,21 +314,17 @@ export default function RSVPForm() {
     }));
   };
 
-  // Fonction pour formater les besoins alimentaires pour le Google Sheet
-  const formatBesoinsForSheet = (): string => {
+  // Fonction pour formater les RÉGIMES pour le Google Sheet (colonne Régimes)
+  const formatRegimesForSheet = (): string => {
     const parts: string[] = [];
 
     // Invité principal
     const inviteRegime = formData.besoinsInvite.regime === "autre"
       ? formData.besoinsInvite.regimeAutre
       : regimeOptions.find((o) => o.value === formData.besoinsInvite.regime)?.label;
-    const inviteAllergies = formData.besoinsInvite.allergies;
 
     if (inviteRegime && inviteRegime !== "Pas de régime spécial") {
-      parts.push(`${invite?.prenom || "Invité"}: ${inviteRegime}`);
-    }
-    if (inviteAllergies) {
-      parts.push(`${invite?.prenom || "Invité"} (allergies): ${inviteAllergies}`);
+      parts.push(`${invite?.prenom || "Moi"}: ${inviteRegime}`);
     }
 
     // Conjoint
@@ -336,13 +332,9 @@ export default function RSVPForm() {
       const conjointRegime = formData.besoinsConjoint.regime === "autre"
         ? formData.besoinsConjoint.regimeAutre
         : regimeOptions.find((o) => o.value === formData.besoinsConjoint.regime)?.label;
-      const conjointAllergies = formData.besoinsConjoint.allergies;
 
       if (conjointRegime && conjointRegime !== "Pas de régime spécial") {
         parts.push(`${formData.prenomConjoint}: ${conjointRegime}`);
-      }
-      if (conjointAllergies) {
-        parts.push(`${formData.prenomConjoint} (allergies): ${conjointAllergies}`);
       }
     }
 
@@ -354,20 +346,44 @@ export default function RSVPForm() {
           const enfantRegime = enfantBesoins.regime === "autre"
             ? enfantBesoins.regimeAutre
             : regimeOptions.find((o) => o.value === enfantBesoins.regime)?.label;
-          const enfantAllergies = enfantBesoins.allergies;
           const enfantNom = prenom || `Enfant ${index + 1}`;
 
           if (enfantRegime && enfantRegime !== "Pas de régime spécial") {
             parts.push(`${enfantNom}: ${enfantRegime}`);
           }
-          if (enfantAllergies) {
-            parts.push(`${enfantNom} (allergies): ${enfantAllergies}`);
-          }
         }
       });
     }
 
-    return parts.length > 0 ? parts.join(" | ") : "";
+    return parts.length > 0 ? parts.join(", ") : "";
+  };
+
+  // Fonction pour formater les ALLERGIES pour le Google Sheet (colonne Allergies)
+  const formatAllergiesForSheet = (): string => {
+    const parts: string[] = [];
+
+    // Invité principal
+    if (formData.besoinsInvite.allergies) {
+      parts.push(`${invite?.prenom || "Moi"}: ${formData.besoinsInvite.allergies}`);
+    }
+
+    // Conjoint
+    if (formData.accompagnant && formData.prenomConjoint && formData.besoinsConjoint.allergies) {
+      parts.push(`${formData.prenomConjoint}: ${formData.besoinsConjoint.allergies}`);
+    }
+
+    // Enfants
+    if (formData.enfants) {
+      formData.prenomsEnfants.forEach((prenom, index) => {
+        const enfantBesoins = formData.besoinsEnfants[index];
+        if (enfantBesoins && enfantBesoins.allergies) {
+          const enfantNom = prenom || `Enfant ${index + 1}`;
+          parts.push(`${enfantNom}: ${enfantBesoins.allergies}`);
+        }
+      });
+    }
+
+    return parts.length > 0 ? parts.join(", ") : "";
   };
 
   // Soumission du formulaire
@@ -391,20 +407,20 @@ export default function RSVPForm() {
         (formData.accompagnant && formData.prenomConjoint ? 1 : 0) +
         (formData.enfants ? formData.nombreEnfants : 0);
 
-      // Déterminer si on demande l'hébergement chez les Lavergne
+      // Déterminer si on demande l'hébergement à la Maison des Lavergne
       const demandeHebergementLavergne = formData.hebergementChoix === "lavergne";
 
-      // Formater l'option hébergement pour le sheet
-      let hebergementLabel = "";
+      // Formater l'option logement pour le sheet
+      let logement = "";
       switch (formData.hebergementChoix) {
         case "lavergne":
-          hebergementLabel = "Chez les Lavergne";
+          logement = "Maison des Lavergne";
           break;
         case "tente":
-          hebergementLabel = "Tente dans le jardin";
+          logement = "Tente dans le jardin";
           break;
         case "autonome":
-          hebergementLabel = "Se débrouille";
+          logement = "Se débrouille";
           break;
       }
 
@@ -424,10 +440,10 @@ export default function RSVPForm() {
           enfants: formData.enfants,
           nombreEnfants: formData.nombreEnfants,
           prenomsEnfants: formData.prenomsEnfants,
-          regimeAlimentaire: formatBesoinsForSheet(),
-          hebergement: demandeHebergementLavergne, // true uniquement si "chez les Lavergne"
-          hebergementChoix: formData.hebergementChoix,
-          hebergementLabel,
+          regimes: formatRegimesForSheet(),     // Synthèse des régimes
+          allergies: formatAllergiesForSheet(), // Synthèse des allergies
+          hebergement: demandeHebergementLavergne, // true uniquement si "Maison des Lavergne"
+          logement,
           nbTotal,
         }),
       });
@@ -780,7 +796,7 @@ export default function RSVPForm() {
                   </p>
 
                   <div className="space-y-3">
-                    {/* Option 1: Chez les Lavergne (si disponible) */}
+                    {/* Option 1: Maison des Lavergne (si disponible) */}
                     {hebergementDisponible && placesRestantes > 0 && (
                       <label className="flex items-start gap-3 p-4 border border-brand-light rounded-lg cursor-pointer hover:border-brand-primary/50 transition-colors">
                         <input
@@ -795,7 +811,7 @@ export default function RSVPForm() {
                         />
                         <div>
                           <span className="text-brand-dark font-medium">
-                            Dormir chez les Lavergne
+                            Dormir à la Maison des Lavergne
                           </span>
                           <p className="text-brand-dark/60 text-sm mt-1">
                             {placesRestantes} place{placesRestantes > 1 ? "s" : ""} disponible{placesRestantes > 1 ? "s" : ""}
@@ -878,7 +894,7 @@ export default function RSVPForm() {
                   {!hebergementDisponible && (
                     <div className="p-4 bg-brand-alert/10 rounded-lg">
                       <p className="text-brand-alert font-medium text-sm">
-                        L&apos;hébergement chez les Lavergne est complet.
+                        L&apos;hébergement à la Maison des Lavergne est complet.
                       </p>
                     </div>
                   )}
