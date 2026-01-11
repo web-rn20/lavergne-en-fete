@@ -36,22 +36,17 @@ interface FormData {
   hebergementChoix: "lavergne" | "tente" | "autonome";
 }
 
-// Liste des hôtels partenaires
-const hotelsPartenaires = [
+// Liste des hôtels suggérés à proximité
+const hotelsSuggeres = [
   {
-    nom: "Hôtel Le Petit Château",
-    adresse: "123 Rue de la Gare",
-    lien: "#",
+    nom: "Hôtel La Palmeraie",
+    adresse: "35 route de Seilh, 31700 Cornebarrieu",
+    lien: "https://www.google.com/maps/search/?api=1&query=Hotel+la+palmeraie+35+route+de+Seilh+31700+Cornebarrieu",
   },
   {
-    nom: "Auberge du Lac",
-    adresse: "45 Chemin du Lac",
-    lien: "#",
-  },
-  {
-    nom: "Gîte Les Lavandes",
-    adresse: "78 Route des Vignes",
-    lien: "#",
+    nom: "ACE Hôtel Toulouse Blagnac",
+    adresse: "35 bis route de Toulouse, 31700 Cornebarrieu",
+    lien: "https://www.google.com/maps/search/?api=1&query=ACE+hotel+Toulouse+Blagnac+35+bis+route+de+Toulouse+31700+Cornebarrieu",
   },
 ];
 
@@ -998,24 +993,37 @@ export default function RSVPForm() {
                     </label>
                   </div>
 
-                  {/* Liste des hôtels si autonome */}
+                  {/* Suggestions d'hôtels si autonome */}
                   {formData.hebergementChoix === "autonome" && (
-                    <div className="mt-4 p-4 bg-brand-light/50 rounded-lg">
-                      <p className="text-brand-dark font-medium mb-3 text-sm">
-                        Quelques hôtels à proximité :
+                    <div className="mt-3 pl-8">
+                      <p className="text-brand-dark/60 text-xs mb-2 italic">
+                        Quelques suggestions d&apos;hébergement à proximité :
                       </p>
-                      <ul className="space-y-2">
-                        {hotelsPartenaires.map((hotel, index) => (
-                          <li key={index} className="text-sm">
+                      <ul className="space-y-1">
+                        {hotelsSuggeres.map((hotel, index) => (
+                          <li key={index} className="text-xs text-brand-dark/70">
                             <a
                               href={hotel.lien}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-brand-accent-deep hover:text-brand-primary
-                                       transition-colors duration-200"
+                              className="hover:text-brand-primary transition-colors duration-200 inline-flex items-center gap-1"
                             >
-                              <span className="font-medium">{hotel.nom}</span>
-                              <span className="text-brand-dark/50"> - {hotel.adresse}</span>
+                              <span className="font-medium text-brand-accent-deep/80">{hotel.nom}</span>
+                              <span className="text-brand-dark/50">— {hotel.adresse}</span>
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-3 w-3 text-brand-dark/40"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                />
+                              </svg>
                             </a>
                           </li>
                         ))}
