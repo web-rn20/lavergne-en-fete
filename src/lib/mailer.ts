@@ -162,17 +162,27 @@ export async function sendRSVPConfirmationEmail(
       </html>
     `;
 
+    console.log("--- ENVOI EMAIL INVITÉ ---");
+    console.log("From:", fromEmail);
+    console.log("To:", data.email);
+
     await transporter.sendMail({
-      from: `"30 Ans d'Amour" <${fromEmail}>`,
+      from: fromEmail,
+      replyTo: fromEmail,
       to: data.email,
       subject: "On a bien noté ! RDV le 27 juin 2026",
       html,
     });
 
-    console.log("Email de confirmation envoyé à:", data.email);
+    console.log("Email de confirmation envoyé avec succès à:", data.email);
     return true;
   } catch (error) {
-    console.error("Erreur lors de l'envoi de l'email de confirmation:", error);
+    console.error("--- ERREUR MAIL INVITÉ ---");
+    console.error("Type:", error instanceof Error ? error.constructor.name : typeof error);
+    console.error("Message:", error instanceof Error ? error.message : String(error));
+    if (error instanceof Error && error.stack) {
+      console.error("Stack:", error.stack);
+    }
     return false;
   }
 }
@@ -299,7 +309,8 @@ export async function sendRSVPNotificationToHosts(
     `;
 
     await transporter.sendMail({
-      from: `"30 Ans d'Amour - RSVP" <${adminEmail}>`,
+      from: adminEmail,
+      replyTo: adminEmail,
       to: adminEmail,
       subject: `Nouveau RSVP : ${data.prenom} ${data.nom} (${data.nbTotal} pers.)`,
       html,
@@ -308,7 +319,9 @@ export async function sendRSVPNotificationToHosts(
     console.log("Notification admin envoyée à:", adminEmail);
     return true;
   } catch (error) {
-    console.error("Erreur lors de l'envoi de la notification admin:", error);
+    console.error("--- ERREUR MAIL ADMIN ---");
+    console.error("Type:", error instanceof Error ? error.constructor.name : typeof error);
+    console.error("Message:", error instanceof Error ? error.message : String(error));
     return false;
   }
 }

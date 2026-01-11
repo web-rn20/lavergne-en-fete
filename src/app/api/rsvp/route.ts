@@ -192,6 +192,9 @@ export async function POST(request: NextRequest) {
       };
 
       // Envoi de l'email de confirmation à l'invité (si email fourni)
+      console.log("--- TEST EMAIL INVITÉ ---");
+      console.log("Destinataire invité:", body.email);
+
       if (email) {
         try {
           emailSuccess = await sendRSVPConfirmationEmail(emailData);
@@ -201,8 +204,10 @@ export async function POST(request: NextRequest) {
             console.log("Email de confirmation envoyé à l'invité");
           }
         } catch (emailError) {
-          console.error("Erreur lors de l'envoi de l'email à l'invité:", emailError);
+          console.error("Erreur mail invité:", emailError);
         }
+      } else {
+        console.log("Envoi annulé : adresse email de l'invité manquante");
       }
 
       // Envoi de la notification aux hôtes (indépendant de l'email invité)
