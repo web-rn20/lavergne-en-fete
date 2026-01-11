@@ -174,47 +174,57 @@ export async function POST(request: NextRequest) {
       console.warn("Attention: Recalcul du stock échoué:", recalculResult.error);
     }
 
-    // Données communes pour les emails
-    const regimeEtAllergies = [regimes, allergies].filter(s => s).join(" | ");
-    const emailData = {
-      prenom: body.prenom.trim(),
-      nom: body.nom.trim(),
-      email,
-      prenomConjoint: accompagnant ? prenomConjoint : undefined,
-      nombreEnfants: enfants ? nombreEnfants : 0,
-      prenomsEnfants: prenomsEnfantsStr,
-      nbTotal,
-      regimeAlimentaire: regimeEtAllergies,
-      hebergementLabel: logement,
-    };
-
-    // Envoi de l'email de confirmation à l'invité (si email fourni)
+    // Envoi des emails (non-bloquant : les erreurs ne doivent pas empêcher le succès RSVP)
     let emailSuccess = false;
-    if (email) {
-      try {
-        emailSuccess = await sendRSVPConfirmationEmail(emailData);
-        if (!emailSuccess) {
-          console.warn("L'email de confirmation n'a pas pu être envoyé");
-        } else {
-          console.log("Email de confirmation envoyé à l'invité");
-        }
-      } catch (emailError) {
-        console.error("Erreur lors de l'envoi de l'email à l'invité:", emailError);
-      }
-    }
-
-    // Envoi de la notification aux hôtes (indépendant de l'email invité)
     try {
-      const hostNotificationSuccess = await sendRSVPNotificationToHosts(emailData);
-      if (!hostNotificationSuccess) {
-        console.warn("La notification aux hôtes n'a pas pu être envoyée");
-      } else {
-        console.log("Notification envoyée aux hôtes");
+      // Données communes pour les emails
+      const regimeEtAllergies = [regimes, allergies].filter(s => s).join(" | ");
+      const emailData = {
+        prenom: body.prenom.trim(),
+        nom: body.nom.trim(),
+        email,
+        prenomConjoint: accompagnant ? prenomConjoint : undefined,
+        nombreEnfants: enfants ? nombreEnfants : 0,
+        prenomsEnfants: prenomsEnfantsStr,
+        nbTotal,
+        regimeAlimentaire: regimeEtAllergies,
+        hebergementLabel: logement,
+      };
+
+      // Envoi de l'email de confirmation à l'invité (si email fourni)
+      if (email) {
+        try {
+          emailSuccess = await sendRSVPConfirmationEmail(emailData);
+          if (!emailSuccess) {
+            console.warn("L'email de confirmation n'a pas pu être envoyé");
+          } else {
+            console.log("Email de confirmation envoyé à l'invité");
+          }
+        } catch (emailError) {
+          console.error("Erreur lors de l'envoi de l'email à l'invité:", emailError);
+        }
       }
-    } catch (hostEmailError) {
-      console.error("Erreur lors de l'envoi de la notification aux hôtes:", hostEmailError);
+
+      // Envoi de la notification aux hôtes (indépendant de l'email invité)
+      try {
+        const hostNotificationSuccess = await sendRSVPNotificationToHosts(emailData);
+        if (!hostNotificationSuccess) {
+          console.warn("La notification aux hôtes n'a pas pu être envoyée");
+        } else {
+          console.log("Notification envoyée aux hôtes");
+        }
+      } catch (hostEmailError) {
+        console.error("Erreur lors de l'envoi de la notification aux hôtes:", hostEmailError);
+      }
+    } catch (emailBlockError) {
+      // Erreur globale dans le bloc email (variable manquante, erreur 400, etc.)
+      // On log mais on ne bloque PAS la réponse succès pour l'invité
+      console.error("=== Erreur dans le bloc email (non-bloquant) ===");
+      console.error("Type:", emailBlockError instanceof Error ? emailBlockError.constructor.name : typeof emailBlockError);
+      console.error("Message:", emailBlockError instanceof Error ? emailBlockError.message : String(emailBlockError));
     }
 
+    // Réponse succès : le RSVP est enregistré, même si les emails ont échoué
     return NextResponse.json({
       success: true,
       message: "Votre présence a été confirmée !",
