@@ -5,6 +5,7 @@ import FamilyPhotos from "@/components/FamilyPhotos";
 import MusicProgramming from "@/components/MusicProgramming";
 import RSVPForm from "@/components/RSVPForm";
 import LogisticsSection from "@/components/LogisticsSection";
+import GuestbookSection from "@/components/GuestbookSection";
 import SectionContainer from "@/components/SectionContainer";
 
 // Fallback pour le chargement du formulaire RSVP
@@ -44,16 +45,8 @@ export default function Home() {
       {/* Section Logistique & Hébergement */}
       <LogisticsSection />
 
-      <SectionContainer id="livre-or" className="py-20 bg-brand-light">
-        <div className="max-w-2xl mx-auto text-center">
-          <h2 className="font-serif text-4xl md:text-5xl text-brand-dark mb-8">
-            Livre d&apos;Or
-          </h2>
-          <p className="text-brand-dark/70">
-            Livre d&apos;or numérique à implémenter...
-          </p>
-        </div>
-      </SectionContainer>
+      {/* Livre d'Or - Messages des invités */}
+      <GuestbookSection />
 
       {/* Footer */}
       <SectionContainer as="footer" className="py-8 bg-brand-dark text-brand-light text-center">
