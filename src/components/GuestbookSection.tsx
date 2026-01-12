@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { motion } from "framer-motion";
 import SectionContainer from "@/components/SectionContainer";
 
 // Interface pour un message du livre d'or
@@ -9,6 +10,118 @@ interface GuestbookMessage {
   prenom: string;
   nom: string;
   message: string;
+}
+
+// Palette de couleurs pastel pour les Post-its
+const PASTEL_COLORS = [
+  "#FFF9C4", // Jaune pâle
+  "#F8BBD9", // Rose poudré
+  "#B3E5FC", // Bleu ciel
+  "#C8E6C9", // Vert d'eau
+];
+
+// Génère une rotation aléatoire entre -2 et +2 degrés
+const getRandomRotation = (seed: number) => {
+  // Utilise un seed pour avoir une rotation cohérente par message
+  const pseudoRandom = Math.sin(seed * 12.9898) * 43758.5453;
+  const normalized = pseudoRandom - Math.floor(pseudoRandom);
+  return (normalized * 4) - 2; // Entre -2 et +2 degrés
+};
+
+// Génère une couleur aléatoire basée sur un seed
+const getRandomColor = (seed: number) => {
+  const pseudoRandom = Math.sin(seed * 78.233) * 43758.5453;
+  const normalized = pseudoRandom - Math.floor(pseudoRandom);
+  const index = Math.floor(normalized * PASTEL_COLORS.length);
+  return PASTEL_COLORS[index];
+};
+
+// Variants pour l'animation du container (stagger)
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.2,
+    },
+  },
+};
+
+// Variants pour chaque Post-it
+const postItVariants = {
+  hidden: {
+    opacity: 0,
+    y: 50,
+    scale: 0.8,
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      type: "spring" as const,
+      damping: 15,
+      stiffness: 100,
+    },
+  },
+};
+
+// Composant Post-it individuel
+interface PostItProps {
+  message: GuestbookMessage;
+  index: number;
+}
+
+function PostIt({ message, index }: PostItProps) {
+  const rotation = useMemo(() => getRandomRotation(index + message.prenom.charCodeAt(0)), [index, message.prenom]);
+  const backgroundColor = useMemo(() => getRandomColor(index + message.message.length), [index, message.message.length]);
+
+  return (
+    <motion.div
+      variants={postItVariants}
+      whileHover={{
+        scale: 1.05,
+        rotate: 0,
+        boxShadow: "0 20px 40px rgba(0, 0, 0, 0.2)",
+        zIndex: 10,
+      }}
+      className="relative p-5 rounded-sm cursor-default transition-shadow duration-300"
+      style={{
+        backgroundColor,
+        rotate: `${rotation}deg`,
+        boxShadow: "4px 4px 15px rgba(0, 0, 0, 0.15)",
+        minHeight: "180px",
+      }}
+    >
+      {/* Effet "punaise" en haut */}
+      <div
+        className="absolute top-2 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full"
+        style={{
+          background: "radial-gradient(circle at 30% 30%, #ff6b6b, #c92a2a)",
+          boxShadow: "0 2px 4px rgba(0, 0, 0, 0.3)",
+        }}
+      />
+
+      {/* Message */}
+      <p
+        className="font-caveat text-xl md:text-2xl leading-relaxed text-brand-dark/90 mt-4 mb-4"
+        style={{ wordBreak: "break-word" }}
+      >
+        {message.message}
+      </p>
+
+      {/* Auteur et date */}
+      <div className="absolute bottom-3 left-5 right-5">
+        <p className="font-montserrat text-xs text-brand-dark/60">
+          — {message.prenom} {message.nom && message.nom}
+        </p>
+        <p className="font-montserrat text-[10px] text-brand-dark/40 mt-1">
+          {message.date}
+        </p>
+      </div>
+    </motion.div>
+  );
 }
 
 export default function GuestbookSection() {
@@ -27,7 +140,7 @@ export default function GuestbookSection() {
   // Fonction pour charger les derniers messages
   const fetchRecentMessages = useCallback(async () => {
     try {
-      const response = await fetch("/api/guestbook?limit=3");
+      const response = await fetch("/api/guestbook?limit=12");
       const data = await response.json();
       if (data.success && data.messages) {
         setRecentMessages(data.messages);
@@ -104,7 +217,7 @@ export default function GuestbookSection() {
 
   return (
     <SectionContainer id="livre-or" className="py-20 bg-brand-light">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         {/* Titre de section */}
         <h2 className="font-oswald text-4xl md:text-5xl text-brand-dark text-center mb-4">
           Livre d&apos;Or
@@ -117,7 +230,7 @@ export default function GuestbookSection() {
         </p>
 
         {/* Formulaire */}
-        <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 md:p-8 shadow-lg mb-12">
+        <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 md:p-8 shadow-lg mb-16 max-w-4xl mx-auto">
           {/* Champ Message (Textarea en premier pour l'importance) */}
           <div className="mb-6">
             <label
@@ -259,34 +372,27 @@ export default function GuestbookSection() {
           </div>
         </form>
 
-        {/* Affichage des derniers messages */}
+        {/* Mur de Post-its */}
         {!isLoadingMessages && recentMessages.length > 0 && (
           <div>
-            <h3 className="font-oswald text-2xl text-brand-dark text-center mb-6">
-              Les Derniers Messages
+            <h3 className="font-oswald text-2xl md:text-3xl text-brand-dark text-center mb-8">
+              Le Mur des Messages
             </h3>
 
-            <div className="space-y-4">
+            <motion.div
+              className="grid gap-4 md:gap-6"
+              style={{
+                gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
+              }}
+              variants={containerVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.1 }}
+            >
               {recentMessages.map((msg, index) => (
-                <div
-                  key={index}
-                  className="bg-white rounded-xl p-5 shadow-md border-l-4 border-brand-primary"
-                >
-                  {/* Message */}
-                  <p className="text-brand-dark/80 italic mb-3 leading-relaxed">
-                    &ldquo;{msg.message}&rdquo;
-                  </p>
-
-                  {/* Auteur et date */}
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium text-brand-dark">
-                      — {msg.prenom} {msg.nom && msg.nom}
-                    </span>
-                    <span className="text-brand-dark/50">{msg.date}</span>
-                  </div>
-                </div>
+                <PostIt key={index} message={msg} index={index} />
               ))}
-            </div>
+            </motion.div>
           </div>
         )}
 
