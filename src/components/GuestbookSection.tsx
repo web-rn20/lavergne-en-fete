@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { motion } from "framer-motion";
 import SectionContainer from "@/components/SectionContainer";
+import MessageBounceCard from "@/components/MessageBounceCard";
 
 // Interface pour un message du livre d'or
 interface GuestbookMessage {
@@ -12,46 +12,11 @@ interface GuestbookMessage {
   message: string;
 }
 
-// Composant carte Polaroid individuelle
-interface PolaroidCardProps {
-  message: GuestbookMessage;
-  index: number;
-}
-
-function PolaroidCard({ message, index }: PolaroidCardProps) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{
-        duration: 0.5,
-        delay: index * 0.1,
-        ease: [0.25, 0.46, 0.45, 0.94],
-      }}
-      className="polaroid-card"
-    >
-      {/* Zone du message */}
-      <div className="p-5 md:p-6 bg-gradient-to-br from-[#fdfbf7] to-[#f5f3ed]">
-        <p
-          className="font-caveat text-xl md:text-2xl leading-relaxed text-brand-dark/85 text-center"
-          style={{ wordBreak: "break-word" }}
-        >
-          &ldquo;{message.message}&rdquo;
-        </p>
-      </div>
-
-      {/* Zone inférieure blanche (signature Polaroid) */}
-      <div className="bg-white px-5 py-4 border-t border-gray-100">
-        <p className="font-caveat text-lg text-brand-dark/70 text-center">
-          {message.prenom} {message.nom && message.nom}
-        </p>
-        <p className="font-montserrat text-[10px] text-brand-dark/40 text-center mt-1">
-          {message.date}
-        </p>
-      </div>
-    </motion.div>
-  );
-}
+// Génère une rotation alternée pour l'effet "jeté sur la table"
+const getRotation = (index: number): number => {
+  const rotations = [2, -1.5, 1, -2, 1.5, -1];
+  return rotations[index % rotations.length];
+};
 
 export default function GuestbookSection() {
   // États du formulaire
@@ -95,7 +60,6 @@ export default function GuestbookSection() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validation côté client
     if (!prenom.trim()) {
       setErrorMessage("Le prénom est obligatoire");
       setSubmitStatus("error");
@@ -114,9 +78,7 @@ export default function GuestbookSection() {
     try {
       const response = await fetch("/api/guestbook", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           prenom: prenom.trim(),
           nom: nom.trim(),
@@ -131,7 +93,6 @@ export default function GuestbookSection() {
         setPrenom("");
         setNom("");
         setMessage("");
-        // Rafraîchir immédiatement la liste des messages
         await fetchRecentMessages();
         setTimeout(() => setSubmitStatus("idle"), 5000);
       } else {
@@ -163,12 +124,8 @@ export default function GuestbookSection() {
 
         {/* Formulaire */}
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 md:p-8 shadow-lg mb-16 max-w-4xl mx-auto">
-          {/* Champ Message */}
           <div className="mb-6">
-            <label
-              htmlFor="guestbook-message"
-              className="block text-brand-dark font-medium mb-2"
-            >
+            <label htmlFor="guestbook-message" className="block text-brand-dark font-medium mb-2">
               Ton message *
             </label>
             <textarea
@@ -178,10 +135,7 @@ export default function GuestbookSection() {
               placeholder="Raconte une anecdote, partage un souvenir ou laisse un mot d'amour..."
               rows={5}
               maxLength={1000}
-              className="w-full px-4 py-3 border-2 border-brand-dark/20 rounded-lg
-                       focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20
-                       text-brand-dark placeholder:text-brand-dark/40 resize-none
-                       transition-colors duration-200"
+              className="w-full px-4 py-3 border-2 border-brand-dark/20 rounded-lg focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 text-brand-dark placeholder:text-brand-dark/40 resize-none transition-colors duration-200"
               disabled={isSubmitting}
             />
             <p className="text-xs text-brand-dark/50 mt-1 text-right">
@@ -189,13 +143,9 @@ export default function GuestbookSection() {
             </p>
           </div>
 
-          {/* Champs Prénom et Nom */}
           <div className="grid md:grid-cols-2 gap-4 mb-6">
             <div>
-              <label
-                htmlFor="guestbook-prenom"
-                className="block text-brand-dark font-medium mb-2"
-              >
+              <label htmlFor="guestbook-prenom" className="block text-brand-dark font-medium mb-2">
                 Prénom *
               </label>
               <input
@@ -204,19 +154,12 @@ export default function GuestbookSection() {
                 value={prenom}
                 onChange={(e) => setPrenom(e.target.value)}
                 placeholder="Ton prénom"
-                className="w-full px-4 py-3 border-2 border-brand-dark/20 rounded-lg
-                         focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20
-                         text-brand-dark placeholder:text-brand-dark/40
-                         transition-colors duration-200"
+                className="w-full px-4 py-3 border-2 border-brand-dark/20 rounded-lg focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 text-brand-dark placeholder:text-brand-dark/40 transition-colors duration-200"
                 disabled={isSubmitting}
               />
             </div>
-
             <div>
-              <label
-                htmlFor="guestbook-nom"
-                className="block text-brand-dark font-medium mb-2"
-              >
+              <label htmlFor="guestbook-nom" className="block text-brand-dark font-medium mb-2">
                 Nom <span className="text-brand-dark/50 font-normal">(optionnel)</span>
               </label>
               <input
@@ -225,16 +168,12 @@ export default function GuestbookSection() {
                 value={nom}
                 onChange={(e) => setNom(e.target.value)}
                 placeholder="Ton nom de famille"
-                className="w-full px-4 py-3 border-2 border-brand-dark/20 rounded-lg
-                         focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20
-                         text-brand-dark placeholder:text-brand-dark/40
-                         transition-colors duration-200"
+                className="w-full px-4 py-3 border-2 border-brand-dark/20 rounded-lg focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 text-brand-dark placeholder:text-brand-dark/40 transition-colors duration-200"
                 disabled={isSubmitting}
               />
             </div>
           </div>
 
-          {/* Message de succès */}
           {submitStatus === "success" && (
             <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-green-800 text-center">
               <span className="font-medium">Merci pour ton message !</span>
@@ -243,14 +182,12 @@ export default function GuestbookSection() {
             </div>
           )}
 
-          {/* Message d'erreur */}
           {submitStatus === "error" && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-800 text-center">
               {errorMessage || "Une erreur est survenue. Réessaie !"}
             </div>
           )}
 
-          {/* Bouton d'envoi */}
           <div className="text-center">
             <button
               type="submit"
@@ -259,43 +196,16 @@ export default function GuestbookSection() {
             >
               {isSubmitting ? (
                 <>
-                  <svg
-                    className="animate-spin h-5 w-5"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
+                  <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>
                   Envoi en cours...
                 </>
               ) : (
                 <>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-                    />
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                   </svg>
                   Envoyer mon message
                 </>
@@ -325,14 +235,17 @@ export default function GuestbookSection() {
             </div>
           )}
 
-          {/* Grille des messages - Classe CSS "guestbook-grid" */}
+          {/* Grille des messages avec MessageBounceCard */}
           {!isLoadingMessages && recentMessages.length > 0 && (
-            <div className="guestbook-grid">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 p-4">
               {recentMessages.map((msg, index) => (
-                <PolaroidCard
+                <MessageBounceCard
                   key={`msg-${index}-${msg.prenom}-${msg.date}`}
-                  message={msg}
+                  message={msg.message}
+                  author={`${msg.prenom}${msg.nom ? ` ${msg.nom}` : ''}`}
+                  date={msg.date}
                   index={index}
+                  rotation={getRotation(index)}
                 />
               ))}
             </div>
