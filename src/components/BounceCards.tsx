@@ -2,7 +2,9 @@
 
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
+import { motion } from 'framer-motion';
 import Image from 'next/image';
+import { usePartyMode } from './PartyMode';
 
 interface BounceCardsProps {
   className?: string;
@@ -34,6 +36,21 @@ export default function BounceCards({
   enableHover = false
 }: BounceCardsProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const { isPartyModeActive } = usePartyMode();
+
+  // Animation de vibration pour le mode fête
+  const partyVariants = {
+    idle: {},
+    party: {
+      rotate: [0, -2, 2, -2, 2, 0],
+      scale: [1, 1.02, 1, 1.02, 1],
+      transition: {
+        duration: 0.5,
+        repeat: Infinity,
+        ease: 'easeInOut' as const,
+      },
+    },
+  };
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -129,13 +146,15 @@ export default function BounceCards({
   };
 
   return (
-    <div
+    <motion.div
       className={`relative flex items-center justify-center ${className}`}
       ref={containerRef}
       style={{
         width: containerWidth,
         height: containerHeight
       }}
+      variants={partyVariants}
+      animate={isPartyModeActive ? 'party' : 'idle'}
     >
       {images.map((src, idx) => (
         <div
@@ -157,6 +176,6 @@ export default function BounceCards({
           />
         </div>
       ))}
-    </div>
+    </motion.div>
   );
 }

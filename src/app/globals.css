@@ -186,3 +186,109 @@ body {
 main {
   overflow-x: hidden;
 }
+
+/* ========================================
+   MODE FÊTE TOTALE - Animations Disco
+   ======================================== */
+
+/* Animation de changement de couleur disco */
+@keyframes disco-bg {
+  0%, 100% {
+    background-color: var(--brand-light);
+  }
+  25% {
+    background-color: #ffe4e6; /* Rose pâle */
+  }
+  50% {
+    background-color: #fce7f3; /* Pink 100 */
+  }
+  75% {
+    background-color: #fdf2f8; /* Rose très pâle */
+  }
+}
+
+@keyframes disco-accent {
+  0%, 100% {
+    --brand-primary: #f45b69;
+  }
+  33% {
+    --brand-primary: #f13030;
+  }
+  66% {
+    --brand-primary: #ff6b6b;
+  }
+}
+
+/* Animation de vibration/shake pour les cartes */
+@keyframes party-shake {
+  0%, 100% {
+    transform: rotate(var(--base-rotation, 0deg)) translateX(0);
+  }
+  10% {
+    transform: rotate(calc(var(--base-rotation, 0deg) + 2deg)) translateX(-2px);
+  }
+  20% {
+    transform: rotate(calc(var(--base-rotation, 0deg) - 2deg)) translateX(2px);
+  }
+  30% {
+    transform: rotate(calc(var(--base-rotation, 0deg) + 1deg)) translateX(-1px);
+  }
+  40% {
+    transform: rotate(calc(var(--base-rotation, 0deg) - 1deg)) translateX(1px);
+  }
+  50% {
+    transform: rotate(calc(var(--base-rotation, 0deg) + 2deg)) translateX(-2px);
+  }
+  60% {
+    transform: rotate(calc(var(--base-rotation, 0deg) - 2deg)) translateX(2px);
+  }
+  70% {
+    transform: rotate(calc(var(--base-rotation, 0deg) + 1deg)) translateX(-1px);
+  }
+  80% {
+    transform: rotate(calc(var(--base-rotation, 0deg) - 1deg)) translateX(1px);
+  }
+  90% {
+    transform: rotate(calc(var(--base-rotation, 0deg) + 2deg)) translateX(-2px);
+  }
+}
+
+/* Animation de danse joyeuse */
+@keyframes party-dance {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+  }
+  25% {
+    transform: scale(1.02) rotate(-2deg);
+  }
+  50% {
+    transform: scale(1) rotate(0deg);
+  }
+  75% {
+    transform: scale(1.02) rotate(2deg);
+  }
+}
+
+/* Classe appliquée au body quand le mode fête est actif */
+body.party-mode-active {
+  animation: disco-bg 2s ease-in-out infinite, disco-accent 1.5s ease-in-out infinite;
+}
+
+/* Effet sur tous les éléments avec couleur de fond brand-light */
+body.party-mode-active .bg-brand-light {
+  animation: disco-bg 2s ease-in-out infinite;
+}
+
+/* Effet de pulsation sur les boutons */
+body.party-mode-active .btn {
+  animation: party-dance 0.5s ease-in-out infinite;
+}
+
+/* Classe pour les cartes qui dansent */
+.party-card-shake {
+  animation: party-shake 0.3s ease-in-out infinite;
+}
+
+.party-card-dance {
+  animation: party-dance 0.5s ease-in-out infinite;
+}
