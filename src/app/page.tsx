@@ -3,6 +3,7 @@ import HeroMurDesSouvenirs from "@/components/HeroMurDesSouvenirs";
 import Countdown from "@/components/Countdown";
 import FamilyPhotos from "@/components/FamilyPhotos";
 import FestiveProgram from "@/components/FestiveProgram";
+import Vibrometre from "@/components/Vibrometre";
 import MusicProgramming from "@/components/MusicProgramming";
 import RSVPForm from "@/components/RSVPForm";
 import LogisticsSection from "@/components/LogisticsSection";
@@ -37,6 +38,9 @@ export default function Home() {
 
       {/* Photos de Famille - Section avec cartes animées */}
       <FamilyPhotos />
+
+      {/* Vibromètre de la Fête - Statistiques absurdes en temps réel */}
+      <Vibrometre />
 
       {/* Programmation Musicale - La Scène de Granny */}
       <MusicProgramming />
