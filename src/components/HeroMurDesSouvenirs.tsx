@@ -216,10 +216,10 @@ export default function HeroMurDesSouvenirs() {
         </div>
       </div>
 
-      {/* Date et adresse de l'événement en bas - Mobile */}
+      {/* Date et adresse de l'événement en bas - Mobile (remonté de 40px) */}
       <div
         ref={menuRef}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 text-center md:hidden"
+        className="absolute bottom-[72px] left-1/2 -translate-x-1/2 text-center md:hidden"
       >
         <div className="relative group flex flex-col items-center">
           {/* Date cliquable */}
@@ -243,7 +243,7 @@ export default function HeroMurDesSouvenirs() {
 
           {/* Menu dropdown pour choisir le type de calendrier - Mobile */}
           <div
-            className={`absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-white rounded-lg overflow-hidden transition-all duration-300 ease-out z-50 ${
+            className={`absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-white rounded-lg overflow-visible transition-all duration-300 ease-out z-[100] shadow-lg ${
               calendarMenuOpen
                 ? "opacity-100 translate-y-0 pointer-events-auto"
                 : "opacity-0 translate-y-2 pointer-events-none"
@@ -306,7 +306,7 @@ export default function HeroMurDesSouvenirs() {
 
           {/* Menu dropdown pour choisir le type de calendrier - Desktop */}
           <div
-            className={`absolute top-full mt-8 left-1/2 -translate-x-1/2 bg-white rounded-lg overflow-hidden transition-all duration-300 ease-out z-50 ${
+            className={`absolute top-full mt-8 left-1/2 -translate-x-1/2 bg-white rounded-lg overflow-visible transition-all duration-300 ease-out z-[100] shadow-lg ${
               calendarMenuOpen
                 ? "opacity-100 translate-y-0 pointer-events-auto"
                 : "opacity-0 -translate-y-2 pointer-events-none"
