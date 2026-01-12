@@ -140,7 +140,7 @@ export default function BounceCards({
       {images.map((src, idx) => (
         <div
           key={idx}
-          className={`bounce-card bounce-card-${idx} absolute w-[150px] md:w-[250px] aspect-square border-8 border-white rounded-[30px] overflow-hidden`}
+          className={`bounce-card bounce-card-${idx} absolute w-[150px] md:w-[300px] aspect-square border-8 border-white rounded-[30px] overflow-hidden`}
           style={{
             transform: transformStyles[idx] || 'none',
             zIndex: idx
@@ -153,7 +153,7 @@ export default function BounceCards({
             alt={`Photo de famille ${idx + 1}`}
             fill
             className="object-cover"
-            sizes="(max-width: 768px) 150px, 250px"
+            sizes="(max-width: 768px) 150px, 300px"
           />
         </div>
       ))}

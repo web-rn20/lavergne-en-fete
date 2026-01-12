@@ -38,6 +38,9 @@ export default function Home() {
       {/* Photos de Famille - Section avec cartes animées */}
       <FamilyPhotos />
 
+      {/* Le Programme - Timeline de la soirée */}
+      <ProgrammeTimeline />
+
       {/* Programmation Musicale - La Scène de Granny */}
       <MusicProgramming />
 

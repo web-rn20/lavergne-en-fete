@@ -13,11 +13,11 @@ const familyImages = [
 ];
 
 const transformStyles = [
-  'rotate(5deg) translate(-220px)',
-  'rotate(0deg) translate(-110px)',
+  'rotate(5deg) translate(-280px)',
+  'rotate(0deg) translate(-140px)',
   'rotate(-5deg)',
-  'rotate(5deg) translate(110px)',
-  'rotate(-5deg) translate(220px)'
+  'rotate(5deg) translate(140px)',
+  'rotate(-5deg) translate(280px)'
 ];
 
 const mobileTransformStyles = [
@@ -41,8 +41,8 @@ export default function FamilyPhotos() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const containerWidth = isMobile ? 300 : 800;
-  const containerHeight = isMobile ? 280 : 450;
+  const containerWidth = isMobile ? 300 : 1000;
+  const containerHeight = isMobile ? 280 : 500;
   const currentTransforms = isMobile ? mobileTransformStyles : transformStyles;
 
   return (
