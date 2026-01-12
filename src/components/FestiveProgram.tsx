@@ -19,28 +19,28 @@ const programSteps: ProgramStep[] = [
     title: "L'Arrivée",
     description: "Accueil & Rafraîchissements sous les arbres.",
     icon: MapPin,
-    bgColor: "bg-amber-100", // Jaune doux
+    bgColor: "bg-brand-light", // Lavender Blush
   },
   {
     time: "19h30",
     title: "Le Cocktail",
     description: "Cocktail & Amuse-bouches (début des hostilités).",
     icon: GlassWater,
-    bgColor: "bg-emerald-100", // Vert menthe
+    bgColor: "bg-brand-primary/15", // Bubblegum Pink légèrement transparent
   },
   {
     time: "21h00",
     title: "Le Festin",
     description: "Dîner de fête & surprises.",
     icon: Utensils,
-    bgColor: "bg-rose-100", // Corail / rose
+    bgColor: "bg-brand-light", // Lavender Blush
   },
   {
     time: "23h00",
     title: "La Fiesta",
     description: "Ouverture du bal & dancefloor jusqu'au bout de la nuit.",
     icon: Music,
-    bgColor: "bg-violet-100", // Lavande
+    bgColor: "bg-brand-primary/15", // Bubblegum Pink légèrement transparent
   },
 ];
 
@@ -118,26 +118,14 @@ function ProgramStepCard({
   );
 }
 
-// Composant pour la ligne pointillée serpentante (desktop)
-function DottedPathDesktop() {
+// Composant pour la ligne pleine serpentante (desktop)
+function SolidPathDesktop() {
   return (
     <svg
       className="absolute left-1/2 top-0 h-full w-32 -translate-x-1/2 hidden md:block pointer-events-none"
       preserveAspectRatio="none"
     >
-      <defs>
-        <pattern
-          id="dotPattern"
-          x="0"
-          y="0"
-          width="10"
-          height="10"
-          patternUnits="userSpaceOnUse"
-        >
-          <circle cx="5" cy="5" r="2" fill="#f45b69" />
-        </pattern>
-      </defs>
-      {/* Ligne serpentante avec des courbes */}
+      {/* Ligne serpentante pleine et élégante */}
       <path
         d="M 64 0
            Q 20 80, 64 160
@@ -148,10 +136,9 @@ function DottedPathDesktop() {
            Q 108 880, 64 960
            Q 20 1040, 64 1120"
         fill="none"
-        stroke="url(#dotPattern)"
-        strokeWidth="4"
-        strokeDasharray="12 8"
-        className="opacity-60"
+        stroke="#f45b69"
+        strokeWidth="3"
+        className="opacity-40"
       />
       {/* Points de connexion aux étapes */}
       <circle cx="64" cy="100" r="8" fill="#f45b69" />
@@ -162,18 +149,10 @@ function DottedPathDesktop() {
   );
 }
 
-// Ligne pointillée verticale pour mobile
-function DottedLineMobile() {
+// Ligne pleine verticale pour mobile
+function SolidLineMobile() {
   return (
-    <div className="absolute left-4 top-0 bottom-0 w-1 md:hidden">
-      <div
-        className="h-full w-full"
-        style={{
-          background:
-            "repeating-linear-gradient(to bottom, #f45b69 0px, #f45b69 8px, transparent 8px, transparent 16px)",
-        }}
-      />
-    </div>
+    <div className="absolute left-4 top-0 bottom-0 w-0.5 md:hidden bg-brand-primary/40" />
   );
 }
 
@@ -204,9 +183,9 @@ export default function FestiveProgram() {
 
         {/* Container principal avec ligne et étapes */}
         <div className="relative max-w-4xl mx-auto">
-          {/* Ligne pointillée */}
-          <DottedPathDesktop />
-          <DottedLineMobile />
+          {/* Ligne de liaison pleine */}
+          <SolidPathDesktop />
+          <SolidLineMobile />
 
           {/* Grille des étapes */}
           <div className="relative flex flex-col gap-12 md:gap-16 pl-12 md:pl-0">

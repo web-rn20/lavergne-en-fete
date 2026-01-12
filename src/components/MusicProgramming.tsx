@@ -20,7 +20,7 @@ const bands: Band[] = [
   {
     name: 'Steliophonie',
     image: '/photos/musique/steliophonie.jpg',
-    badges: ['Pop & Rock'],
+    badges: ['Pop', 'Rock'],
     description: "Un groupe de reprises survitaminé prêt à faire vibrer les murs de chez Granny avec une énergie contagieuse.",
   },
   {

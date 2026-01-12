@@ -54,8 +54,6 @@ const hotelsSuggeres = [
 const regimeOptions = [
   { value: "normal", label: "Pas de régime spécial" },
   { value: "vegetarien", label: "Végétarien" },
-  { value: "vegan", label: "Vegan" },
-  { value: "halal", label: "Halal" },
   { value: "autre", label: "Autre" },
 ];
 

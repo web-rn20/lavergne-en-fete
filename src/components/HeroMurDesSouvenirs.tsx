@@ -63,7 +63,6 @@ const parentPhotos = [
   "/photos/parents/20150222_152405.jpg",
   "/photos/parents/20220402_125213.jpg",
   "/photos/parents/IMG_1767.JPG",
-  "/photos/parents/IMG_20220515_122349_678.jpg",
   "/photos/parents/PXL_20230330_161354908.jpg",
   "/photos/parents/PXL_20230604_130602424.MP.jpg",
   "/photos/parents/PXL_20230604_130852428.jpg",
