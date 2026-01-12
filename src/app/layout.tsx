@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import PartyModeWrapper from "@/components/PartyModeWrapper";
 
 export const metadata: Metadata = {
   title: "Véronique et Christophe : 30 ans de mariage",
@@ -28,7 +29,9 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased bg-brand-light text-brand-dark">
-        {children}
+        <PartyModeWrapper>
+          {children}
+        </PartyModeWrapper>
       </body>
     </html>
   );

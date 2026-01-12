@@ -2,6 +2,8 @@
 
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
+import { motion } from 'framer-motion';
+import { usePartyMode } from './PartyMode';
 
 interface MessageBounceCardProps {
   message: string;
@@ -19,6 +21,22 @@ export default function MessageBounceCard({
   rotation = 0,
 }: MessageBounceCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
+  const { isPartyModeActive } = usePartyMode();
+
+  // Animation de vibration pour le mode fête
+  const partyVariants = {
+    idle: {},
+    party: {
+      rotate: [rotation, rotation - 3, rotation + 3, rotation - 3, rotation + 3, rotation],
+      scale: [1, 1.03, 1, 1.03, 1],
+      transition: {
+        duration: 0.4,
+        repeat: Infinity,
+        ease: 'easeInOut' as const,
+        delay: index * 0.05, // Décalage pour effet de vague
+      },
+    },
+  };
 
   // Animation d'entrée avec GSAP (même style que BounceCards)
   useEffect(() => {
@@ -59,7 +77,7 @@ export default function MessageBounceCard({
   };
 
   return (
-    <div
+    <motion.div
       ref={cardRef}
       className="border-8 border-white rounded-[30px] overflow-hidden bg-white cursor-default"
       style={{
@@ -68,6 +86,8 @@ export default function MessageBounceCard({
       }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      variants={partyVariants}
+      animate={isPartyModeActive ? 'party' : 'idle'}
     >
       {/* Zone du message (style Polaroid) */}
       <div className="p-6 bg-gradient-to-br from-[#fdfbf7] to-[#f5f3ed] min-h-[120px] flex items-center justify-center">
@@ -90,6 +110,6 @@ export default function MessageBounceCard({
           </p>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }
