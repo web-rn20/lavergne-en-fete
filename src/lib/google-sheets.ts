@@ -237,22 +237,52 @@ export async function getHebergementPlacesRestantes(): Promise<number> {
   }
 }
 
+// Interface pour un message du Livre d'Or
+export interface GuestbookMessage {
+  date: string;
+  prenom: string;
+  nom: string;
+  message: string;
+}
+
 // Ajout d'un message au livre d'or
+// Colonnes: Date, Prénom, Nom, Message (onglet Livre_dOr)
 export async function addLivreOrMessage(
+  prenom: string,
   nom: string,
   message: string
 ): Promise<boolean> {
   try {
     const doc = await getGoogleSheet();
-    // La deuxième feuille = livre d'or
-    const sheet = doc.sheetsByIndex[1];
+    let sheet = doc.sheetsByTitle["Livre_dOr"];
 
-    await sheet.addRow({
-      nom,
-      message,
-      date: new Date().toISOString(),
+    // Créer l'onglet s'il n'existe pas avec les bons en-têtes
+    if (!sheet) {
+      console.log("Création de l'onglet Livre_dOr avec les en-têtes corrects...");
+      sheet = await doc.addSheet({
+        title: "Livre_dOr",
+        headerValues: ["Date", "Prénom", "Nom", "Message"],
+      });
+    }
+
+    // Formater la date en français (DD/MM/YYYY HH:mm)
+    const now = new Date();
+    const dateFormatted = now.toLocaleDateString("fr-FR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
 
+    await sheet.addRow({
+      "Date": dateFormatted,
+      "Prénom": prenom.trim(),
+      "Nom": nom.trim(),
+      "Message": message.trim(),
+    });
+
+    console.log("Message ajouté au Livre d'Or:", prenom, nom);
     return true;
   } catch (error) {
     console.error("Erreur lors de l'ajout au livre d'or:", error);
@@ -260,20 +290,38 @@ export async function addLivreOrMessage(
   }
 }
 
-// Récupération des messages du livre d'or
-export async function getLivreOrMessages(): Promise<
-  Array<{ nom: string; message: string; date: string }>
-> {
+// Récupération des messages du livre d'or (les plus récents en premier)
+export async function getLivreOrMessages(
+  limit?: number
+): Promise<GuestbookMessage[]> {
   try {
     const doc = await getGoogleSheet();
-    const sheet = doc.sheetsByIndex[1];
+    const sheet = doc.sheetsByTitle["Livre_dOr"];
+
+    if (!sheet) {
+      console.log("Onglet Livre_dOr non trouvé, retourne tableau vide");
+      return [];
+    }
 
     const rows = await sheet.getRows();
-    return rows.map((row: GoogleSpreadsheetRow) => ({
-      nom: row.get("nom"),
-      message: row.get("message"),
-      date: row.get("date"),
+
+    // Mapper les lignes vers l'interface GuestbookMessage
+    const messages: GuestbookMessage[] = rows.map((row: GoogleSpreadsheetRow) => ({
+      date: row.get("Date") || "",
+      prenom: row.get("Prénom") || row.get("Prenom") || "",
+      nom: row.get("Nom") || "",
+      message: row.get("Message") || "",
     }));
+
+    // Inverser pour avoir les plus récents en premier
+    const reversed = messages.reverse();
+
+    // Limiter si demandé
+    if (limit && limit > 0) {
+      return reversed.slice(0, limit);
+    }
+
+    return reversed;
   } catch (error) {
     console.error("Erreur lors de la récupération du livre d'or:", error);
     return [];
