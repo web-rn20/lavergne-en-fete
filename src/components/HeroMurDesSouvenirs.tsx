@@ -197,65 +197,6 @@ export default function HeroMurDesSouvenirs() {
 
       {/* Contenu du Hero centré */}
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-        {/* Date et lieu - Positionnés au-dessus du conteneur principal sur mobile */}
-        <div
-          ref={menuRef}
-          className="mb-4 md:hidden"
-        >
-          <div className="relative group flex flex-col items-center">
-            {/* Date cliquable */}
-            <button
-              onClick={() => setCalendarMenuOpen(!calendarMenuOpen)}
-              className="font-oswald text-2xl text-brand-accent-deep font-bold cursor-pointer hover:text-brand-dark transition-colors duration-300 bg-transparent border-none outline-none"
-              aria-label="Ajouter au calendrier"
-            >
-              27 Juin 2026
-            </button>
-
-            {/* Adresse du lieu - cliquable vers Google Maps */}
-            <a
-              href={RECEPTION_MAPS_LINK}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-montserrat text-sm text-brand-accent-deep/80 mt-1 hover:text-brand-accent-deep transition-colors duration-300 flex items-center gap-1.5"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
-              </svg>
-              Chez Granny — {RECEPTION_ADDRESS}
-            </a>
-
-            {/* Menu dropdown pour choisir le type de calendrier - Mobile */}
-            <div
-              className={`absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-white rounded-lg overflow-hidden transition-all duration-300 ease-out z-50 ${
-                calendarMenuOpen
-                  ? "opacity-100 translate-y-0 pointer-events-auto"
-                  : "opacity-0 -translate-y-2 pointer-events-none"
-              }`}
-            >
-              <a
-                href={generateGoogleCalendarUrl()}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block px-4 py-2 font-montserrat text-sm text-brand-dark hover:bg-brand-light transition-colors duration-200 whitespace-nowrap"
-                onClick={() => setCalendarMenuOpen(false)}
-              >
-                Google Calendar
-              </a>
-              <button
-                onClick={() => {
-                  downloadIcsFile();
-                  setCalendarMenuOpen(false);
-                }}
-                className="block w-full text-left px-4 py-2 font-montserrat text-sm text-brand-dark hover:bg-brand-light transition-colors duration-200 whitespace-nowrap border-none bg-transparent cursor-pointer"
-              >
-                Apple / Outlook (.ics)
-              </button>
-            </div>
-          </div>
-        </div>
-
         {/* Conteneur avec fond Black Cherry - Réduit sur mobile */}
         <div className="bg-brand-accent-deep p-4 sm:p-6 md:p-8 rounded-2xl max-w-fit text-brand-light">
           <h1 className="font-oswald text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold mb-2 sm:mb-4">
@@ -267,14 +208,65 @@ export default function HeroMurDesSouvenirs() {
           <p className="font-montserrat text-sm sm:text-base md:text-xl leading-relaxed mb-4 sm:mb-6 md:mb-8">
             Un anniversaire qui se fête.. même avec un an de retard
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
+          <div className="flex justify-center">
             <a href="#rsvp" className="btn btn-on-dark">
               Confirmer ma présence
             </a>
-            {/* Bouton "Voir le programme" masqué sur mobile */}
-            <a href="#programme" className="btn btn-secondary-on-dark hidden sm:inline-flex">
-              Voir le programme
+          </div>
+        </div>
+      </div>
+
+      {/* Date et adresse de l'événement en bas - Mobile */}
+      <div
+        ref={menuRef}
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 text-center md:hidden"
+      >
+        <div className="relative group flex flex-col items-center">
+          {/* Date cliquable */}
+          <button
+            onClick={() => setCalendarMenuOpen(!calendarMenuOpen)}
+            className="font-oswald text-2xl text-brand-accent-deep font-bold cursor-pointer hover:text-brand-dark transition-colors duration-300 bg-transparent border-none outline-none"
+            aria-label="Ajouter au calendrier"
+          >
+            27 Juin 2026
+          </button>
+
+          {/* Adresse du lieu - cliquable vers Google Maps (sans icône) */}
+          <a
+            href={RECEPTION_MAPS_LINK}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-montserrat text-sm text-brand-accent-deep/80 mt-1 hover:text-brand-accent-deep transition-colors duration-300"
+          >
+            Chez Granny — {RECEPTION_ADDRESS}
+          </a>
+
+          {/* Menu dropdown pour choisir le type de calendrier - Mobile */}
+          <div
+            className={`absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-white rounded-lg overflow-hidden transition-all duration-300 ease-out z-50 ${
+              calendarMenuOpen
+                ? "opacity-100 translate-y-0 pointer-events-auto"
+                : "opacity-0 translate-y-2 pointer-events-none"
+            }`}
+          >
+            <a
+              href={generateGoogleCalendarUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block px-4 py-2 font-montserrat text-sm text-brand-dark hover:bg-brand-light transition-colors duration-200 whitespace-nowrap"
+              onClick={() => setCalendarMenuOpen(false)}
+            >
+              Google Calendar
             </a>
+            <button
+              onClick={() => {
+                downloadIcsFile();
+                setCalendarMenuOpen(false);
+              }}
+              className="block w-full text-left px-4 py-2 font-montserrat text-sm text-brand-dark hover:bg-brand-light transition-colors duration-200 whitespace-nowrap border-none bg-transparent cursor-pointer"
+            >
+              Apple / Outlook (.ics)
+            </button>
           </div>
         </div>
       </div>
