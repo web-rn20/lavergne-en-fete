@@ -10,11 +10,8 @@ const RECEPTION_ADDRESS_ENCODED = encodeURIComponent(`${RECEPTION_NAME}, ${RECEP
 // Lien Google Maps partagé pour le lieu
 const RECEPTION_MAPS_LINK = "https://share.google/gu5MfJ1OBj9OsJiZY";
 
-// Coordonnées de Cornebarrieu pour centrer la carte
-const MAP_CENTER = "43.6214,1.3343";
-
-// Coordonnées exactes de Chez Granny pour le marqueur
-const MARKER_COORDS = "43.6214,1.3343";
+// Coordonnées exactes de Chez Granny pour le marqueur (plus précis)
+const CHEZ_GRANNY_COORDS = "43.6214,1.3343";
 
 // Informations des hôtels partenaires
 const hotels = [
@@ -93,7 +90,7 @@ export default function LogisticsSection() {
           <div className="relative w-full rounded-2xl overflow-hidden bg-white">
             <div className="aspect-video md:aspect-[21/9]">
               <iframe
-                src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${RECEPTION_ADDRESS_ENCODED}&center=${MAP_CENTER}&zoom=15`}
+                src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${RECEPTION_ADDRESS_ENCODED}&center=${CHEZ_GRANNY_COORDS}&zoom=16&maptype=roadmap`}
                 className="w-full h-full border-0"
                 allowFullScreen
                 loading="lazy"
