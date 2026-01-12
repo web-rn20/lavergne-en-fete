@@ -13,42 +13,11 @@ interface GuestbookMessage {
   message: string;
 }
 
-// Génère une rotation aléatoire entre -3 et +3 degrés (comme les photos)
+// Génère une rotation aléatoire entre -2 et +2 degrés
 const getRandomRotation = (seed: number) => {
   const pseudoRandom = Math.sin(seed * 12.9898) * 43758.5453;
   const normalized = pseudoRandom - Math.floor(pseudoRandom);
-  return (normalized * 6) - 3; // Entre -3 et +3 degrés
-};
-
-// Variants pour l'animation du container (stagger comme les photos)
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.06,
-      delayChildren: 0.3,
-    },
-  },
-};
-
-// Variants pour chaque carte Polaroid
-const polaroidVariants = {
-  hidden: {
-    opacity: 0,
-    y: 20,
-    scale: 0,
-  },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: {
-      type: "spring" as const,
-      damping: 12,
-      stiffness: 100,
-    },
-  },
+  return (normalized * 4) - 2; // Entre -2 et +2 degrés
 };
 
 // Composant carte Polaroid individuelle
@@ -64,15 +33,15 @@ function PolaroidCard({ message, index }: PolaroidCardProps) {
     [index, message.prenom]
   );
 
-  // Animation au survol avec GSAP (comme BounceCards)
+  // Animation au survol avec GSAP
   const handleMouseEnter = () => {
     if (!cardRef.current) return;
     gsap.to(cardRef.current, {
-      scale: 1.05,
+      scale: 1.03,
       rotate: 0,
-      boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.35)",
-      duration: 0.4,
-      ease: "back.out(1.4)",
+      boxShadow: "0 20px 40px -10px rgba(0, 0, 0, 0.3)",
+      duration: 0.3,
+      ease: "power2.out",
     });
   };
 
@@ -81,30 +50,33 @@ function PolaroidCard({ message, index }: PolaroidCardProps) {
     gsap.to(cardRef.current, {
       scale: 1,
       rotate: rotation,
-      boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.15)",
-      duration: 0.4,
-      ease: "back.out(1.4)",
+      boxShadow: "0 8px 20px -5px rgba(0, 0, 0, 0.15)",
+      duration: 0.3,
+      ease: "power2.out",
     });
   };
 
   return (
     <motion.div
       ref={cardRef}
-      variants={polaroidVariants}
-      className="bg-white rounded-[20px] overflow-hidden cursor-default"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{
+        duration: 0.4,
+        delay: index * 0.08,
+        ease: "easeOut",
+      }}
+      className="bg-white rounded-2xl overflow-hidden cursor-default"
       style={{
-        rotate: `${rotation}deg`,
-        boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.15)",
-        height: "auto",
+        transform: `rotate(${rotation}deg)`,
+        boxShadow: "0 8px 20px -5px rgba(0, 0, 0, 0.15)",
+        height: "fit-content",
       }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      {/* Zone du message (comme la photo du Polaroid) */}
-      <div
-        className="p-5 md:p-6 bg-gradient-to-br from-[#fdfbf7] to-[#f5f3ed]"
-        style={{ minHeight: "100px" }}
-      >
+      {/* Zone du message */}
+      <div className="p-5 md:p-6 bg-gradient-to-br from-[#fdfbf7] to-[#f5f3ed]">
         <p
           className="font-caveat text-xl md:text-2xl leading-relaxed text-brand-dark/85 text-center"
           style={{ wordBreak: "break-word" }}
@@ -113,7 +85,7 @@ function PolaroidCard({ message, index }: PolaroidCardProps) {
         </p>
       </div>
 
-      {/* Zone inférieure blanche épaisse (signature Polaroid) */}
+      {/* Zone inférieure blanche (signature Polaroid) */}
       <div className="bg-white px-5 py-4 border-t border-gray-100">
         <p className="font-caveat text-lg text-brand-dark/70 text-center">
           {message.prenom} {message.nom && message.nom}
@@ -145,10 +117,15 @@ export default function GuestbookSection() {
       const response = await fetch("/api/guestbook?limit=12");
       const data = await response.json();
       if (data.success && data.messages) {
+        console.log("Nombre de messages à afficher :", data.messages.length);
         setRecentMessages(data.messages);
+      } else {
+        console.log("Aucun message reçu ou erreur:", data);
+        setRecentMessages([]);
       }
     } catch (error) {
       console.error("Erreur lors du chargement des messages:", error);
+      setRecentMessages([]);
     } finally {
       setIsLoadingMessages(false);
     }
@@ -372,36 +349,47 @@ export default function GuestbookSection() {
           </div>
         </form>
 
-        {/* Mur de Polaroids - CSS Grid Layout */}
-        {!isLoadingMessages && recentMessages.length > 0 && (
-          <div>
-            <h3 className="font-oswald text-2xl md:text-3xl text-brand-dark text-center mb-10">
-              Vos Messages
-            </h3>
+        {/* Section des messages */}
+        <div>
+          <h3 className="font-oswald text-2xl md:text-3xl text-brand-dark text-center mb-10">
+            Vos Messages
+          </h3>
 
-            <motion.div
-              className="grid gap-8"
+          {/* État de chargement */}
+          {isLoadingMessages && (
+            <div className="text-center text-brand-dark/50 py-8">
+              <div className="animate-pulse">Chargement des messages...</div>
+            </div>
+          )}
+
+          {/* Message si aucun message */}
+          {!isLoadingMessages && recentMessages.length === 0 && (
+            <div className="text-center text-brand-dark/60 py-12 bg-white/50 rounded-2xl">
+              <p className="font-caveat text-2xl mb-2">Soyez le premier à laisser un mot !</p>
+              <p className="text-sm">Votre message apparaîtra ici après envoi.</p>
+            </div>
+          )}
+
+          {/* Grille des messages - CSS Grid standard */}
+          {!isLoadingMessages && recentMessages.length > 0 && (
+            <div
               style={{
-                gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+                gridAutoRows: "min-content",
+                gap: "24px",
               }}
-              variants={containerVariants}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.1 }}
             >
               {recentMessages.map((msg, index) => (
-                <PolaroidCard key={`${msg.date}-${msg.prenom}-${index}`} message={msg} index={index} />
+                <PolaroidCard
+                  key={`msg-${index}-${msg.prenom}-${msg.date}`}
+                  message={msg}
+                  index={index}
+                />
               ))}
-            </motion.div>
-          </div>
-        )}
-
-        {/* État de chargement */}
-        {isLoadingMessages && (
-          <div className="text-center text-brand-dark/50">
-            <div className="animate-pulse">Chargement des messages...</div>
-          </div>
-        )}
+            </div>
+          )}
+        </div>
       </div>
     </SectionContainer>
   );
