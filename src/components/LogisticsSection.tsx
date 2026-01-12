@@ -62,7 +62,7 @@ const infoPratiques = [
 
 export default function LogisticsSection() {
   return (
-    <SectionContainer id="logistique" className="py-20 bg-brand-light">
+    <SectionContainer id="logistique" className="py-12 md:py-20 bg-brand-light">
       <div className="max-w-6xl mx-auto">
         {/* Titre de section */}
         <h2 className="font-oswald text-4xl md:text-5xl text-brand-dark text-center mb-12">
@@ -77,7 +77,7 @@ export default function LogisticsSection() {
 
           {/* Adresse affichée */}
           <p className="text-brand-dark/80 text-center mb-6 flex items-center justify-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-7 h-7 md:w-5 md:h-5 text-brand-primary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
               <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
             </svg>
@@ -87,7 +87,7 @@ export default function LogisticsSection() {
           </p>
 
           {/* Carte Google Maps */}
-          <div className="relative w-full rounded-2xl overflow-hidden shadow-lg bg-white">
+          <div className="relative w-full rounded-2xl overflow-hidden bg-white">
             <div className="aspect-video md:aspect-[21/9]">
               <iframe
                 src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${RECEPTION_ADDRESS_ENCODED}&center=${MAP_CENTER}&zoom=15`}
@@ -108,7 +108,7 @@ export default function LogisticsSection() {
               rel="noopener noreferrer"
               className="btn btn-on-light inline-flex items-center gap-3"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 md:w-5 md:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
               </svg>
@@ -128,7 +128,7 @@ export default function LogisticsSection() {
             {hotels.map((hotel, index) => (
               <div
                 key={index}
-                className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 relative overflow-hidden"
+                className="bg-white rounded-2xl p-6 relative overflow-hidden"
               >
                 {/* Badge "À 5 min" */}
                 <div className="absolute top-4 right-4">
@@ -144,7 +144,7 @@ export default function LogisticsSection() {
                   </h4>
 
                   <p className="text-brand-dark/70 text-sm mb-4 flex items-start gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6 md:w-4 md:h-4 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                       <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
                     </svg>
@@ -187,7 +187,7 @@ export default function LogisticsSection() {
             {infoPratiques.map((info, index) => (
               <div
                 key={index}
-                className="bg-white rounded-2xl p-6 shadow-lg text-center"
+                className="bg-white rounded-2xl p-6 text-center"
               >
                 {/* Icône */}
                 <div className="w-16 h-16 mx-auto mb-4 bg-brand-primary/10 rounded-full flex items-center justify-center text-brand-primary">

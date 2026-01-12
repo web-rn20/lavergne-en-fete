@@ -12,7 +12,7 @@ interface Band {
 
 const bands: Band[] = [
   {
-    name: "Watt's up",
+    name: "Watts Up",
     image: '/photos/musique/wattsup.jpg',
     badges: ['Pop', 'Rock'],
     description: "Des amoureux de la musique ravis de jouer ensemble et de vous proposer leurs reprises.",
@@ -40,7 +40,7 @@ function BandCard({ band }: { band: Band }) {
       {/* Image Container */}
       <div className="relative w-full aspect-[4/3] bg-brand-dark overflow-hidden">
         {band.isPlaceholder ? (
-          // Placeholder pour Watt's up
+          // Placeholder pour Watts Up
           <div className="absolute inset-0 flex items-center justify-center bg-brand-dark">
             <div className="text-center">
               <svg
@@ -105,10 +105,10 @@ function BandCard({ band }: { band: Band }) {
 
 export default function MusicProgramming() {
   return (
-    <SectionContainer id="musique" className="py-20 bg-brand-dark">
+    <SectionContainer id="programme" className="py-12 md:py-20 bg-brand-dark">
       <div className="max-w-6xl mx-auto">
         {/* Section Title */}
-        <h2 className="font-meow text-5xl text-brand-light text-center mb-12">
+        <h2 className="font-oswald text-4xl md:text-5xl text-brand-light text-center mb-12">
           La Scène de Granny
         </h2>
 

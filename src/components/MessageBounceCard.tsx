@@ -43,7 +43,6 @@ export default function MessageBounceCard({
     gsap.to(cardRef.current, {
       scale: 1.05,
       rotate: 0,
-      boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.35)',
       duration: 0.4,
       ease: 'back.out(1.4)',
     });
@@ -54,7 +53,6 @@ export default function MessageBounceCard({
     gsap.to(cardRef.current, {
       scale: 1,
       rotate: rotation,
-      boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
       duration: 0.4,
       ease: 'back.out(1.4)',
     });
@@ -63,7 +61,7 @@ export default function MessageBounceCard({
   return (
     <div
       ref={cardRef}
-      className="border-8 border-white rounded-[30px] overflow-hidden shadow-xl bg-white cursor-default"
+      className="border-8 border-white rounded-[30px] overflow-hidden bg-white cursor-default"
       style={{
         transform: `rotate(${rotation}deg)`,
         opacity: 0, // Commence invisible, GSAP l'anime

@@ -197,38 +197,97 @@ export default function HeroMurDesSouvenirs() {
 
       {/* Contenu du Hero centré */}
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
-        {/* Conteneur avec fond Black Cherry */}
-        <div className="bg-brand-accent-deep p-8 rounded-2xl max-w-fit text-brand-light">
-          <h1 className="font-oswald text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
+        {/* Date et lieu - Positionnés au-dessus du conteneur principal sur mobile */}
+        <div
+          ref={menuRef}
+          className="mb-4 md:hidden"
+        >
+          <div className="relative group flex flex-col items-center">
+            {/* Date cliquable */}
+            <button
+              onClick={() => setCalendarMenuOpen(!calendarMenuOpen)}
+              className="font-oswald text-2xl text-brand-accent-deep font-bold cursor-pointer hover:text-brand-dark transition-colors duration-300 bg-transparent border-none outline-none"
+              aria-label="Ajouter au calendrier"
+            >
+              27 Juin 2026
+            </button>
+
+            {/* Adresse du lieu - cliquable vers Google Maps */}
+            <a
+              href={RECEPTION_MAPS_LINK}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-montserrat text-sm text-brand-accent-deep/80 mt-1 hover:text-brand-accent-deep transition-colors duration-300 flex items-center gap-1.5"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+              </svg>
+              Chez Granny — {RECEPTION_ADDRESS}
+            </a>
+
+            {/* Menu dropdown pour choisir le type de calendrier - Mobile */}
+            <div
+              className={`absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-white rounded-lg overflow-hidden transition-all duration-300 ease-out z-50 ${
+                calendarMenuOpen
+                  ? "opacity-100 translate-y-0 pointer-events-auto"
+                  : "opacity-0 -translate-y-2 pointer-events-none"
+              }`}
+            >
+              <a
+                href={generateGoogleCalendarUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block px-4 py-2 font-montserrat text-sm text-brand-dark hover:bg-brand-light transition-colors duration-200 whitespace-nowrap"
+                onClick={() => setCalendarMenuOpen(false)}
+              >
+                Google Calendar
+              </a>
+              <button
+                onClick={() => {
+                  downloadIcsFile();
+                  setCalendarMenuOpen(false);
+                }}
+                className="block w-full text-left px-4 py-2 font-montserrat text-sm text-brand-dark hover:bg-brand-light transition-colors duration-200 whitespace-nowrap border-none bg-transparent cursor-pointer"
+              >
+                Apple / Outlook (.ics)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Conteneur avec fond Black Cherry - Réduit sur mobile */}
+        <div className="bg-brand-accent-deep p-4 sm:p-6 md:p-8 rounded-2xl max-w-fit text-brand-light">
+          <h1 className="font-oswald text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold mb-2 sm:mb-4">
             Véronique &amp; Christophe : 30 ans de mariage
           </h1>
-          <p className="font-meow text-3xl sm:text-4xl md:text-5xl mb-4">
+          <p className="font-meow text-2xl sm:text-3xl md:text-5xl mb-2 sm:mb-4">
             Noces de Perle
           </p>
-          <p className="font-montserrat text-base sm:text-lg md:text-xl leading-relaxed mb-8">
+          <p className="font-montserrat text-sm sm:text-base md:text-xl leading-relaxed mb-4 sm:mb-6 md:mb-8">
             Un anniversaire qui se fête.. même avec un an de retard
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
             <a href="#rsvp" className="btn btn-on-dark">
               Confirmer ma présence
             </a>
-            <a href="#programme" className="btn btn-secondary-on-dark">
+            {/* Bouton "Voir le programme" masqué sur mobile */}
+            <a href="#programme" className="btn btn-secondary-on-dark hidden sm:inline-flex">
               Voir le programme
             </a>
           </div>
         </div>
       </div>
 
-      {/* Date et adresse de l'événement en bas - Cliquable pour ajouter au calendrier */}
+      {/* Date et adresse de l'événement en bas - Desktop uniquement */}
       <div
-        ref={menuRef}
-        className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 text-center"
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 text-center hidden md:block"
       >
         <div className="relative group flex flex-col items-center">
           {/* Date cliquable */}
           <button
             onClick={() => setCalendarMenuOpen(!calendarMenuOpen)}
-            className="font-oswald text-xl sm:text-2xl md:text-3xl text-brand-accent-deep font-bold cursor-pointer hover:text-brand-dark transition-colors duration-300 bg-transparent border-none outline-none shadow-none"
+            className="font-oswald text-2xl md:text-3xl text-brand-accent-deep font-bold cursor-pointer hover:text-brand-dark transition-colors duration-300 bg-transparent border-none outline-none"
             aria-label="Ajouter au calendrier"
           >
             27 Juin 2026
@@ -239,9 +298,9 @@ export default function HeroMurDesSouvenirs() {
             href={RECEPTION_MAPS_LINK}
             target="_blank"
             rel="noopener noreferrer"
-            className="font-montserrat text-sm sm:text-base text-brand-accent-deep/80 mt-2 hover:text-brand-accent-deep transition-colors duration-300 flex items-center gap-1.5"
+            className="font-montserrat text-base text-brand-accent-deep/80 mt-2 hover:text-brand-accent-deep transition-colors duration-300 flex items-center gap-1.5"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
               <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
             </svg>
@@ -249,13 +308,13 @@ export default function HeroMurDesSouvenirs() {
           </a>
 
           {/* Texte "clique sur la date" qui apparaît au hover - centré sous la date */}
-          <span className="font-montserrat text-xs text-brand-accent-deep/60 mt-1 whitespace-nowrap opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 ease-out pointer-events-none shadow-none">
+          <span className="font-montserrat text-xs text-brand-accent-deep/60 mt-1 whitespace-nowrap opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 ease-out pointer-events-none">
             clique sur la date pour l&apos;ajouter au calendrier
           </span>
 
-          {/* Menu dropdown pour choisir le type de calendrier */}
+          {/* Menu dropdown pour choisir le type de calendrier - Desktop */}
           <div
-            className={`absolute top-full mt-8 left-1/2 -translate-x-1/2 bg-white rounded-lg overflow-hidden transition-all duration-300 ease-out shadow-none ${
+            className={`absolute top-full mt-8 left-1/2 -translate-x-1/2 bg-white rounded-lg overflow-hidden transition-all duration-300 ease-out z-50 ${
               calendarMenuOpen
                 ? "opacity-100 translate-y-0 pointer-events-auto"
                 : "opacity-0 -translate-y-2 pointer-events-none"

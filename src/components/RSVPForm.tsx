@@ -502,7 +502,7 @@ export default function RSVPForm() {
   // Affichage du chargement
   if (isLoading) {
     return (
-      <SectionContainer id="rsvp" className="py-20 bg-brand-light">
+      <SectionContainer id="rsvp" className="py-12 md:py-20 bg-brand-light">
         <div className="max-w-2xl mx-auto text-center">
           <div className="animate-pulse">
             <div className="h-12 bg-brand-dark/10 rounded-lg w-3/4 mx-auto mb-8"></div>
@@ -516,7 +516,7 @@ export default function RSVPForm() {
   // Affichage du succès
   if (isSuccess) {
     return (
-      <SectionContainer id="rsvp" className="py-20 bg-brand-light">
+      <SectionContainer id="rsvp" className="py-12 md:py-20 bg-brand-light">
         <div className="max-w-2xl mx-auto text-center">
           <div className="bg-white rounded-2xl p-8 md:p-12">
             <div className="text-6xl mb-6">🎉</div>
@@ -557,7 +557,7 @@ export default function RSVPForm() {
   };
 
   return (
-    <SectionContainer id="rsvp" className="py-20 bg-brand-light">
+    <SectionContainer id="rsvp" className="py-12 md:py-20 bg-brand-light">
       {/* Modal de confirmation de modification */}
       {showConfirmModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -568,7 +568,7 @@ export default function RSVPForm() {
           />
 
           {/* Contenu du modal */}
-          <div className="relative bg-white rounded-2xl p-6 md:p-8 max-w-md w-full shadow-2xl animate-in fade-in zoom-in duration-200">
+          <div className="relative bg-white rounded-2xl p-6 md:p-8 max-w-md w-full animate-in fade-in zoom-in duration-200">
             {/* Icône d'alerte */}
             <div className="text-center mb-4">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-brand-accent/20 text-brand-accent-deep">
@@ -625,7 +625,7 @@ export default function RSVPForm() {
                 className="flex-1 py-3 px-4 bg-brand-primary text-white
                          rounded-lg font-montserrat font-semibold hover:bg-brand-primary/90
                          disabled:opacity-50 disabled:cursor-not-allowed
-                         transition-all duration-200 shadow-lg shadow-brand-primary/30"
+                         transition-all duration-200"
               >
                 {isSubmitting ? "Envoi..." : "Oui, modifier ma réponse"}
               </button>

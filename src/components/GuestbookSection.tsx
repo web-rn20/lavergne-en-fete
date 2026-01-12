@@ -109,7 +109,7 @@ export default function GuestbookSection() {
   };
 
   return (
-    <SectionContainer id="livre-or" className="py-20 bg-brand-light">
+    <SectionContainer id="livre-or" className="py-12 md:py-20 bg-brand-light">
       <div className="max-w-6xl mx-auto">
         {/* Titre de section */}
         <h2 className="font-oswald text-4xl md:text-5xl text-brand-dark text-center mb-4">
@@ -123,7 +123,7 @@ export default function GuestbookSection() {
         </p>
 
         {/* Formulaire */}
-        <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 md:p-8 shadow-lg mb-16 max-w-4xl mx-auto">
+        <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 md:p-8 mb-16 max-w-4xl mx-auto">
           <div className="mb-6">
             <label htmlFor="guestbook-message" className="block text-brand-dark font-medium mb-2">
               Ton message *
