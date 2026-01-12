@@ -3,12 +3,16 @@
 import Image from "next/image";
 import { useEffect, useState, useRef } from "react";
 
+// Adresse du lieu de réception (cohérence avec LogisticsSection)
+const RECEPTION_ADDRESS = "35 chemin de l'église, 31700 Cornebarrieu";
+const RECEPTION_MAPS_LINK = "https://share.google/gu5MfJ1OBj9OsJiZY";
+
 // Détails de l'événement pour le calendrier
 const eventDetails = {
   title: "30 ans de mariage : Véronique & Christophe",
   date: "20260627",
   dateEnd: "20260628",
-  location: "Chez Granny",
+  location: `Chez Granny - ${RECEPTION_ADDRESS}`,
   description:
     "Soirée musicale et festive pour les 30 ans de mariage et les anniversaires de Romain, Maxime et Jade.",
 };
@@ -215,10 +219,10 @@ export default function HeroMurDesSouvenirs() {
         </div>
       </div>
 
-      {/* Date de l'événement en bas - Cliquable pour ajouter au calendrier */}
+      {/* Date et adresse de l'événement en bas - Cliquable pour ajouter au calendrier */}
       <div
         ref={menuRef}
-        className="absolute bottom-8 sm:bottom-10 left-1/2 -translate-x-1/2 text-center"
+        className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 text-center"
       >
         <div className="relative group flex flex-col items-center">
           {/* Date cliquable */}
@@ -230,9 +234,23 @@ export default function HeroMurDesSouvenirs() {
             27 Juin 2026
           </button>
 
+          {/* Adresse du lieu - cliquable vers Google Maps */}
+          <a
+            href={RECEPTION_MAPS_LINK}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-montserrat text-sm sm:text-base text-brand-accent-deep/80 mt-2 hover:text-brand-accent-deep transition-colors duration-300 flex items-center gap-1.5"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+            </svg>
+            Chez Granny — {RECEPTION_ADDRESS}
+          </a>
+
           {/* Texte "clique sur la date" qui apparaît au hover - centré sous la date */}
-          <span className="font-montserrat text-base text-brand-accent-deep/70 mt-1 whitespace-nowrap opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 ease-out pointer-events-none shadow-none">
-            clique sur la date
+          <span className="font-montserrat text-xs text-brand-accent-deep/60 mt-1 whitespace-nowrap opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 ease-out pointer-events-none shadow-none">
+            clique sur la date pour l&apos;ajouter au calendrier
           </span>
 
           {/* Menu dropdown pour choisir le type de calendrier */}

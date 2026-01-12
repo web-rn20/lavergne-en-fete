@@ -2,11 +2,15 @@
 
 import SectionContainer from "@/components/SectionContainer";
 
-// Adresse du lieu de réception
-const RECEPTION_ADDRESS = "Maison des Lavergne, Cornebarrieu, 31700";
-const RECEPTION_ADDRESS_ENCODED = encodeURIComponent(RECEPTION_ADDRESS);
+// Adresse du lieu de réception (cohérence avec HeroMurDesSouvenirs)
+const RECEPTION_NAME = "Chez Granny";
+const RECEPTION_ADDRESS = "35 chemin de l'église, 31700 Cornebarrieu";
+const RECEPTION_ADDRESS_ENCODED = encodeURIComponent(`${RECEPTION_NAME}, ${RECEPTION_ADDRESS}`);
 
-// Coordonnées approximatives de Cornebarrieu pour centrer la carte
+// Lien Google Maps partagé pour le lieu
+const RECEPTION_MAPS_LINK = "https://share.google/gu5MfJ1OBj9OsJiZY";
+
+// Coordonnées de Cornebarrieu pour centrer la carte
 const MAP_CENTER = "43.6214,1.3343";
 
 // Informations des hôtels partenaires
@@ -67,20 +71,31 @@ export default function LogisticsSection() {
 
         {/* Section Carte Google Maps */}
         <div className="mb-16">
-          <h3 className="font-oswald text-2xl text-brand-dark text-center mb-6">
+          <h3 className="font-oswald text-2xl text-brand-dark text-center mb-4">
             Le Lieu de Réception
           </h3>
+
+          {/* Adresse affichée */}
+          <p className="text-brand-dark/80 text-center mb-6 flex items-center justify-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+            </svg>
+            <span className="font-semibold">{RECEPTION_NAME}</span>
+            <span className="text-brand-dark/60">—</span>
+            <span>{RECEPTION_ADDRESS}</span>
+          </p>
 
           {/* Carte Google Maps */}
           <div className="relative w-full rounded-2xl overflow-hidden shadow-lg bg-white">
             <div className="aspect-video md:aspect-[21/9]">
               <iframe
-                src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${RECEPTION_ADDRESS_ENCODED}&center=${MAP_CENTER}&zoom=14`}
+                src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${RECEPTION_ADDRESS_ENCODED}&center=${MAP_CENTER}&zoom=15`}
                 className="w-full h-full border-0"
                 allowFullScreen
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
-                title="Carte du lieu de réception"
+                title="Carte du lieu de réception - Chez Granny"
               />
             </div>
           </div>
@@ -88,7 +103,7 @@ export default function LogisticsSection() {
           {/* Bouton Google Maps */}
           <div className="text-center mt-6">
             <a
-              href={`https://www.google.com/maps/dir/?api=1&destination=${RECEPTION_ADDRESS_ENCODED}`}
+              href={RECEPTION_MAPS_LINK}
               target="_blank"
               rel="noopener noreferrer"
               className="btn btn-on-light inline-flex items-center gap-3"
