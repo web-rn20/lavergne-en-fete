@@ -80,11 +80,12 @@ const parentPhotos = [
   "/photos/parents/webcam1.jpg",
 ];
 
-// Distribution des photos dans 4 colonnes
-function distributePhotos(photos: string[]): string[][] {
-  const columns: string[][] = [[], [], [], []];
+// Distribution des photos dans les colonnes
+// Mobile: 3 colonnes, Desktop: 4 colonnes
+function distributePhotos(photos: string[], numColumns: number): string[][] {
+  const columns: string[][] = Array.from({ length: numColumns }, () => []);
   photos.forEach((photo, index) => {
-    columns[index % 4].push(photo);
+    columns[index % numColumns].push(photo);
   });
   return columns;
 }
@@ -119,28 +120,84 @@ export default function HeroMurDesSouvenirs() {
     };
   }, [calendarMenuOpen]);
 
-  const distributedPhotos = distributePhotos(parentPhotos);
+  // Distribution pour desktop (4 colonnes) et mobile (3 colonnes)
+  const desktopPhotos = distributePhotos(parentPhotos, 4);
+  const mobilePhotos = distributePhotos(parentPhotos, 3);
 
-  // Configuration des 4 colonnes : colonnes 1 et 3 vers le haut, 2 et 4 vers le bas
-  const columns: ColumnConfig[] = [
-    { photos: distributedPhotos[0], direction: "up", speed: 30 },
-    { photos: distributedPhotos[1], direction: "down", speed: 35 },
-    { photos: distributedPhotos[2], direction: "up", speed: 28 },
-    { photos: distributedPhotos[3], direction: "down", speed: 32 },
+  // Configuration des colonnes desktop (4 colonnes)
+  const desktopColumns: ColumnConfig[] = [
+    { photos: desktopPhotos[0], direction: "up", speed: 30 },
+    { photos: desktopPhotos[1], direction: "down", speed: 35 },
+    { photos: desktopPhotos[2], direction: "up", speed: 28 },
+    { photos: desktopPhotos[3], direction: "down", speed: 32 },
+  ];
+
+  // Configuration des colonnes mobile (3 colonnes)
+  const mobileColumns: ColumnConfig[] = [
+    { photos: mobilePhotos[0], direction: "up", speed: 28 },
+    { photos: mobilePhotos[1], direction: "down", speed: 32 },
+    { photos: mobilePhotos[2], direction: "up", speed: 30 },
   ];
 
   return (
     <section className="relative h-screen w-full overflow-hidden">
-      {/* Grille de photos : 2 colonnes mobile, 4 colonnes desktop */}
-      <div className="absolute inset-0 grid grid-cols-2 md:grid-cols-4 gap-2 p-2">
-        {columns.map((column, columnIndex) => (
-          <div
-            key={columnIndex}
-            className={`relative h-full overflow-hidden ${
-              // Masquer les colonnes 3 et 4 sur mobile
-              columnIndex >= 2 ? "hidden md:block" : ""
-            }`}
-          >
+      {/* Grille de photos MOBILE : 3 colonnes */}
+      <div className="absolute inset-0 grid grid-cols-3 gap-2 p-2 md:hidden">
+        {mobileColumns.map((column, columnIndex) => (
+          <div key={columnIndex} className="relative h-full overflow-hidden">
+            {/* Container animé avec duplication pour l'effet de boucle infinie */}
+            <div
+              className={`flex flex-col gap-2 will-change-transform ${
+                mounted
+                  ? column.direction === "up"
+                    ? "animate-marquee-up"
+                    : "animate-marquee-down"
+                  : ""
+              }`}
+              style={{
+                animationDuration: `${column.speed}s`,
+              }}
+            >
+              {/* Première série de photos */}
+              {column.photos.map((photo, photoIndex) => (
+                <div
+                  key={`first-${photoIndex}`}
+                  className="relative aspect-[3/4] w-full flex-shrink-0 overflow-hidden rounded-lg"
+                >
+                  <Image
+                    src={photo}
+                    alt={`Souvenir de famille ${columnIndex * 6 + photoIndex + 1}`}
+                    fill
+                    className="object-cover"
+                    sizes="33vw"
+                    priority={photoIndex === 0}
+                  />
+                </div>
+              ))}
+              {/* Deuxième série (duplication pour éviter les trous) */}
+              {column.photos.map((photo, photoIndex) => (
+                <div
+                  key={`second-${photoIndex}`}
+                  className="relative aspect-[3/4] w-full flex-shrink-0 overflow-hidden rounded-lg"
+                >
+                  <Image
+                    src={photo}
+                    alt={`Souvenir de famille ${columnIndex * 6 + photoIndex + 1}`}
+                    fill
+                    className="object-cover"
+                    sizes="33vw"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Grille de photos DESKTOP : 4 colonnes */}
+      <div className="absolute inset-0 hidden md:grid md:grid-cols-4 gap-2 p-2">
+        {desktopColumns.map((column, columnIndex) => (
+          <div key={columnIndex} className="relative h-full overflow-hidden">
             {/* Container animé avec duplication pour l'effet de boucle infinie */}
             <div
               className={`flex flex-col gap-2 will-change-transform ${
@@ -165,7 +222,7 @@ export default function HeroMurDesSouvenirs() {
                     alt={`Souvenir de famille ${columnIndex * 5 + photoIndex + 1}`}
                     fill
                     className="object-cover"
-                    sizes="(max-width: 768px) 50vw, 25vw"
+                    sizes="25vw"
                     priority={photoIndex === 0 && columnIndex < 2}
                   />
                 </div>
@@ -181,7 +238,7 @@ export default function HeroMurDesSouvenirs() {
                     alt={`Souvenir de famille ${columnIndex * 5 + photoIndex + 1}`}
                     fill
                     className="object-cover"
-                    sizes="(max-width: 768px) 50vw, 25vw"
+                    sizes="25vw"
                   />
                 </div>
               ))}
