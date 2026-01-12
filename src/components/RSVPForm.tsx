@@ -661,30 +661,6 @@ export default function RSVPForm() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label
-                    htmlFor="nom"
-                    className="block text-sm font-medium text-brand-dark mb-1"
-                  >
-                    Nom <span className="text-brand-alert">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="nom"
-                    value={formData.nom}
-                    onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, nom: e.target.value }))
-                    }
-                    disabled={!!invite}
-                    className="w-full px-4 py-3 border border-brand-light rounded-lg bg-white text-brand-dark
-                             focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20
-                             disabled:bg-brand-light/50 disabled:cursor-not-allowed
-                             transition-all duration-200"
-                    placeholder="Votre nom"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label
                     htmlFor="prenom"
                     className="block text-sm font-medium text-brand-dark mb-1"
                   >
@@ -703,6 +679,30 @@ export default function RSVPForm() {
                              disabled:bg-brand-light/50 disabled:cursor-not-allowed
                              transition-all duration-200"
                     placeholder="Votre prénom"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="nom"
+                    className="block text-sm font-medium text-brand-dark mb-1"
+                  >
+                    Nom <span className="text-brand-alert">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="nom"
+                    value={formData.nom}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, nom: e.target.value }))
+                    }
+                    disabled={!!invite}
+                    className="w-full px-4 py-3 border border-brand-light rounded-lg bg-white text-brand-dark
+                             focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20
+                             disabled:bg-brand-light/50 disabled:cursor-not-allowed
+                             transition-all duration-200"
+                    placeholder="Votre nom"
                     required
                   />
                 </div>

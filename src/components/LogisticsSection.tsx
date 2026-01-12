@@ -13,6 +13,9 @@ const RECEPTION_MAPS_LINK = "https://share.google/gu5MfJ1OBj9OsJiZY";
 // Coordonnées de Cornebarrieu pour centrer la carte
 const MAP_CENTER = "43.6214,1.3343";
 
+// Coordonnées exactes de Chez Granny pour le marqueur
+const MARKER_COORDS = "43.6214,1.3343";
+
 // Informations des hôtels partenaires
 const hotels = [
   {

@@ -13,17 +13,15 @@ interface Band {
 const bands: Band[] = [
   {
     name: "Watts Up",
-    image: '/photos/musique/wattsup.jpg',
+    image: '/photos/musique/watts-up.jpg',
     badges: ['Pop', 'Rock'],
     description: "Des amoureux de la musique ravis de jouer ensemble et de vous proposer leurs reprises.",
-    isPlaceholder: true,
   },
   {
     name: 'Steliophonie',
     image: '/photos/musique/steliophonie.jpg',
-    badges: ['Rock'],
-    description: "Un groupe de rock survitaminé prêt à faire vibrer les murs de chez Granny avec une énergie contagieuse.",
-    isPlaceholder: true,
+    badges: ['Pop & Rock'],
+    description: "Un groupe de reprises survitaminé prêt à faire vibrer les murs de chez Granny avec une énergie contagieuse.",
   },
   {
     name: 'À venir...',
