@@ -15,6 +15,7 @@
   --font-oswald: "Oswald", Arial, sans-serif;
   --font-meow: "Meow Script", cursive;
   --font-montserrat: "Montserrat", Arial, sans-serif;
+  --font-caveat: "Caveat", cursive;
 }
 
 @theme inline {
@@ -31,6 +32,7 @@
   --font-oswald: var(--font-oswald);
   --font-meow: var(--font-meow);
   --font-montserrat: var(--font-montserrat);
+  --font-caveat: var(--font-caveat);
   --font-serif: var(--font-oswald);
   --font-sans: var(--font-montserrat);
 
@@ -82,6 +84,10 @@ h1, h2 {
 
 .font-montserrat {
   font-family: var(--font-montserrat);
+}
+
+.font-caveat {
+  font-family: var(--font-caveat);
 }
 
 /* Boutons - Classes utilitaires harmonisées */
