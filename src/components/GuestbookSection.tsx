@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { motion } from "framer-motion";
+import { gsap } from "gsap";
 import SectionContainer from "@/components/SectionContainer";
 
 // Interface pour un message du livre d'or
@@ -12,48 +13,31 @@ interface GuestbookMessage {
   message: string;
 }
 
-// Palette de couleurs pastel pour les Post-its
-const PASTEL_COLORS = [
-  "#FFF9C4", // Jaune pâle
-  "#F8BBD9", // Rose poudré
-  "#B3E5FC", // Bleu ciel
-  "#C8E6C9", // Vert d'eau
-];
-
-// Génère une rotation aléatoire entre -2 et +2 degrés
+// Génère une rotation aléatoire entre -3 et +3 degrés (comme les photos)
 const getRandomRotation = (seed: number) => {
-  // Utilise un seed pour avoir une rotation cohérente par message
   const pseudoRandom = Math.sin(seed * 12.9898) * 43758.5453;
   const normalized = pseudoRandom - Math.floor(pseudoRandom);
-  return (normalized * 4) - 2; // Entre -2 et +2 degrés
+  return (normalized * 6) - 3; // Entre -3 et +3 degrés
 };
 
-// Génère une couleur aléatoire basée sur un seed
-const getRandomColor = (seed: number) => {
-  const pseudoRandom = Math.sin(seed * 78.233) * 43758.5453;
-  const normalized = pseudoRandom - Math.floor(pseudoRandom);
-  const index = Math.floor(normalized * PASTEL_COLORS.length);
-  return PASTEL_COLORS[index];
-};
-
-// Variants pour l'animation du container (stagger)
+// Variants pour l'animation du container (stagger comme les photos)
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2,
+      staggerChildren: 0.06, // Même stagger que BounceCards
+      delayChildren: 0.3,
     },
   },
 };
 
-// Variants pour chaque Post-it
-const postItVariants = {
+// Variants pour chaque carte Polaroid
+const polaroidVariants = {
   hidden: {
     opacity: 0,
-    y: 50,
-    scale: 0.8,
+    y: 20,
+    scale: 0,
   },
   visible: {
     opacity: 1,
@@ -61,64 +45,85 @@ const postItVariants = {
     scale: 1,
     transition: {
       type: "spring" as const,
-      damping: 15,
+      damping: 12,
       stiffness: 100,
+      duration: 0.5,
     },
   },
 };
 
-// Composant Post-it individuel
-interface PostItProps {
+// Composant carte Polaroid individuelle
+interface PolaroidCardProps {
   message: GuestbookMessage;
   index: number;
 }
 
-function PostIt({ message, index }: PostItProps) {
-  const rotation = useMemo(() => getRandomRotation(index + message.prenom.charCodeAt(0)), [index, message.prenom]);
-  const backgroundColor = useMemo(() => getRandomColor(index + message.message.length), [index, message.message.length]);
+function PolaroidCard({ message, index }: PolaroidCardProps) {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const rotation = useMemo(
+    () => getRandomRotation(index + message.prenom.charCodeAt(0)),
+    [index, message.prenom]
+  );
+
+  // Animation au survol avec GSAP (comme BounceCards)
+  const handleMouseEnter = () => {
+    if (!cardRef.current) return;
+    gsap.to(cardRef.current, {
+      scale: 1.05,
+      rotate: 0,
+      boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.35)",
+      duration: 0.4,
+      ease: "back.out(1.4)",
+    });
+  };
+
+  const handleMouseLeave = () => {
+    if (!cardRef.current) return;
+    gsap.to(cardRef.current, {
+      scale: 1,
+      rotate: rotation,
+      boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+      duration: 0.4,
+      ease: "back.out(1.4)",
+    });
+  };
 
   return (
     <motion.div
-      variants={postItVariants}
-      whileHover={{
-        scale: 1.05,
-        rotate: 0,
-        boxShadow: "0 20px 40px rgba(0, 0, 0, 0.2)",
-        zIndex: 10,
-      }}
-      className="relative p-5 rounded-sm cursor-default transition-shadow duration-300"
+      ref={cardRef}
+      variants={polaroidVariants}
+      className="break-inside-avoid mb-6"
       style={{
-        backgroundColor,
-        rotate: `${rotation}deg`,
-        boxShadow: "4px 4px 15px rgba(0, 0, 0, 0.15)",
-        minHeight: "180px",
+        transform: `rotate(${rotation}deg)`,
       }}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
-      {/* Effet "punaise" en haut */}
       <div
-        className="absolute top-2 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full"
+        className="bg-white rounded-[30px] overflow-hidden cursor-default"
         style={{
-          background: "radial-gradient(circle at 30% 30%, #ff6b6b, #c92a2a)",
-          boxShadow: "0 2px 4px rgba(0, 0, 0, 0.3)",
+          boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
         }}
-      />
-
-      {/* Message */}
-      <p
-        className="font-caveat text-xl md:text-2xl leading-relaxed text-brand-dark/90 mt-4 mb-4"
-        style={{ wordBreak: "break-word" }}
       >
-        {message.message}
-      </p>
+        {/* Zone du message (comme la photo du Polaroid) */}
+        <div className="p-6 pb-4 bg-gradient-to-br from-[#fdfbf7] to-[#f8f6f0] min-h-[120px] flex items-center justify-center">
+          <p
+            className="font-caveat text-xl md:text-2xl leading-relaxed text-brand-dark/85 text-center"
+            style={{ wordBreak: "break-word" }}
+          >
+            &ldquo;{message.message}&rdquo;
+          </p>
+        </div>
 
-      {/* Auteur et date */}
-      <div className="absolute bottom-3 left-5 right-5">
-        <p className="font-montserrat text-xs text-brand-dark/60">
-          — {message.prenom} {message.nom && message.nom}
-        </p>
-        <p className="font-montserrat text-[10px] text-brand-dark/40 mt-1">
-          {message.date}
-        </p>
+        {/* Zone inférieure blanche épaisse (signature Polaroid) */}
+        <div className="bg-white px-6 py-4 border-t border-gray-100">
+          <p className="font-caveat text-lg text-brand-dark/70 text-center">
+            {message.prenom} {message.nom && message.nom}
+          </p>
+          <p className="font-montserrat text-[10px] text-brand-dark/40 text-center mt-1">
+            {message.date}
+          </p>
+        </div>
       </div>
     </motion.div>
   );
@@ -194,13 +199,10 @@ export default function GuestbookSection() {
 
       if (data.success) {
         setSubmitStatus("success");
-        // Vider les champs du formulaire
         setPrenom("");
         setNom("");
         setMessage("");
-        // Recharger les messages récents
         fetchRecentMessages();
-        // Réinitialiser le statut après 5 secondes
         setTimeout(() => setSubmitStatus("idle"), 5000);
       } else {
         setSubmitStatus("error");
@@ -231,7 +233,7 @@ export default function GuestbookSection() {
 
         {/* Formulaire */}
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 md:p-8 shadow-lg mb-16 max-w-4xl mx-auto">
-          {/* Champ Message (Textarea en premier pour l'importance) */}
+          {/* Champ Message */}
           <div className="mb-6">
             <label
               htmlFor="guestbook-message"
@@ -257,7 +259,7 @@ export default function GuestbookSection() {
             </p>
           </div>
 
-          {/* Champs Prénom et Nom (côte à côte) */}
+          {/* Champs Prénom et Nom */}
           <div className="grid md:grid-cols-2 gap-4 mb-6">
             <div>
               <label
@@ -372,31 +374,28 @@ export default function GuestbookSection() {
           </div>
         </form>
 
-        {/* Mur de Post-its */}
+        {/* Mur de Polaroids - Layout Masonry */}
         {!isLoadingMessages && recentMessages.length > 0 && (
           <div>
-            <h3 className="font-oswald text-2xl md:text-3xl text-brand-dark text-center mb-8">
-              Le Mur des Messages
+            <h3 className="font-oswald text-2xl md:text-3xl text-brand-dark text-center mb-10">
+              Vos Messages
             </h3>
 
             <motion.div
-              className="grid gap-4 md:gap-6"
-              style={{
-                gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
-              }}
+              className="columns-1 sm:columns-2 lg:columns-3 gap-6"
               variants={containerVariants}
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, amount: 0.1 }}
             >
               {recentMessages.map((msg, index) => (
-                <PostIt key={index} message={msg} index={index} />
+                <PolaroidCard key={index} message={msg} index={index} />
               ))}
             </motion.div>
           </div>
         )}
 
-        {/* État de chargement des messages */}
+        {/* État de chargement */}
         {isLoadingMessages && (
           <div className="text-center text-brand-dark/50">
             <div className="animate-pulse">Chargement des messages...</div>
