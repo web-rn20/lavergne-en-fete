@@ -4,6 +4,7 @@ import Countdown from "@/components/Countdown";
 import FamilyPhotos from "@/components/FamilyPhotos";
 import MusicProgramming from "@/components/MusicProgramming";
 import RSVPForm from "@/components/RSVPForm";
+import LogisticsSection from "@/components/LogisticsSection";
 import SectionContainer from "@/components/SectionContainer";
 
 // Fallback pour le chargement du formulaire RSVP
@@ -40,16 +41,8 @@ export default function Home() {
         <RSVPForm />
       </Suspense>
 
-      <SectionContainer id="logistique" className="py-20 bg-brand-accent-deep">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="font-serif text-4xl md:text-5xl text-brand-light mb-8">
-            Logistique & Hébergement
-          </h2>
-          <p className="text-brand-light/70">
-            Section logistique à implémenter (Google Maps, Hôtels, Dress Code)...
-          </p>
-        </div>
-      </SectionContainer>
+      {/* Section Logistique & Hébergement */}
+      <LogisticsSection />
 
       <SectionContainer id="livre-or" className="py-20 bg-brand-light">
         <div className="max-w-2xl mx-auto text-center">
