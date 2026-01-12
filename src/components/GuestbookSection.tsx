@@ -26,7 +26,7 @@ const containerVariants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.06, // Même stagger que BounceCards
+      staggerChildren: 0.06,
       delayChildren: 0.3,
     },
   },
@@ -47,7 +47,6 @@ const polaroidVariants = {
       type: "spring" as const,
       damping: 12,
       stiffness: 100,
-      duration: 0.5,
     },
   },
 };
@@ -82,7 +81,7 @@ function PolaroidCard({ message, index }: PolaroidCardProps) {
     gsap.to(cardRef.current, {
       scale: 1,
       rotate: rotation,
-      boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+      boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.15)",
       duration: 0.4,
       ease: "back.out(1.4)",
     });
@@ -92,38 +91,36 @@ function PolaroidCard({ message, index }: PolaroidCardProps) {
     <motion.div
       ref={cardRef}
       variants={polaroidVariants}
-      className="break-inside-avoid mb-6"
+      className="bg-white rounded-[20px] overflow-hidden cursor-default"
       style={{
-        transform: `rotate(${rotation}deg)`,
+        rotate: `${rotation}deg`,
+        boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.15)",
+        height: "auto",
       }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
+      {/* Zone du message (comme la photo du Polaroid) */}
       <div
-        className="bg-white rounded-[30px] overflow-hidden cursor-default"
-        style={{
-          boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
-        }}
+        className="p-5 md:p-6 bg-gradient-to-br from-[#fdfbf7] to-[#f5f3ed]"
+        style={{ minHeight: "100px" }}
       >
-        {/* Zone du message (comme la photo du Polaroid) */}
-        <div className="p-6 pb-4 bg-gradient-to-br from-[#fdfbf7] to-[#f8f6f0] min-h-[120px] flex items-center justify-center">
-          <p
-            className="font-caveat text-xl md:text-2xl leading-relaxed text-brand-dark/85 text-center"
-            style={{ wordBreak: "break-word" }}
-          >
-            &ldquo;{message.message}&rdquo;
-          </p>
-        </div>
+        <p
+          className="font-caveat text-xl md:text-2xl leading-relaxed text-brand-dark/85 text-center"
+          style={{ wordBreak: "break-word" }}
+        >
+          &ldquo;{message.message}&rdquo;
+        </p>
+      </div>
 
-        {/* Zone inférieure blanche épaisse (signature Polaroid) */}
-        <div className="bg-white px-6 py-4 border-t border-gray-100">
-          <p className="font-caveat text-lg text-brand-dark/70 text-center">
-            {message.prenom} {message.nom && message.nom}
-          </p>
-          <p className="font-montserrat text-[10px] text-brand-dark/40 text-center mt-1">
-            {message.date}
-          </p>
-        </div>
+      {/* Zone inférieure blanche épaisse (signature Polaroid) */}
+      <div className="bg-white px-5 py-4 border-t border-gray-100">
+        <p className="font-caveat text-lg text-brand-dark/70 text-center">
+          {message.prenom} {message.nom && message.nom}
+        </p>
+        <p className="font-montserrat text-[10px] text-brand-dark/40 text-center mt-1">
+          {message.date}
+        </p>
       </div>
     </motion.div>
   );
@@ -202,7 +199,8 @@ export default function GuestbookSection() {
         setPrenom("");
         setNom("");
         setMessage("");
-        fetchRecentMessages();
+        // Rafraîchir immédiatement la liste des messages
+        await fetchRecentMessages();
         setTimeout(() => setSubmitStatus("idle"), 5000);
       } else {
         setSubmitStatus("error");
@@ -374,7 +372,7 @@ export default function GuestbookSection() {
           </div>
         </form>
 
-        {/* Mur de Polaroids - Layout Masonry */}
+        {/* Mur de Polaroids - CSS Grid Layout */}
         {!isLoadingMessages && recentMessages.length > 0 && (
           <div>
             <h3 className="font-oswald text-2xl md:text-3xl text-brand-dark text-center mb-10">
@@ -382,14 +380,17 @@ export default function GuestbookSection() {
             </h3>
 
             <motion.div
-              className="columns-1 sm:columns-2 lg:columns-3 gap-6"
+              className="grid gap-8"
+              style={{
+                gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+              }}
               variants={containerVariants}
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true, amount: 0.1 }}
             >
               {recentMessages.map((msg, index) => (
-                <PolaroidCard key={index} message={msg} index={index} />
+                <PolaroidCard key={`${msg.date}-${msg.prenom}-${index}`} message={msg} index={index} />
               ))}
             </motion.div>
           </div>
