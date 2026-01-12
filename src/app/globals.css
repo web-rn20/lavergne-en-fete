@@ -175,5 +175,14 @@ textarea:focus,
 select:focus {
   outline: none;
   border-color: var(--brand-primary);
-  box-shadow: 0 0 0 2px var(--brand-primary);
+}
+
+/* Empêcher le défilement horizontal */
+html,
+body {
+  overflow-x: hidden;
+}
+
+main {
+  overflow-x: hidden;
 }

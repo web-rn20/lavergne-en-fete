@@ -13,19 +13,19 @@ const familyImages = [
 ];
 
 const transformStyles = [
-  'rotate(5deg) translate(-150px)',
-  'rotate(0deg) translate(-70px)',
+  'rotate(5deg) translate(-220px)',
+  'rotate(0deg) translate(-110px)',
   'rotate(-5deg)',
-  'rotate(5deg) translate(70px)',
-  'rotate(-5deg) translate(150px)'
+  'rotate(5deg) translate(110px)',
+  'rotate(-5deg) translate(220px)'
 ];
 
 const mobileTransformStyles = [
-  'rotate(5deg) translate(-100px)',
-  'rotate(0deg) translate(-50px)',
+  'rotate(5deg) translate(-80px)',
+  'rotate(0deg) translate(-40px)',
   'rotate(-5deg)',
-  'rotate(5deg) translate(50px)',
-  'rotate(-5deg) translate(100px)'
+  'rotate(5deg) translate(40px)',
+  'rotate(-5deg) translate(80px)'
 ];
 
 export default function FamilyPhotos() {
@@ -41,12 +41,12 @@ export default function FamilyPhotos() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const containerWidth = isMobile ? 320 : 600;
-  const containerHeight = isMobile ? 350 : 400;
+  const containerWidth = isMobile ? 300 : 800;
+  const containerHeight = isMobile ? 280 : 450;
   const currentTransforms = isMobile ? mobileTransformStyles : transformStyles;
 
   return (
-    <SectionContainer id="famille" className="py-20 bg-brand-light">
+    <SectionContainer id="famille" className="py-12 md:py-20 bg-brand-light">
       <div className="max-w-4xl mx-auto flex flex-col items-center justify-center">
         <h2 className="font-serif text-4xl md:text-5xl text-brand-accent-deep mb-4 text-center">
           La Famille
