@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-import { gsap } from "gsap";
 import SectionContainer from "@/components/SectionContainer";
 
 // Interface pour un message du livre d'or
@@ -13,13 +12,6 @@ interface GuestbookMessage {
   message: string;
 }
 
-// Génère une rotation aléatoire entre -2 et +2 degrés
-const getRandomRotation = (seed: number) => {
-  const pseudoRandom = Math.sin(seed * 12.9898) * 43758.5453;
-  const normalized = pseudoRandom - Math.floor(pseudoRandom);
-  return (normalized * 4) - 2; // Entre -2 et +2 degrés
-};
-
 // Composant carte Polaroid individuelle
 interface PolaroidCardProps {
   message: GuestbookMessage;
@@ -27,53 +19,16 @@ interface PolaroidCardProps {
 }
 
 function PolaroidCard({ message, index }: PolaroidCardProps) {
-  const cardRef = useRef<HTMLDivElement>(null);
-  const rotation = useMemo(
-    () => getRandomRotation(index + message.prenom.charCodeAt(0)),
-    [index, message.prenom]
-  );
-
-  // Animation au survol avec GSAP
-  const handleMouseEnter = () => {
-    if (!cardRef.current) return;
-    gsap.to(cardRef.current, {
-      scale: 1.03,
-      rotate: 0,
-      boxShadow: "0 20px 40px -10px rgba(0, 0, 0, 0.3)",
-      duration: 0.3,
-      ease: "power2.out",
-    });
-  };
-
-  const handleMouseLeave = () => {
-    if (!cardRef.current) return;
-    gsap.to(cardRef.current, {
-      scale: 1,
-      rotate: rotation,
-      boxShadow: "0 8px 20px -5px rgba(0, 0, 0, 0.15)",
-      duration: 0.3,
-      ease: "power2.out",
-    });
-  };
-
   return (
     <motion.div
-      ref={cardRef}
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{
-        duration: 0.4,
-        delay: index * 0.08,
-        ease: "easeOut",
+        duration: 0.5,
+        delay: index * 0.1,
+        ease: [0.25, 0.46, 0.45, 0.94],
       }}
-      className="bg-white rounded-2xl overflow-hidden cursor-default"
-      style={{
-        transform: `rotate(${rotation}deg)`,
-        boxShadow: "0 8px 20px -5px rgba(0, 0, 0, 0.15)",
-        height: "fit-content",
-      }}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+      className="polaroid-card"
     >
       {/* Zone du message */}
       <div className="p-5 md:p-6 bg-gradient-to-br from-[#fdfbf7] to-[#f5f3ed]">
@@ -370,16 +325,9 @@ export default function GuestbookSection() {
             </div>
           )}
 
-          {/* Grille des messages - CSS Grid standard */}
+          {/* Grille des messages - Classe CSS "guestbook-grid" */}
           {!isLoadingMessages && recentMessages.length > 0 && (
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-                gridAutoRows: "min-content",
-                gap: "24px",
-              }}
-            >
+            <div className="guestbook-grid">
               {recentMessages.map((msg, index) => (
                 <PolaroidCard
                   key={`msg-${index}-${msg.prenom}-${msg.date}`}
