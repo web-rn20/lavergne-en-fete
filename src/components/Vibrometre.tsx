@@ -262,13 +262,13 @@ export default function Vibrometre() {
             repeat: Infinity,
           }}
         >
-          Vibrometre de la Fete
+          Vibromètre de la Fête
         </motion.h2>
 
         {/* Sous-titre avec compteur d'invités */}
         <p className="font-montserrat text-brand-dark/70 text-center mb-10">
           <span className="font-bold text-brand-primary">{nTotal}</span>{" "}
-          {nTotal <= 1 ? "personne confirmee" : "personnes confirmees"}
+          {nTotal <= 1 ? "personne confirmée" : "personnes confirmées"}
         </p>
 
         {/* Message humoristique si aucun invité */}
@@ -280,11 +280,11 @@ export default function Vibrometre() {
             transition={{ delay: 0.3 }}
           >
             <p className="font-montserrat text-xl text-brand-dark/60 italic">
-              C&apos;est un peu calme ici... On attend vos reponses !
+              C&apos;est un peu calme ici... On attend vos réponses !
             </p>
             <p className="font-montserrat text-sm text-brand-dark/40 mt-4">
-              Le vibrometre s&apos;activera des que les premiers invites auront
-              confirme leur presence.
+              Le vibromètre s&apos;activera dès que les premiers invités auront
+              confirmé leur présence.
             </p>
           </motion.div>
         ) : (
@@ -295,7 +295,7 @@ export default function Vibrometre() {
               <GaugeBar
                 value={niveauSonore}
                 maxValue={110}
-                label="Niveau sonore estime"
+                label="Niveau sonore estimé"
                 unit="dB"
                 icon={Volume2}
                 shakeIntensity={shakeIntensity}
@@ -306,7 +306,7 @@ export default function Vibrometre() {
               <GaugeBar
                 value={debitPotion}
                 maxValue={Math.max(100, debitPotion + 30)}
-                label="Debit de Potion Magique"
+                label="Débit de Potion Magique"
                 unit="L"
                 icon={Wine}
                 shakeIntensity={shakeIntensity}
@@ -317,7 +317,7 @@ export default function Vibrometre() {
               <GaugeBar
                 value={probaChenille}
                 maxValue={100}
-                label="Probabilite de Chenille"
+                label="Probabilité de Chenille"
                 unit="%"
                 icon={PartyPopper}
                 shakeIntensity={shakeIntensity}
@@ -327,12 +327,12 @@ export default function Vibrometre() {
 
             {/* Légende des niveaux sonores */}
             <div className="flex flex-wrap justify-center gap-4 mb-8 text-xs font-montserrat text-brand-dark/60">
-              <span>30dB = Bibliotheque</span>
-              <span>-</span>
+              <span>30dB = Bibliothèque</span>
+              <span>·</span>
               <span>60dB = Conversation</span>
-              <span>-</span>
-              <span>85dB = Rue animee</span>
-              <span>-</span>
+              <span>·</span>
+              <span>85dB = Rue animée</span>
+              <span>·</span>
               <span>110dB = Concert rock</span>
             </div>
           </>
@@ -345,7 +345,7 @@ export default function Vibrometre() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.5 }}
         >
-          Calcule selon le nombre de gosiers assoiffes et de jambes pretes a
+          Calculé selon le nombre de gosiers assoiffés et de jambes prêtes à
           danser.
         </motion.p>
       </motion.div>

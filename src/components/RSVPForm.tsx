@@ -111,9 +111,9 @@ function BlocBesoinsAlimentaires({
               regimeAutre: e.target.value !== "autre" ? "" : besoins.regimeAutre,
             })
           }
-          className="w-full px-4 py-3 pr-12 border border-brand-light rounded-lg bg-white text-brand-dark
+          className="w-full px-4 py-3 pr-10 border border-brand-light rounded-lg bg-white text-brand-dark
                    font-montserrat focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20
-                   transition-all duration-200"
+                   transition-all duration-200 appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%20stroke%3D%22%2322181c%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%222%22%20d%3D%22M19%209l-7%207-7-7%22%2F%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[right_12px_center] bg-[length:20px]"
         >
           {regimeOptions.map((option) => (
             <option key={option.value} value={option.value}>
@@ -1134,9 +1134,9 @@ export default function RSVPForm() {
                           onChange={(e) =>
                             handleNombreEnfantsChange(parseInt(e.target.value, 10))
                           }
-                          className="w-full px-4 py-3 pr-12 border border-brand-light rounded-lg bg-white text-brand-dark
+                          className="w-full px-4 py-3 pr-10 border border-brand-light rounded-lg bg-white text-brand-dark
                                    focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20
-                                   transition-all duration-200"
+                                   transition-all duration-200 appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%20stroke%3D%22%2322181c%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%222%22%20d%3D%22M19%209l-7%207-7-7%22%2F%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[right_12px_center] bg-[length:20px]"
                         >
                           {[1, 2, 3, 4, 5].map((num) => (
                             <option key={num} value={num}>
@@ -1220,9 +1220,9 @@ export default function RSVPForm() {
                           onChange={(e) =>
                             handleNombreEnfantsPlus18Change(parseInt(e.target.value, 10))
                           }
-                          className="w-full px-4 py-3 pr-12 border border-brand-light rounded-lg bg-white text-brand-dark
+                          className="w-full px-4 py-3 pr-10 border border-brand-light rounded-lg bg-white text-brand-dark
                                    focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20
-                                   transition-all duration-200"
+                                   transition-all duration-200 appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2024%2024%22%20stroke%3D%22%2322181c%22%3E%3Cpath%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%222%22%20d%3D%22M19%209l-7%207-7-7%22%2F%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[right_12px_center] bg-[length:20px]"
                         >
                           {[1, 2, 3, 4, 5].map((num) => (
                             <option key={num} value={num}>
