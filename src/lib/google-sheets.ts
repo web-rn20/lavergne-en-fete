@@ -850,30 +850,48 @@ export async function getVibrometerAggregatedStats(): Promise<VibrometerAggregat
     let nBuveurs = 0;
     let nEnfants = 0;
 
+    // Helper: convertir une valeur en nombre, retourne 0 si NaN ou invalide
+    const toNumber = (value: unknown): number => {
+      if (value === null || value === undefined || value === "") return 0;
+      const num = Number(value);
+      return isNaN(num) ? 0 : num;
+    };
+
     for (const row of rows) {
       // Ne compter que les présences confirmées (Présence = "Oui")
-      const presence = row.get("Présence") || row.get("Presence") || "";
-      if (presence.toString().toLowerCase() !== "oui") {
+      // Gestion case-insensitive avec trim pour les espaces
+      const presenceRaw = row.get("Présence") || row.get("Presence") || "";
+      const presence = presenceRaw.toString().trim().toUpperCase();
+
+      // Debug: afficher chaque ligne pour diagnostic
+      const rowId = row.get("ID_Invité") || row.get("ID_Invite") || "?";
+      const rowNbTotal = row.get("Nb_Total");
+      console.log(`[getVibrometerAggregatedStats] Ligne ID=${rowId}, Présence="${presenceRaw}" → normalisé="${presence}", Nb_Total="${rowNbTotal}"`);
+
+      if (presence !== "OUI") {
+        console.log(`[getVibrometerAggregatedStats]   → Ignorée (Présence != OUI)`);
         continue;
       }
 
       // Nb_Total : nombre total de personnes dans ce groupe
-      const nbTotal = parseInt(row.get("Nb_Total") || "0", 10);
+      // Utilisation de Number() au lieu de parseInt pour plus de robustesse
+      const nbTotal = toNumber(row.get("Nb_Total"));
+      console.log(`[getVibrometerAggregatedStats]   → Nb_Total parsé: ${nbTotal}`);
       nTotal += nbTotal;
 
       // Nb Enfants : nombre total d'enfants
-      const nbEnfants = parseInt(row.get("Nb Enfants") || row.get("Nb_Enfants") || "0", 10);
+      const nbEnfants = toNumber(row.get("Nb Enfants") || row.get("Nb_Enfants"));
 
       // Nb Enfants Plus 18 : enfants majeurs (comptent comme adultes)
-      const nbEnfantsPlus18 = parseInt(row.get("Nb Enfants Plus 18") || row.get("Nb_Enfants_Plus_18") || "0", 10);
+      const nbEnfantsPlus18 = toNumber(row.get("Nb Enfants Plus 18") || row.get("Nb_Enfants_Plus_18"));
 
       // Enfants mineurs (-18 ans)
       const enfantsMineurs = Math.max(0, nbEnfants - nbEnfantsPlus18);
       nEnfants += enfantsMineurs;
 
-      // Accompagnant : 1 si "Oui", 0 sinon
-      const accompagnant = row.get("Accompagnant") || "";
-      const hasAccompagnant = accompagnant.toString().toLowerCase() === "oui" ? 1 : 0;
+      // Accompagnant : 1 si "Oui", 0 sinon (case-insensitive avec trim)
+      const accompagnantRaw = row.get("Accompagnant") || "";
+      const hasAccompagnant = accompagnantRaw.toString().trim().toUpperCase() === "OUI" ? 1 : 0;
 
       // Adultes = 1 (invité principal) + accompagnant + enfants +18 ans
       const adultesGroupe = 1 + hasAccompagnant + nbEnfantsPlus18;
@@ -883,13 +901,16 @@ export async function getVibrometerAggregatedStats(): Promise<VibrometerAggregat
       const consommeAlcool = row.get("Consomme_Alcool") || row.get("Consomme Alcool") || "";
       const buveursGroupe = countOuiInSynthese(consommeAlcool.toString());
       nBuveurs += buveursGroupe;
+
+      console.log(`[getVibrometerAggregatedStats]   → Comptée: nbTotal=${nbTotal}, adultes=${adultesGroupe}, buveurs=${buveursGroupe}, enfantsMineurs=${enfantsMineurs}`);
     }
 
-    console.log("[getVibrometerAggregatedStats] Résultats:");
-    console.log("  - N_total:", nTotal);
-    console.log("  - N_adultes:", nAdultes);
-    console.log("  - N_buveurs:", nBuveurs);
-    console.log("  - N_enfants:", nEnfants);
+    console.log("[getVibrometerAggregatedStats] ========== RÉSULTATS FINAUX ==========");
+    console.log(`  - N_total: ${nTotal}`);
+    console.log(`  - N_adultes: ${nAdultes}`);
+    console.log(`  - N_buveurs: ${nBuveurs}`);
+    console.log(`  - N_enfants: ${nEnfants}`);
+    console.log("======================================");
 
     return { nTotal, nAdultes, nBuveurs, nEnfants };
   } catch (error) {
