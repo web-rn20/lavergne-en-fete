@@ -101,13 +101,14 @@ export async function POST(request: NextRequest) {
       console.log("Invité trouvé:", invite.prenom, invite.nom);
     }
 
-    // Calcul du nombre total de personnes
+    // Calcul du nombre total de personnes (invité + accompagnant + enfants -18 + enfants +18)
     const nbTotal =
       1 + // L'invité principal
       (accompagnant && prenomConjoint ? 1 : 0) + // Conjoint
-      (enfants && nombreEnfants > 0 ? nombreEnfants : 0); // Enfants
+      (enfants && nombreEnfants > 0 ? nombreEnfants : 0) + // Enfants -18 ans
+      (nombreEnfantsPlus18 > 0 ? nombreEnfantsPlus18 : 0); // Enfants +18 ans
 
-    console.log("Nombre total de personnes:", nbTotal);
+    console.log("Nombre total de personnes:", nbTotal, "(dont", nombreEnfantsPlus18, "enfants +18 ans)");
 
     // Nombre de places d'hébergement demandées (seulement si "Maison des Lavergne")
     const nombrePlacesHebergement = hebergement ? nbTotal : 0;

@@ -111,7 +111,7 @@ function BlocBesoinsAlimentaires({
               regimeAutre: e.target.value !== "autre" ? "" : besoins.regimeAutre,
             })
           }
-          className="w-full px-4 py-3 pr-10 border border-brand-light rounded-lg bg-white text-brand-dark
+          className="w-full px-4 py-3 pr-12 border border-brand-light rounded-lg bg-white text-brand-dark
                    font-montserrat focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20
                    transition-all duration-200"
         >
@@ -289,10 +289,15 @@ export default function RSVPForm() {
     init();
   }, [urlId, checkInviteById, fetchHebergement, checkExistingRsvp]);
 
-  // Scroll vers le haut du formulaire après soumission réussie
+  // Scroll vers le haut du formulaire après soumission réussie (avec offset de 32px)
   useEffect(() => {
     if (isSuccess && formContainerRef.current) {
-      formContainerRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      const elementPosition = formContainerRef.current.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.scrollY - 32; // 32px d'offset
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth"
+      });
     }
   }, [isSuccess]);
 
@@ -1129,7 +1134,7 @@ export default function RSVPForm() {
                           onChange={(e) =>
                             handleNombreEnfantsChange(parseInt(e.target.value, 10))
                           }
-                          className="w-full px-4 py-3 pr-10 border border-brand-light rounded-lg bg-white text-brand-dark
+                          className="w-full px-4 py-3 pr-12 border border-brand-light rounded-lg bg-white text-brand-dark
                                    focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20
                                    transition-all duration-200"
                         >
@@ -1215,7 +1220,7 @@ export default function RSVPForm() {
                           onChange={(e) =>
                             handleNombreEnfantsPlus18Change(parseInt(e.target.value, 10))
                           }
-                          className="w-full px-4 py-3 pr-10 border border-brand-light rounded-lg bg-white text-brand-dark
+                          className="w-full px-4 py-3 pr-12 border border-brand-light rounded-lg bg-white text-brand-dark
                                    focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20
                                    transition-all duration-200"
                         >

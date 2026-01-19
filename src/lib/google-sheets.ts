@@ -832,7 +832,7 @@ export async function addRSVPReponse(
           "Allergies",
           "Logement",
           "Nb_Total",
-          "Nb_Enfants_Plus18",
+          "Nb Enfants Plus 18",
           "Consomme_Alcool",
           "Message",
         ],
@@ -855,7 +855,7 @@ export async function addRSVPReponse(
       "Allergies": reponse.allergies || "",
       "Logement": reponse.logement || "Se débrouille",
       "Nb_Total": reponse.nbTotal?.toString() || "1",
-      "Nb_Enfants_Plus18": reponse.nombreEnfantsPlus18?.toString() || "0",
+      "Nb Enfants Plus 18": reponse.nombreEnfantsPlus18?.toString() || "0",
       "Consomme_Alcool": reponse.consommeAlcool || "",
       "Message": reponse.message || "",
     };
@@ -901,7 +901,7 @@ export async function addRSVPReponse(
       existingRow.set("Allergies", rowData["Allergies"]);
       existingRow.set("Logement", rowData["Logement"]);
       existingRow.set("Nb_Total", rowData["Nb_Total"]);
-      existingRow.set("Nb_Enfants_Plus18", rowData["Nb_Enfants_Plus18"]);
+      existingRow.set("Nb Enfants Plus 18", rowData["Nb Enfants Plus 18"]);
       existingRow.set("Consomme_Alcool", rowData["Consomme_Alcool"]);
       existingRow.set("Message", rowData["Message"]);
 
