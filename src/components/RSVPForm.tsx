@@ -35,11 +35,14 @@ interface FormData {
   nombreEnfants: number;
   prenomsEnfants: string[];
   // Enfants (+18 ans)
+  enfantsPlus18: boolean;
   nombreEnfantsPlus18: number;
+  prenomsEnfantsPlus18: string[];
   // Besoins alimentaires par personne
   besoinsInvite: BesoinsAlimentaires;
   besoinsConjoint: BesoinsAlimentaires;
   besoinsEnfants: BesoinsAlimentaires[];
+  besoinsEnfantsPlus18: BesoinsAlimentaires[];
   // Nouvelle logique hébergement
   hebergementChoix: "lavergne" | "tente" | "autonome";
   // Message (surtout pour les NON)
@@ -64,6 +67,7 @@ const hotelsSuggeres = [
 const regimeOptions = [
   { value: "normal", label: "Pas de régime spécial" },
   { value: "vegetarien", label: "Végétarien" },
+  { value: "sans-gluten", label: "Sans gluten" },
   { value: "autre", label: "Autre" },
 ];
 
@@ -72,18 +76,21 @@ const defaultBesoins: BesoinsAlimentaires = {
   regime: "normal",
   regimeAutre: "",
   allergies: "",
-  consommeAlcool: true, // Par défaut, on suppose que oui
+  consommeAlcool: false, // Par défaut, décochée
 };
 
 // Composant pour un bloc de besoins alimentaires
+// showAlcool: false pour les enfants -18 ans (par défaut true)
 function BlocBesoinsAlimentaires({
   titre,
   besoins,
   onChange,
+  showAlcool = true,
 }: {
   titre: string;
   besoins: BesoinsAlimentaires;
   onChange: (besoins: BesoinsAlimentaires) => void;
+  showAlcool?: boolean;
 }) {
   return (
     <div className="p-4 bg-brand-light/30 rounded-lg space-y-4">
@@ -150,16 +157,18 @@ function BlocBesoinsAlimentaires({
         />
       </div>
 
-      <label className="flex items-center gap-3 cursor-pointer pt-2">
-        <input
-          type="checkbox"
-          checked={besoins.consommeAlcool}
-          onChange={(e) => onChange({ ...besoins, consommeAlcool: e.target.checked })}
-          className="w-5 h-5 rounded border-brand-light text-brand-primary
-                   focus:ring-brand-primary focus:ring-offset-0"
-        />
-        <span className="text-brand-dark text-sm">Je consomme de l&apos;alcool</span>
-      </label>
+      {showAlcool && (
+        <label className="flex items-center gap-3 cursor-pointer pt-2">
+          <input
+            type="checkbox"
+            checked={besoins.consommeAlcool}
+            onChange={(e) => onChange({ ...besoins, consommeAlcool: e.target.checked })}
+            className="w-5 h-5 rounded border-brand-light text-brand-primary
+                     focus:ring-brand-primary focus:ring-offset-0"
+          />
+          <span className="text-brand-dark text-sm">Je consomme de l&apos;alcool</span>
+        </label>
+      )}
     </div>
   );
 }
@@ -193,10 +202,13 @@ export default function RSVPForm() {
     enfants: false,
     nombreEnfants: 1,
     prenomsEnfants: [""],
-    nombreEnfantsPlus18: 0,
+    enfantsPlus18: false,
+    nombreEnfantsPlus18: 1,
+    prenomsEnfantsPlus18: [""],
     besoinsInvite: { ...defaultBesoins },
     besoinsConjoint: { ...defaultBesoins },
     besoinsEnfants: [{ ...defaultBesoins }],
+    besoinsEnfantsPlus18: [{ ...defaultBesoins }],
     hebergementChoix: "autonome",
     message: "",
   });
@@ -360,6 +372,51 @@ export default function RSVPForm() {
     }));
   };
 
+  // Mise à jour du nombre d'enfants +18 ans
+  const handleNombreEnfantsPlus18Change = (value: number) => {
+    const newPrenoms = [...formData.prenomsEnfantsPlus18];
+    const newBesoins = [...formData.besoinsEnfantsPlus18];
+
+    if (value > newPrenoms.length) {
+      // Ajouter des champs vides
+      for (let i = newPrenoms.length; i < value; i++) {
+        newPrenoms.push("");
+        newBesoins.push({ ...defaultBesoins });
+      }
+    } else {
+      // Réduire le tableau
+      newPrenoms.splice(value);
+      newBesoins.splice(value);
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      nombreEnfantsPlus18: value,
+      prenomsEnfantsPlus18: newPrenoms,
+      besoinsEnfantsPlus18: newBesoins,
+    }));
+  };
+
+  // Mise à jour du prénom d'un enfant +18 ans
+  const handlePrenomEnfantPlus18Change = (index: number, value: string) => {
+    const newPrenoms = [...formData.prenomsEnfantsPlus18];
+    newPrenoms[index] = value;
+    setFormData((prev) => ({
+      ...prev,
+      prenomsEnfantsPlus18: newPrenoms,
+    }));
+  };
+
+  // Mise à jour des besoins d'un enfant +18 ans
+  const handleBesoinsEnfantPlus18Change = (index: number, besoins: BesoinsAlimentaires) => {
+    const newBesoins = [...formData.besoinsEnfantsPlus18];
+    newBesoins[index] = besoins;
+    setFormData((prev) => ({
+      ...prev,
+      besoinsEnfantsPlus18: newBesoins,
+    }));
+  };
+
   // Fonction pour formater les RÉGIMES pour le Google Sheet (colonne Régimes)
   const formatRegimesForSheet = (): string => {
     const parts: string[] = [];
@@ -384,7 +441,7 @@ export default function RSVPForm() {
       }
     }
 
-    // Enfants
+    // Enfants (-18 ans)
     if (formData.enfants) {
       formData.prenomsEnfants.forEach((prenom, index) => {
         const enfantBesoins = formData.besoinsEnfants[index];
@@ -393,6 +450,23 @@ export default function RSVPForm() {
             ? enfantBesoins.regimeAutre
             : regimeOptions.find((o) => o.value === enfantBesoins.regime)?.label;
           const enfantNom = prenom || `Enfant ${index + 1}`;
+
+          if (enfantRegime && enfantRegime !== "Pas de régime spécial") {
+            parts.push(`${enfantNom}: ${enfantRegime}`);
+          }
+        }
+      });
+    }
+
+    // Enfants (+18 ans)
+    if (formData.enfantsPlus18) {
+      formData.prenomsEnfantsPlus18.forEach((prenom, index) => {
+        const enfantBesoins = formData.besoinsEnfantsPlus18[index];
+        if (enfantBesoins) {
+          const enfantRegime = enfantBesoins.regime === "autre"
+            ? enfantBesoins.regimeAutre
+            : regimeOptions.find((o) => o.value === enfantBesoins.regime)?.label;
+          const enfantNom = prenom || `Enfant +18 ${index + 1}`;
 
           if (enfantRegime && enfantRegime !== "Pas de régime spécial") {
             parts.push(`${enfantNom}: ${enfantRegime}`);
@@ -418,7 +492,7 @@ export default function RSVPForm() {
       parts.push(`${formData.prenomConjoint}: ${formData.besoinsConjoint.allergies}`);
     }
 
-    // Enfants
+    // Enfants (-18 ans)
     if (formData.enfants) {
       formData.prenomsEnfants.forEach((prenom, index) => {
         const enfantBesoins = formData.besoinsEnfants[index];
@@ -429,27 +503,47 @@ export default function RSVPForm() {
       });
     }
 
+    // Enfants (+18 ans)
+    if (formData.enfantsPlus18) {
+      formData.prenomsEnfantsPlus18.forEach((prenom, index) => {
+        const enfantBesoins = formData.besoinsEnfantsPlus18[index];
+        if (enfantBesoins && enfantBesoins.allergies) {
+          const enfantNom = prenom || `Enfant +18 ${index + 1}`;
+          parts.push(`${enfantNom}: ${enfantBesoins.allergies}`);
+        }
+      });
+    }
+
     return parts.length > 0 ? parts.join(", ") : "";
   };
 
   // Fonction pour formater la consommation d'ALCOOL pour le Google Sheet
+  // Note: on ne demande JAMAIS l'alcool pour les enfants -18 ans
   const formatAlcoolForSheet = (): string => {
     const parts: string[] = [];
 
     // Invité principal
-    const inviteAlcool = formData.besoinsInvite.consommeAlcool ? "Oui" : "Non";
-    parts.push(`${invite?.prenom || "Moi"}: ${inviteAlcool}`);
-
-    // Conjoint
-    if (formData.accompagnant && formData.prenomConjoint) {
-      const conjointAlcool = formData.besoinsConjoint.consommeAlcool ? "Oui" : "Non";
-      parts.push(`${formData.prenomConjoint}: ${conjointAlcool}`);
+    if (formData.besoinsInvite.consommeAlcool) {
+      parts.push(`${invite?.prenom || "Moi"}: Oui`);
     }
 
-    // Enfants (seulement +18 ans, pas les mineurs)
-    // Note: on n'ajoute pas les enfants mineurs car ils ne consomment pas d'alcool
+    // Conjoint
+    if (formData.accompagnant && formData.prenomConjoint && formData.besoinsConjoint.consommeAlcool) {
+      parts.push(`${formData.prenomConjoint}: Oui`);
+    }
 
-    return parts.join(", ");
+    // Enfants +18 ans (seuls les majeurs peuvent consommer de l'alcool)
+    if (formData.enfantsPlus18) {
+      formData.prenomsEnfantsPlus18.forEach((prenom, index) => {
+        const enfantBesoins = formData.besoinsEnfantsPlus18[index];
+        if (enfantBesoins && enfantBesoins.consommeAlcool) {
+          const enfantNom = prenom || `Enfant +18 ${index + 1}`;
+          parts.push(`${enfantNom}: Oui`);
+        }
+      });
+    }
+
+    return parts.length > 0 ? parts.join(", ") : "";
   };
 
   // Soumission du formulaire (avec vérification de réponse existante)
@@ -482,12 +576,15 @@ export default function RSVPForm() {
     const presence = formData.serezVousParmiNous === true;
 
     try {
+      // Calculer le nombre d'enfants +18 ans (seulement si la case est cochée)
+      const nbEnfantsPlus18 = formData.enfantsPlus18 ? formData.nombreEnfantsPlus18 : 0;
+
       // Calculer le nombre total de personnes (seulement si présence = OUI)
       const nbTotal = presence
         ? 1 + // Invité principal
           (formData.accompagnant && formData.prenomConjoint ? 1 : 0) +
           (formData.enfants ? formData.nombreEnfants : 0) +
-          formData.nombreEnfantsPlus18
+          nbEnfantsPlus18
         : 1;
 
       // Déterminer si on demande l'hébergement à la Maison des Lavergne
@@ -531,7 +628,7 @@ export default function RSVPForm() {
           logement,
           nbTotal,
           // Nouveaux champs
-          nombreEnfantsPlus18: presence ? formData.nombreEnfantsPlus18 : 0,
+          nombreEnfantsPlus18: presence ? nbEnfantsPlus18 : 0,
           consommeAlcool: presence ? formatAlcoolForSheet() : "",
           message: formData.message, // Toujours envoyer le message
         }),
@@ -1055,12 +1152,13 @@ export default function RSVPForm() {
                               />
                             </div>
 
-                            {/* Besoins alimentaires de l'enfant */}
+                            {/* Besoins alimentaires de l'enfant (-18 ans, pas d'alcool) */}
                             {prenom && (
                               <BlocBesoinsAlimentaires
                                 titre={`Besoins spécifiques de ${prenom}`}
                                 besoins={formData.besoinsEnfants[index] || defaultBesoins}
                                 onChange={(besoins) => handleBesoinsEnfantChange(index, besoins)}
+                                showAlcool={false}
                               />
                             )}
                           </div>
@@ -1076,36 +1174,89 @@ export default function RSVPForm() {
                     Enfants de plus de 18 ans
                   </h3>
 
-                  <div>
-                    <label
-                      htmlFor="nombreEnfantsPlus18"
-                      className="block text-sm font-medium text-brand-dark mb-1"
-                    >
-                      Nombre d&apos;enfants de plus de 18 ans
-                    </label>
-                    <select
-                      id="nombreEnfantsPlus18"
-                      value={formData.nombreEnfantsPlus18}
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.enfantsPlus18}
                       onChange={(e) =>
                         setFormData((prev) => ({
                           ...prev,
-                          nombreEnfantsPlus18: parseInt(e.target.value, 10),
+                          enfantsPlus18: e.target.checked,
+                          nombreEnfantsPlus18: e.target.checked ? 1 : 0,
+                          prenomsEnfantsPlus18: e.target.checked ? [""] : [],
+                          besoinsEnfantsPlus18: e.target.checked ? [{ ...defaultBesoins }] : [],
                         }))
                       }
-                      className="w-full px-4 py-3 border border-brand-light rounded-lg bg-white text-brand-dark
-                               focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20
-                               transition-all duration-200"
-                    >
-                      {[0, 1, 2, 3, 4, 5].map((num) => (
-                        <option key={num} value={num}>
-                          {num === 0 ? "Aucun" : num}
-                        </option>
-                      ))}
-                    </select>
-                    <p className="text-brand-dark/60 text-xs mt-1">
-                      Ces enfants seront comptés comme des adultes pour l&apos;organisation.
-                    </p>
-                  </div>
+                      className="w-5 h-5 rounded border-brand-light text-brand-primary
+                               focus:ring-brand-primary focus:ring-offset-0"
+                    />
+                    <span className="text-brand-dark">Je viens avec des enfants (+18 ans)</span>
+                  </label>
+
+                  {formData.enfantsPlus18 && (
+                    <div className="ml-8 space-y-4">
+                      <div>
+                        <label
+                          htmlFor="nombreEnfantsPlus18"
+                          className="block text-sm font-medium text-brand-dark mb-1"
+                        >
+                          Nombre d&apos;enfants (+18 ans)
+                        </label>
+                        <select
+                          id="nombreEnfantsPlus18"
+                          value={formData.nombreEnfantsPlus18}
+                          onChange={(e) =>
+                            handleNombreEnfantsPlus18Change(parseInt(e.target.value, 10))
+                          }
+                          className="w-full px-4 py-3 border border-brand-light rounded-lg bg-white text-brand-dark
+                                   focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20
+                                   transition-all duration-200"
+                        >
+                          {[1, 2, 3, 4, 5].map((num) => (
+                            <option key={num} value={num}>
+                              {num} enfant{num > 1 ? "s" : ""}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="space-y-6">
+                        {formData.prenomsEnfantsPlus18.map((prenom, index) => (
+                          <div key={index} className="space-y-3">
+                            <div>
+                              <label
+                                htmlFor={`enfant-plus18-${index}`}
+                                className="block text-sm font-medium text-brand-dark mb-1"
+                              >
+                                Prénom de l&apos;enfant (+18) {index + 1}
+                              </label>
+                              <input
+                                type="text"
+                                id={`enfant-plus18-${index}`}
+                                value={prenom}
+                                onChange={(e) =>
+                                  handlePrenomEnfantPlus18Change(index, e.target.value)
+                                }
+                                className="w-full px-4 py-3 border border-brand-light rounded-lg bg-white text-brand-dark
+                                         focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20
+                                         transition-all duration-200"
+                                placeholder={`Prénom de l'enfant (+18) ${index + 1}`}
+                              />
+                            </div>
+
+                            {/* Besoins alimentaires de l'enfant +18 */}
+                            {prenom && (
+                              <BlocBesoinsAlimentaires
+                                titre={`Besoins spécifiques de ${prenom}`}
+                                besoins={formData.besoinsEnfantsPlus18[index] || defaultBesoins}
+                                onChange={(besoins) => handleBesoinsEnfantPlus18Change(index, besoins)}
+                              />
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Section Besoins Alimentaires - Invité Principal */}
