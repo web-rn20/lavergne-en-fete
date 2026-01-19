@@ -5,37 +5,71 @@ import { motion } from "framer-motion";
 import { Volume2, Wine, PartyPopper } from "lucide-react";
 import SectionContainer from "./SectionContainer";
 
-// Interface pour les stats du vibromètre
-// Compte uniquement les "OUI" de la colonne "Réponse" dans Liste_Invites
+// Interface pour les stats agrégées du vibromètre
 interface VibrometerStats {
-  totalGuests: number;
+  nTotal: number;    // Somme de Nb_Total (invité + accompagnant + tous les enfants)
+  nAdultes: number;  // Invités principaux + accompagnants + enfants +18 ans
+  nBuveurs: number;  // Personnes ayant 'Oui' dans Consomme_Alcool
+  nEnfants: number;  // Enfants de -18 ans
 }
 
-// Seuil à partir duquel le titre change de couleur
+// Seuil à partir duquel le titre change de couleur (animation cyclique)
 const TITRE_SEUIL_ANIMATION = 30;
 
-// Calculs absurdes basés sur le nombre d'invités
-function calculateNuisanceSonore(n: number): number {
-  // Formule: 60dB de base + log2(n+1) * 15
-  // Minimum: 60dB (silence relatif), Maximum: ~120dB
-  const base = 60;
-  const increment = Math.log2(n + 1) * 15;
-  return Math.min(120, Math.round(base + increment));
+// ============================================================================
+// NOUVELLES FORMULES DU VIBROMÈTRE (basées sur les données réelles agrégées)
+// ============================================================================
+
+/**
+ * Calcul du niveau sonore (Décibels)
+ * - Si N_total = 0 : 30 dB (bruit d'une bibliothèque vide)
+ * - Sinon : 30 + (N_total × 1.5)
+ * - Plafond à 110 dB (concert de rock)
+ */
+function calculateNiveauSonore(nTotal: number): number {
+  if (nTotal === 0) return 30;
+  return Math.min(110, Math.round(30 + nTotal * 1.5));
 }
 
-function calculateDebitBoisson(n: number): number {
-  // Formule: 1.5L par personne + 0.5L bonus par tranche de 10
-  const basePerPerson = 1.5;
-  const bonusPerTen = Math.floor(n / 10) * 5;
-  return Math.round(n * basePerPerson + bonusPerTen);
+/**
+ * Calcul du débit de Potion Magique (Litres)
+ * Formule : (N_buveurs × 2) + ((N_total - N_buveurs) × 0.5)
+ * - 2L par buveur (alcool)
+ * - 0.5L par non-buveur (softs)
+ */
+function calculateDebitPotionMagique(nTotal: number, nBuveurs: number): number {
+  const alcool = nBuveurs * 2;
+  const softs = (nTotal - nBuveurs) * 0.5;
+  return Math.round(alcool + softs);
 }
 
-function calculateIndiceChenille(n: number): number {
-  // Formule: 85% minimum + 0.5% par invité, plafonné à 100%
-  const base = 85;
-  const increment = n * 0.5;
-  return Math.min(100, Math.round(base + increment));
+/**
+ * Calcul de la probabilité de Chenille Spontanée (%)
+ * - Si N_total < 5 : 0% (il faut un minimum de monde pour démarrer)
+ * - Sinon : 40 + (N_total × 1)
+ * - Plafond à 100%
+ */
+function calculateProbabiliteChenille(nTotal: number): number {
+  if (nTotal < 5) return 0;
+  return Math.min(100, Math.round(40 + nTotal * 1));
 }
+
+/**
+ * Calcul de l'intensité de vibration pour les animations
+ * Indexée sur N_total :
+ * - 0 invité : 0 (aucune vibration)
+ * - 10 invités : ~0.5 (légère oscillation)
+ * - 50+ invités : 2.5 (tremblement visible)
+ */
+function calculateShakeIntensity(nTotal: number): number {
+  if (nTotal === 0) return 0;
+  if (nTotal <= 10) return nTotal * 0.05;
+  return Math.min(2.5, 0.5 + (nTotal - 10) * 0.05);
+}
+
+// ============================================================================
+// COMPOSANTS
+// ============================================================================
 
 // Composant de jauge horizontale avec animation
 function GaugeBar({
@@ -44,7 +78,7 @@ function GaugeBar({
   label,
   unit,
   icon: Icon,
-  guestCount,
+  shakeIntensity,
   color,
 }: {
   value: number;
@@ -52,25 +86,32 @@ function GaugeBar({
   label: string;
   unit: string;
   icon: React.ComponentType<{ className?: string }>;
-  guestCount: number;
+  shakeIntensity: number;
   color: string;
 }) {
   const percentage = Math.min(100, (value / maxValue) * 100);
 
-  // Intensité de vibration basée sur le nombre d'invités
-  // Plus il y a d'invités, plus ça vibre
-  const shakeIntensity = Math.min(3, guestCount / 20);
-
   return (
     <motion.div
       className="flex flex-col gap-3"
-      animate={guestCount > 5 ? {
-        x: [0, -shakeIntensity, shakeIntensity, -shakeIntensity/2, shakeIntensity/2, 0],
-      } : {}}
+      animate={
+        shakeIntensity > 0
+          ? {
+              x: [
+                0,
+                -shakeIntensity,
+                shakeIntensity,
+                -shakeIntensity / 2,
+                shakeIntensity / 2,
+                0,
+              ],
+            }
+          : {}
+      }
       transition={{
         duration: 0.3,
         repeat: Infinity,
-        repeatDelay: 2 - Math.min(1.8, guestCount / 50),
+        repeatDelay: Math.max(0.5, 2 - shakeIntensity * 0.5),
       }}
     >
       {/* Label avec icône */}
@@ -115,7 +156,10 @@ function GaugeBar({
 // Composant principal Vibromètre
 export default function Vibrometre() {
   const [stats, setStats] = useState<VibrometerStats>({
-    totalGuests: 0,
+    nTotal: 0,
+    nAdultes: 0,
+    nBuveurs: 0,
+    nEnfants: 0,
   });
   const [mounted, setMounted] = useState(false);
   const [colorIndex, setColorIndex] = useState(0);
@@ -128,7 +172,7 @@ export default function Vibrometre() {
     "#22181c", // Coffee Bean
   ];
 
-  // Récupération des données RSVP
+  // Récupération des données RSVP agrégées
   useEffect(() => {
     setMounted(true);
 
@@ -153,109 +197,146 @@ export default function Vibrometre() {
 
   // Animation cyclique du titre si seuil dépassé
   useEffect(() => {
-    if (stats.totalGuests >= TITRE_SEUIL_ANIMATION) {
+    if (stats.nTotal >= TITRE_SEUIL_ANIMATION) {
       const colorInterval = setInterval(() => {
         setColorIndex((prev) => (prev + 1) % titleColors.length);
       }, 500);
       return () => clearInterval(colorInterval);
     }
-  }, [stats.totalGuests, titleColors.length]);
+  }, [stats.nTotal, titleColors.length]);
 
   // Éviter les problèmes d'hydratation
   if (!mounted) {
     return null;
   }
 
-  // Calcul des indicateurs absurdes
-  const n = stats.totalGuests;
-  const nuisanceSonore = calculateNuisanceSonore(n);
-  const debitBoisson = calculateDebitBoisson(n);
-  const indiceChenille = calculateIndiceChenille(n);
+  // Variables de calcul
+  const { nTotal, nBuveurs } = stats;
 
-  // Intensité globale de vibration pour le conteneur
-  const containerShake = Math.min(2, n / 30);
+  // Calcul des indicateurs avec les nouvelles formules
+  const niveauSonore = calculateNiveauSonore(nTotal);
+  const debitPotion = calculateDebitPotionMagique(nTotal, nBuveurs);
+  const probaChenille = calculateProbabiliteChenille(nTotal);
+
+  // Intensité de vibration globale indexée sur N_total
+  const shakeIntensity = calculateShakeIntensity(nTotal);
+
+  // Rotation du conteneur pour les grandes fêtes
+  const containerShake = Math.min(1.5, nTotal / 40);
 
   return (
     <SectionContainer id="vibrometre" className="py-12 md:py-20 bg-brand-light">
       <motion.div
         className="max-w-4xl mx-auto"
-        animate={n > 10 ? {
-          rotate: [0, -containerShake/2, containerShake/2, 0],
-        } : {}}
+        animate={
+          nTotal > 10
+            ? {
+                rotate: [0, -containerShake / 2, containerShake / 2, 0],
+              }
+            : {}
+        }
         transition={{
           duration: 0.5,
           repeat: Infinity,
-          repeatDelay: 3 - Math.min(2.5, n / 40),
+          repeatDelay: Math.max(0.5, 3 - nTotal / 20),
         }}
       >
         {/* Titre de la section */}
         <motion.h2
           className="font-oswald text-4xl md:text-5xl text-center mb-4"
           style={{
-            color: n >= TITRE_SEUIL_ANIMATION ? titleColors[colorIndex] : "#5a0001",
+            color:
+              nTotal >= TITRE_SEUIL_ANIMATION
+                ? titleColors[colorIndex]
+                : "#5a0001",
           }}
-          animate={n >= TITRE_SEUIL_ANIMATION ? {
-            scale: [1, 1.02, 1],
-          } : {}}
+          animate={
+            nTotal >= TITRE_SEUIL_ANIMATION
+              ? {
+                  scale: [1, 1.02, 1],
+                }
+              : {}
+          }
           transition={{
             duration: 0.5,
             repeat: Infinity,
           }}
         >
-          Vibromètre de la Fête
+          Vibrometre de la Fete
         </motion.h2>
 
         {/* Sous-titre avec compteur d'invités */}
         <p className="font-montserrat text-brand-dark/70 text-center mb-10">
-          <span className="font-bold text-brand-primary">{n}</span> {n <= 1 ? "invité confirmé" : "invités confirmés"}
+          <span className="font-bold text-brand-primary">{nTotal}</span>{" "}
+          {nTotal <= 1 ? "personne confirmee" : "personnes confirmees"}
         </p>
 
-        {/* Grille des 3 jauges */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
-          {/* Jauge 1: Nuisance sonore */}
-          <GaugeBar
-            value={nuisanceSonore}
-            maxValue={120}
-            label="Nuisance sonore estimée"
-            unit="dB"
-            icon={Volume2}
-            guestCount={n}
-            color="#f45b69"
-          />
+        {/* Message humoristique si aucun invité */}
+        {nTotal === 0 ? (
+          <motion.div
+            className="text-center py-12"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <p className="font-montserrat text-xl text-brand-dark/60 italic">
+              C&apos;est un peu calme ici... On attend vos reponses !
+            </p>
+            <p className="font-montserrat text-sm text-brand-dark/40 mt-4">
+              Le vibrometre s&apos;activera des que les premiers invites auront
+              confirme leur presence.
+            </p>
+          </motion.div>
+        ) : (
+          <>
+            {/* Grille des 3 jauges */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
+              {/* Jauge 1: Niveau sonore */}
+              <GaugeBar
+                value={niveauSonore}
+                maxValue={110}
+                label="Niveau sonore estime"
+                unit="dB"
+                icon={Volume2}
+                shakeIntensity={shakeIntensity}
+                color="#f45b69"
+              />
 
-          {/* Jauge 2: Débit de boisson */}
-          <GaugeBar
-            value={debitBoisson}
-            maxValue={Math.max(200, debitBoisson + 50)}
-            label="Débit de boisson prévisionnel"
-            unit="L"
-            icon={Wine}
-            guestCount={n}
-            color="#5a0001"
-          />
+              {/* Jauge 2: Débit de Potion Magique */}
+              <GaugeBar
+                value={debitPotion}
+                maxValue={Math.max(100, debitPotion + 30)}
+                label="Debit de Potion Magique"
+                unit="L"
+                icon={Wine}
+                shakeIntensity={shakeIntensity}
+                color="#5a0001"
+              />
 
-          {/* Jauge 3: Indice de Chenille */}
-          <GaugeBar
-            value={indiceChenille}
-            maxValue={100}
-            label="Indice de 'Chenille Spontanée'"
-            unit="%"
-            icon={PartyPopper}
-            guestCount={n}
-            color="#f13030"
-          />
-        </div>
+              {/* Jauge 3: Probabilité de Chenille */}
+              <GaugeBar
+                value={probaChenille}
+                maxValue={100}
+                label="Probabilite de Chenille"
+                unit="%"
+                icon={PartyPopper}
+                shakeIntensity={shakeIntensity}
+                color="#f13030"
+              />
+            </div>
 
-        {/* Légende des niveaux de nuisance sonore */}
-        <div className="flex flex-wrap justify-center gap-4 mb-8 text-xs font-montserrat text-brand-dark/60">
-          <span>60dB = Conversation</span>
-          <span>•</span>
-          <span>80dB = Rue animée</span>
-          <span>•</span>
-          <span>100dB = Concert rock</span>
-          <span>•</span>
-          <span>120dB = Décollage avion</span>
-        </div>
+            {/* Légende des niveaux sonores */}
+            <div className="flex flex-wrap justify-center gap-4 mb-8 text-xs font-montserrat text-brand-dark/60">
+              <span>30dB = Bibliotheque</span>
+              <span>-</span>
+              <span>60dB = Conversation</span>
+              <span>-</span>
+              <span>85dB = Rue animee</span>
+              <span>-</span>
+              <span>110dB = Concert rock</span>
+            </div>
+          </>
+        )}
 
         {/* Texte explicatif */}
         <motion.p
@@ -264,9 +345,8 @@ export default function Vibrometre() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.5 }}
         >
-          Statistiques générées en temps réel par l&apos;enthousiasme des invités.
-          <br />
-          Plus vous êtes nombreux, plus le site tremble.
+          Calcule selon le nombre de gosiers assoiffes et de jambes pretes a
+          danser.
         </motion.p>
       </motion.div>
     </SectionContainer>

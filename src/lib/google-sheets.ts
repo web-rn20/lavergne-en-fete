@@ -801,6 +801,103 @@ export async function countOuiFromListeInvites(): Promise<number> {
   }
 }
 
+// Interface pour les statistiques agrégées du vibromètre
+export interface VibrometerAggregatedStats {
+  nTotal: number;       // Somme de Nb_Total (invité + accompagnant + tous les enfants)
+  nAdultes: number;     // Invités principaux + accompagnants + enfants +18 ans
+  nBuveurs: number;     // Personnes ayant 'Oui' dans Consomme_Alcool
+  nEnfants: number;     // Enfants de -18 ans
+}
+
+// Compter les "Oui" dans une chaîne synthétique comme "Marie: Oui, Paul: Non"
+function countOuiInSynthese(synthese: string): number {
+  if (!synthese || synthese.trim() === "") return 0;
+
+  // Découper par virgule et compter les "Oui"
+  const parts = synthese.split(",");
+  let count = 0;
+
+  for (const part of parts) {
+    // Chercher "Oui" (insensible à la casse) après le ":"
+    if (part.toLowerCase().includes(": oui")) {
+      count++;
+    }
+  }
+
+  return count;
+}
+
+// Agrégation des données du vibromètre depuis RSVP_Reponses
+// Ne prend en compte que les réponses avec Présence = "Oui"
+export async function getVibrometerAggregatedStats(): Promise<VibrometerAggregatedStats> {
+  try {
+    console.log("[getVibrometerAggregatedStats] Début de l'agrégation...");
+
+    const doc = await getGoogleSheet();
+    const rsvpSheet = doc.sheetsByTitle["RSVP_Reponses"];
+
+    // Si l'onglet n'existe pas, retourner des valeurs à 0
+    if (!rsvpSheet) {
+      console.log("[getVibrometerAggregatedStats] Onglet RSVP_Reponses non trouvé");
+      return { nTotal: 0, nAdultes: 0, nBuveurs: 0, nEnfants: 0 };
+    }
+
+    const rows = await rsvpSheet.getRows();
+    console.log("[getVibrometerAggregatedStats] Nombre total de lignes RSVP:", rows.length);
+
+    let nTotal = 0;
+    let nAdultes = 0;
+    let nBuveurs = 0;
+    let nEnfants = 0;
+
+    for (const row of rows) {
+      // Ne compter que les présences confirmées (Présence = "Oui")
+      const presence = row.get("Présence") || row.get("Presence") || "";
+      if (presence.toString().toLowerCase() !== "oui") {
+        continue;
+      }
+
+      // Nb_Total : nombre total de personnes dans ce groupe
+      const nbTotal = parseInt(row.get("Nb_Total") || "0", 10);
+      nTotal += nbTotal;
+
+      // Nb Enfants : nombre total d'enfants
+      const nbEnfants = parseInt(row.get("Nb Enfants") || row.get("Nb_Enfants") || "0", 10);
+
+      // Nb Enfants Plus 18 : enfants majeurs (comptent comme adultes)
+      const nbEnfantsPlus18 = parseInt(row.get("Nb Enfants Plus 18") || row.get("Nb_Enfants_Plus_18") || "0", 10);
+
+      // Enfants mineurs (-18 ans)
+      const enfantsMineurs = Math.max(0, nbEnfants - nbEnfantsPlus18);
+      nEnfants += enfantsMineurs;
+
+      // Accompagnant : 1 si "Oui", 0 sinon
+      const accompagnant = row.get("Accompagnant") || "";
+      const hasAccompagnant = accompagnant.toString().toLowerCase() === "oui" ? 1 : 0;
+
+      // Adultes = 1 (invité principal) + accompagnant + enfants +18 ans
+      const adultesGroupe = 1 + hasAccompagnant + nbEnfantsPlus18;
+      nAdultes += adultesGroupe;
+
+      // Buveurs : compter les "Oui" dans la synthèse Consomme_Alcool
+      const consommeAlcool = row.get("Consomme_Alcool") || row.get("Consomme Alcool") || "";
+      const buveursGroupe = countOuiInSynthese(consommeAlcool.toString());
+      nBuveurs += buveursGroupe;
+    }
+
+    console.log("[getVibrometerAggregatedStats] Résultats:");
+    console.log("  - N_total:", nTotal);
+    console.log("  - N_adultes:", nAdultes);
+    console.log("  - N_buveurs:", nBuveurs);
+    console.log("  - N_enfants:", nEnfants);
+
+    return { nTotal, nAdultes, nBuveurs, nEnfants };
+  } catch (error) {
+    console.error("[getVibrometerAggregatedStats] Erreur:", error);
+    return { nTotal: 0, nAdultes: 0, nBuveurs: 0, nEnfants: 0 };
+  }
+}
+
 // Ajout ou mise à jour d'une réponse RSVP
 // LOGIQUE INTELLIGENTE:
 //   - Si l'ID_Invité existe déjà → mise à jour de la ligne existante
