@@ -172,22 +172,34 @@ export default function Vibrometre() {
     "#22181c", // Coffee Bean
   ];
 
-  // Récupération des données RSVP agrégées
+  // Récupération des données RSVP agrégées (avec désactivation du cache)
   useEffect(() => {
     setMounted(true);
 
     async function fetchStats() {
       try {
-        const response = await fetch("/api/vibrometer");
+        // Ajout de timestamp et cache: 'no-store' pour forcer la récupération fraîche
+        const timestamp = Date.now();
+        const response = await fetch(`/api/vibrometer?t=${timestamp}`, {
+          cache: "no-store",
+          headers: {
+            "Cache-Control": "no-cache",
+            "Pragma": "no-cache",
+          },
+        });
         if (response.ok) {
           const data = await response.json();
+          console.log("[Vibrometre] Données reçues:", data);
           setStats(data);
+        } else {
+          console.error("[Vibrometre] Erreur API:", response.status);
         }
       } catch (error) {
-        console.error("Erreur lors de la récupération des stats:", error);
+        console.error("[Vibrometre] Erreur lors de la récupération des stats:", error);
       }
     }
 
+    // Récupération immédiate au montage
     fetchStats();
 
     // Rafraîchir toutes les 30 secondes
