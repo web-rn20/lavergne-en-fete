@@ -827,28 +827,17 @@ function countOuiInSynthese(synthese: string): number {
   return count;
 }
 
-// Agrégation des données du vibromètre depuis RSVP_Reponses
-// Ne prend en compte que les réponses avec Présence = "Oui"
+// Agrégation des données du vibromètre avec JOIN entre Liste_Invites et RSVP_Reponses
+// LOGIQUE DE JOIN:
+//   1. Lire tous les IDs ayant "OUI" dans la colonne "Réponse" de Liste_Invites
+//   2. Pour chaque ID, chercher les détails dans RSVP_Reponses
+//   3. Si trouvé → utiliser Nb_Total de RSVP_Reponses
+//   4. Si non trouvé → compter 1 personne par défaut (invité seul)
 export async function getVibrometerAggregatedStats(): Promise<VibrometerAggregatedStats> {
   try {
-    console.log("[getVibrometerAggregatedStats] Début de l'agrégation...");
+    console.log("[getVibrometerAggregatedStats] ========== DÉBUT AGRÉGATION (JOIN) ==========");
 
     const doc = await getGoogleSheet();
-    const rsvpSheet = doc.sheetsByTitle["RSVP_Reponses"];
-
-    // Si l'onglet n'existe pas, retourner des valeurs à 0
-    if (!rsvpSheet) {
-      console.log("[getVibrometerAggregatedStats] Onglet RSVP_Reponses non trouvé");
-      return { nTotal: 0, nAdultes: 0, nBuveurs: 0, nEnfants: 0 };
-    }
-
-    const rows = await rsvpSheet.getRows();
-    console.log("[getVibrometerAggregatedStats] Nombre total de lignes RSVP:", rows.length);
-
-    let nTotal = 0;
-    let nAdultes = 0;
-    let nBuveurs = 0;
-    let nEnfants = 0;
 
     // Helper: convertir une valeur en nombre, retourne 0 si NaN ou invalide
     const toNumber = (value: unknown): number => {
@@ -857,52 +846,101 @@ export async function getVibrometerAggregatedStats(): Promise<VibrometerAggregat
       return isNaN(num) ? 0 : num;
     };
 
-    for (const row of rows) {
-      // Ne compter que les présences confirmées (Présence = "Oui")
-      // Gestion case-insensitive avec trim pour les espaces
-      const presenceRaw = row.get("Présence") || row.get("Presence") || "";
-      const presence = presenceRaw.toString().trim().toUpperCase();
+    // ========== ÉTAPE 1: Lire Liste_Invites pour trouver les OUI ==========
+    const listeInvitesSheet = doc.sheetsByTitle["Liste_Invites"] || doc.sheetsByIndex[0];
+    if (!listeInvitesSheet) {
+      console.log("[getVibrometerAggregatedStats] Onglet Liste_Invites non trouvé");
+      return { nTotal: 0, nAdultes: 0, nBuveurs: 0, nEnfants: 0 };
+    }
 
-      // Debug: afficher chaque ligne pour diagnostic
-      const rowId = row.get("ID_Invité") || row.get("ID_Invite") || "?";
-      const rowNbTotal = row.get("Nb_Total");
-      console.log(`[getVibrometerAggregatedStats] Ligne ID=${rowId}, Présence="${presenceRaw}" → normalisé="${presence}", Nb_Total="${rowNbTotal}"`);
+    const invitesRows = await listeInvitesSheet.getRows();
+    console.log(`[getVibrometerAggregatedStats] Liste_Invites: ${invitesRows.length} lignes`);
 
-      if (presence !== "OUI") {
-        console.log(`[getVibrometerAggregatedStats]   → Ignorée (Présence != OUI)`);
-        continue;
+    // Extraire les IDs avec Réponse = "OUI" (case-insensitive avec trim)
+    const ouiInvites: Array<{ id: string; nom: string; prenom: string }> = [];
+    for (const row of invitesRows) {
+      const reponseRaw = row.get("Réponse") || row.get("Reponse") || "";
+      const reponse = reponseRaw.toString().trim().toUpperCase();
+
+      if (reponse === "OUI") {
+        const id = (row.get("ID") || row.get("ID_Invité") || row.get("ID_Invite") || "").toString().toLowerCase().trim();
+        const nom = row.get("Nom") || row.get("nom") || "";
+        const prenom = row.get("Prénom") || row.get("prenom") || "";
+        if (id) {
+          ouiInvites.push({ id, nom: nom.toString(), prenom: prenom.toString() });
+        }
       }
+    }
+    console.log(`[getVibrometerAggregatedStats] Invités avec OUI: ${ouiInvites.length}`);
+    ouiInvites.forEach(inv => console.log(`  - ${inv.prenom} ${inv.nom} (ID: ${inv.id})`));
 
-      // Nb_Total : nombre total de personnes dans ce groupe
-      // Utilisation de Number() au lieu de parseInt pour plus de robustesse
-      const nbTotal = toNumber(row.get("Nb_Total"));
-      console.log(`[getVibrometerAggregatedStats]   → Nb_Total parsé: ${nbTotal}`);
-      nTotal += nbTotal;
+    // Si aucun OUI, retourner 0
+    if (ouiInvites.length === 0) {
+      console.log("[getVibrometerAggregatedStats] Aucun invité avec OUI → retour 0");
+      return { nTotal: 0, nAdultes: 0, nBuveurs: 0, nEnfants: 0 };
+    }
 
-      // Nb Enfants : nombre total d'enfants
-      const nbEnfants = toNumber(row.get("Nb Enfants") || row.get("Nb_Enfants"));
+    // ========== ÉTAPE 2: Lire RSVP_Reponses pour les détails ==========
+    const rsvpSheet = doc.sheetsByTitle["RSVP_Reponses"];
+    let rsvpRows: GoogleSpreadsheetRow[] = [];
+    if (rsvpSheet) {
+      rsvpRows = await rsvpSheet.getRows();
+      console.log(`[getVibrometerAggregatedStats] RSVP_Reponses: ${rsvpRows.length} lignes`);
+    } else {
+      console.log("[getVibrometerAggregatedStats] Onglet RSVP_Reponses non trouvé (utilisation des valeurs par défaut)");
+    }
 
-      // Nb Enfants Plus 18 : enfants majeurs (comptent comme adultes)
-      const nbEnfantsPlus18 = toNumber(row.get("Nb Enfants Plus 18") || row.get("Nb_Enfants_Plus_18"));
+    // Créer un index pour recherche rapide par ID
+    const rsvpByIdMap = new Map<string, GoogleSpreadsheetRow>();
+    for (const row of rsvpRows) {
+      const rowId = (row.get("ID_Invité") || row.get("ID_Invite") || "").toString().toLowerCase().trim();
+      if (rowId) {
+        rsvpByIdMap.set(rowId, row);
+      }
+    }
 
-      // Enfants mineurs (-18 ans)
-      const enfantsMineurs = Math.max(0, nbEnfants - nbEnfantsPlus18);
-      nEnfants += enfantsMineurs;
+    // ========== ÉTAPE 3: JOIN - Pour chaque OUI, récupérer les détails ==========
+    let nTotal = 0;
+    let nAdultes = 0;
+    let nBuveurs = 0;
+    let nEnfants = 0;
 
-      // Accompagnant : 1 si "Oui", 0 sinon (case-insensitive avec trim)
-      const accompagnantRaw = row.get("Accompagnant") || "";
-      const hasAccompagnant = accompagnantRaw.toString().trim().toUpperCase() === "OUI" ? 1 : 0;
+    for (const invite of ouiInvites) {
+      const rsvpRow = rsvpByIdMap.get(invite.id);
 
-      // Adultes = 1 (invité principal) + accompagnant + enfants +18 ans
-      const adultesGroupe = 1 + hasAccompagnant + nbEnfantsPlus18;
-      nAdultes += adultesGroupe;
+      if (rsvpRow) {
+        // Ligne RSVP trouvée → utiliser les détails
+        const nbTotal = toNumber(rsvpRow.get("Nb_Total"));
+        const nbEnfantsTotal = toNumber(rsvpRow.get("Nb Enfants") || rsvpRow.get("Nb_Enfants"));
+        const nbEnfantsPlus18 = toNumber(rsvpRow.get("Nb Enfants Plus 18") || rsvpRow.get("Nb_Enfants_Plus_18"));
+        const enfantsMineurs = Math.max(0, nbEnfantsTotal - nbEnfantsPlus18);
 
-      // Buveurs : compter les "Oui" dans la synthèse Consomme_Alcool
-      const consommeAlcool = row.get("Consomme_Alcool") || row.get("Consomme Alcool") || "";
-      const buveursGroupe = countOuiInSynthese(consommeAlcool.toString());
-      nBuveurs += buveursGroupe;
+        const accompagnantRaw = rsvpRow.get("Accompagnant") || "";
+        const hasAccompagnant = accompagnantRaw.toString().trim().toUpperCase() === "OUI" ? 1 : 0;
 
-      console.log(`[getVibrometerAggregatedStats]   → Comptée: nbTotal=${nbTotal}, adultes=${adultesGroupe}, buveurs=${buveursGroupe}, enfantsMineurs=${enfantsMineurs}`);
+        const adultesGroupe = 1 + hasAccompagnant + nbEnfantsPlus18;
+
+        const consommeAlcool = rsvpRow.get("Consomme_Alcool") || rsvpRow.get("Consomme Alcool") || "";
+        const buveursGroupe = countOuiInSynthese(consommeAlcool.toString());
+
+        // Utiliser nbTotal si > 0, sinon compter au moins 1 personne
+        const effectif = nbTotal > 0 ? nbTotal : 1;
+
+        nTotal += effectif;
+        nAdultes += adultesGroupe;
+        nBuveurs += buveursGroupe;
+        nEnfants += enfantsMineurs;
+
+        console.log(`[getVibrometerAggregatedStats] Compté: ${invite.prenom} ${invite.nom} (${effectif} pers.) - RSVP trouvé`);
+      } else {
+        // Pas de ligne RSVP → compter 1 personne par défaut (l'invité seul)
+        nTotal += 1;
+        nAdultes += 1;
+        // Buveur par défaut: non (on ne sait pas)
+        // Enfants: 0
+
+        console.log(`[getVibrometerAggregatedStats] Compté: ${invite.prenom} ${invite.nom} (1 pers.) - RSVP non trouvé (défaut)`);
+      }
     }
 
     console.log("[getVibrometerAggregatedStats] ========== RÉSULTATS FINAUX ==========");
@@ -910,7 +948,7 @@ export async function getVibrometerAggregatedStats(): Promise<VibrometerAggregat
     console.log(`  - N_adultes: ${nAdultes}`);
     console.log(`  - N_buveurs: ${nBuveurs}`);
     console.log(`  - N_enfants: ${nEnfants}`);
-    console.log("======================================");
+    console.log("=====================================================================");
 
     return { nTotal, nAdultes, nBuveurs, nEnfants };
   } catch (error) {
