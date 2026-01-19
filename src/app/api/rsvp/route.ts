@@ -7,7 +7,7 @@ import {
   recalculerStockHebergement,
   updateInviteReponse,
 } from "@/lib/google-sheets";
-import { sendRSVPConfirmationEmail, sendRSVPNotificationToHosts } from "@/lib/mailer";
+import { sendRSVPConfirmationEmail, sendRSVPAbsenceEmail, sendRSVPNotificationToHosts } from "@/lib/mailer";
 
 // Interface flexible - seuls nom et prenom sont vraiment obligatoires
 interface RSVPRequestBody {
@@ -221,34 +221,44 @@ export async function POST(request: NextRequest) {
       console.warn("Attention: Recalcul du stock échoué:", recalculResult.error);
     }
 
-    // Envoi des emails (non-bloquant : les erreurs ne doivent pas empêcher le succès RSVP)
+    // Envoi des emails (non-bloquant : les erreurs ne doivent pas empêcher le succès)
     let emailSuccess = false;
     try {
-      // Données communes pour les emails
+      // Données complètes pour les emails (sans termes techniques)
       const regimeEtAllergies = [regimes, allergies].filter(s => s).join(" | ");
       const emailData = {
         prenom: body.prenom.trim(),
         nom: body.nom.trim(),
         email,
+        presence,
         prenomConjoint: accompagnant ? prenomConjoint : undefined,
         nombreEnfants: enfants ? nombreEnfants : 0,
         prenomsEnfants: prenomsEnfantsStr,
+        nombreEnfantsPlus18,
         nbTotal,
         regimeAlimentaire: regimeEtAllergies,
         hebergementLabel: logement,
+        consommeAlcool,
+        message,
       };
 
-      // Envoi de l'email de confirmation à l'invité (si email fourni)
-      console.log("--- TEST EMAIL INVITÉ ---");
-      console.log("Destinataire invité:", body.email);
+      // Envoi de l'email à l'invité (si email fourni)
+      console.log("--- ENVOI EMAIL INVITÉ ---");
+      console.log("Destinataire:", body.email, "| Présence:", presence ? "OUI" : "NON");
 
       if (email) {
         try {
-          emailSuccess = await sendRSVPConfirmationEmail(emailData);
-          if (!emailSuccess) {
-            console.warn("L'email de confirmation n'a pas pu être envoyé");
+          // Utiliser le bon template selon la présence
+          if (presence) {
+            emailSuccess = await sendRSVPConfirmationEmail(emailData);
           } else {
-            console.log("Email de confirmation envoyé à l'invité");
+            emailSuccess = await sendRSVPAbsenceEmail(emailData);
+          }
+
+          if (!emailSuccess) {
+            console.warn("L'email n'a pas pu être envoyé");
+          } else {
+            console.log("Email envoyé avec succès à l'invité");
           }
         } catch (emailError) {
           console.error("Erreur mail invité:", emailError);
@@ -257,20 +267,19 @@ export async function POST(request: NextRequest) {
         console.log("Envoi annulé : adresse email de l'invité manquante");
       }
 
-      // Envoi de la notification aux hôtes (indépendant de l'email invité)
+      // Envoi de l'alerte aux organisateurs (indépendant de l'email invité)
       try {
         const hostNotificationSuccess = await sendRSVPNotificationToHosts(emailData);
         if (!hostNotificationSuccess) {
-          console.warn("La notification aux hôtes n'a pas pu être envoyée");
+          console.warn("L'alerte aux organisateurs n'a pas pu être envoyée");
         } else {
-          console.log("Notification envoyée aux hôtes");
+          console.log("Alerte envoyée aux organisateurs");
         }
       } catch (hostEmailError) {
-        console.error("Erreur lors de l'envoi de la notification aux hôtes:", hostEmailError);
+        console.error("Erreur alerte organisateurs:", hostEmailError);
       }
     } catch (emailBlockError) {
-      // Erreur globale dans le bloc email (variable manquante, erreur 400, etc.)
-      // On log mais on ne bloque PAS la réponse succès pour l'invité
+      // Erreur globale dans le bloc email - on continue sans bloquer
       console.error("=== Erreur dans le bloc email (non-bloquant) ===");
       console.error("Type:", emailBlockError instanceof Error ? emailBlockError.constructor.name : typeof emailBlockError);
       console.error("Message:", emailBlockError instanceof Error ? emailBlockError.message : String(emailBlockError));
