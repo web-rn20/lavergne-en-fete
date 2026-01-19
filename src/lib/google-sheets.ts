@@ -728,9 +728,11 @@ export interface RSVPReponse {
 
 // Mise à jour de la colonne "Réponse" dans Liste_Invites
 // Cette fonction est appelée lors de la soumission du formulaire RSVP
+// Pour les réponses NON, on sauvegarde aussi le message dans la colonne "Message"
 export async function updateInviteReponse(
   inviteId: string,
-  reponse: "OUI" | "NON"
+  reponse: "OUI" | "NON",
+  message?: string
 ): Promise<boolean> {
   try {
     console.log("[updateInviteReponse] Mise à jour pour ID:", inviteId, "avec réponse:", reponse);
@@ -753,6 +755,13 @@ export async function updateInviteReponse(
 
     // Mettre à jour la colonne "Réponse" (ou "Reponse")
     row.set("Réponse", reponse);
+
+    // Pour les réponses NON, sauvegarder aussi le message dans la colonne "Message"
+    if (reponse === "NON" && message) {
+      row.set("Message", message);
+      console.log("[updateInviteReponse] Message également sauvegardé pour absence:", message.substring(0, 50) + "...");
+    }
+
     await row.save();
 
     console.log("[updateInviteReponse] Réponse mise à jour avec succès:", reponse);

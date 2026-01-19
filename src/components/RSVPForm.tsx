@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import SectionContainer from "./SectionContainer";
 
@@ -111,7 +111,7 @@ function BlocBesoinsAlimentaires({
               regimeAutre: e.target.value !== "autre" ? "" : besoins.regimeAutre,
             })
           }
-          className="w-full px-4 py-3 border border-brand-light rounded-lg bg-white text-brand-dark
+          className="w-full px-4 py-3 pr-10 border border-brand-light rounded-lg bg-white text-brand-dark
                    font-montserrat focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20
                    transition-all duration-200"
         >
@@ -176,6 +176,9 @@ function BlocBesoinsAlimentaires({
 export default function RSVPForm() {
   const searchParams = useSearchParams();
   const urlId = searchParams.get("id");
+
+  // Ref pour scroller vers le haut après soumission réussie
+  const formContainerRef = useRef<HTMLDivElement>(null);
 
   // États
   const [isLoading, setIsLoading] = useState(true);
@@ -285,6 +288,13 @@ export default function RSVPForm() {
 
     init();
   }, [urlId, checkInviteById, fetchHebergement, checkExistingRsvp]);
+
+  // Scroll vers le haut du formulaire après soumission réussie
+  useEffect(() => {
+    if (isSuccess && formContainerRef.current) {
+      formContainerRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [isSuccess]);
 
   // Recherche manuelle par nom/prénom
   const handleManualSearch = async () => {
@@ -519,31 +529,33 @@ export default function RSVPForm() {
 
   // Fonction pour formater la consommation d'ALCOOL pour le Google Sheet
   // Note: on ne demande JAMAIS l'alcool pour les enfants -18 ans
+  // Format: "Prénom: Oui" ou "Prénom: Non" pour chaque personne majeure
   const formatAlcoolForSheet = (): string => {
     const parts: string[] = [];
 
     // Invité principal
-    if (formData.besoinsInvite.consommeAlcool) {
-      parts.push(`${invite?.prenom || "Moi"}: Oui`);
-    }
+    const inviteAlcool = formData.besoinsInvite.consommeAlcool ? "Oui" : "Non";
+    parts.push(`${invite?.prenom || "Moi"}: ${inviteAlcool}`);
 
     // Conjoint
-    if (formData.accompagnant && formData.prenomConjoint && formData.besoinsConjoint.consommeAlcool) {
-      parts.push(`${formData.prenomConjoint}: Oui`);
+    if (formData.accompagnant && formData.prenomConjoint) {
+      const conjointAlcool = formData.besoinsConjoint.consommeAlcool ? "Oui" : "Non";
+      parts.push(`${formData.prenomConjoint}: ${conjointAlcool}`);
     }
 
     // Enfants +18 ans (seuls les majeurs peuvent consommer de l'alcool)
     if (formData.enfantsPlus18) {
       formData.prenomsEnfantsPlus18.forEach((prenom, index) => {
         const enfantBesoins = formData.besoinsEnfantsPlus18[index];
-        if (enfantBesoins && enfantBesoins.consommeAlcool) {
+        if (enfantBesoins) {
+          const enfantAlcool = enfantBesoins.consommeAlcool ? "Oui" : "Non";
           const enfantNom = prenom || `Enfant +18 ${index + 1}`;
-          parts.push(`${enfantNom}: Oui`);
+          parts.push(`${enfantNom}: ${enfantAlcool}`);
         }
       });
     }
 
-    return parts.length > 0 ? parts.join(", ") : "";
+    return parts.join(", ");
   };
 
   // Soumission du formulaire (avec vérification de réponse existante)
@@ -669,7 +681,7 @@ export default function RSVPForm() {
 
     return (
       <SectionContainer id="rsvp" className="py-12 md:py-20 bg-brand-light">
-        <div className="max-w-2xl mx-auto text-center">
+        <div ref={formContainerRef} className="max-w-2xl mx-auto text-center">
           <div className="bg-white rounded-2xl p-8 md:p-12">
             <div className="text-6xl mb-6">{isPresent ? "🎉" : "💌"}</div>
             <h2 className="font-oswald text-4xl md:text-5xl text-brand-primary mb-4 uppercase">
@@ -1076,12 +1088,13 @@ export default function RSVPForm() {
                   )}
                 </div>
 
-                {/* Section Enfants */}
+                {/* Section Enfants (regroupée : -18 ans et +18 ans) */}
                 <div className="space-y-4">
                   <h3 className="font-oswald text-xl text-brand-dark border-b border-brand-light pb-2">
                     Enfants
                   </h3>
 
+                  {/* Enfants de moins de 18 ans */}
                   <label className="flex items-center gap-3 cursor-pointer">
                     <input
                       type="checkbox"
@@ -1116,7 +1129,7 @@ export default function RSVPForm() {
                           onChange={(e) =>
                             handleNombreEnfantsChange(parseInt(e.target.value, 10))
                           }
-                          className="w-full px-4 py-3 border border-brand-light rounded-lg bg-white text-brand-dark
+                          className="w-full px-4 py-3 pr-10 border border-brand-light rounded-lg bg-white text-brand-dark
                                    focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20
                                    transition-all duration-200"
                         >
@@ -1166,14 +1179,8 @@ export default function RSVPForm() {
                       </div>
                     </div>
                   )}
-                </div>
 
-                {/* Section Enfants de plus de 18 ans */}
-                <div className="space-y-4">
-                  <h3 className="font-oswald text-xl text-brand-dark border-b border-brand-light pb-2">
-                    Enfants de plus de 18 ans
-                  </h3>
-
+                  {/* Enfants de plus de 18 ans */}
                   <label className="flex items-center gap-3 cursor-pointer">
                     <input
                       type="checkbox"
@@ -1208,7 +1215,7 @@ export default function RSVPForm() {
                           onChange={(e) =>
                             handleNombreEnfantsPlus18Change(parseInt(e.target.value, 10))
                           }
-                          className="w-full px-4 py-3 border border-brand-light rounded-lg bg-white text-brand-dark
+                          className="w-full px-4 py-3 pr-10 border border-brand-light rounded-lg bg-white text-brand-dark
                                    focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20
                                    transition-all duration-200"
                         >

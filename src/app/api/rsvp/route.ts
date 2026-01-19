@@ -141,10 +141,13 @@ export async function POST(request: NextRequest) {
       : "";
 
     // ÉTAPE 1: Mise à jour de la colonne "Réponse" dans Liste_Invites
+    // Pour les NON, on enregistre aussi le message dans Liste_Invites
     if (inviteId) {
       console.log("=== Mise à jour Liste_Invites ===");
       const reponseListeInvites = presence ? "OUI" : "NON";
-      const updateSuccess = await updateInviteReponse(inviteId, reponseListeInvites);
+      // Passer le message uniquement pour les réponses NON
+      const messageForAbsence = !presence ? message : undefined;
+      const updateSuccess = await updateInviteReponse(inviteId, reponseListeInvites, messageForAbsence);
       if (!updateSuccess) {
         console.warn("La mise à jour de Liste_Invites a échoué (non bloquant)");
       }
