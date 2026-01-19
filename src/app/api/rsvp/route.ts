@@ -4,6 +4,7 @@ import {
   addRSVPReponse,
   getPlacesRestantesFromConfig,
   recalculerStockHebergement,
+  updateInviteReponse,
 } from "@/lib/google-sheets";
 import { sendRSVPConfirmationEmail, sendRSVPNotificationToHosts } from "@/lib/mailer";
 
@@ -20,12 +21,16 @@ interface RSVPRequestBody {
   nombreEnfants?: number;
   prenomsEnfants?: string[];
   // Nouveaux champs séparés pour régimes et allergies
-  regimes?: string;    // Synthèse des régimes (ex: "Moi: Vegan, Léo: Halal")
+  regimes?: string;    // Synthèse des régimes (ex: "Moi: Végétarien")
   allergies?: string;  // Synthèse des allergies (ex: "Moi: Noix, Clara: Gluten")
   // Hébergement
   hebergement?: boolean; // true uniquement si "Maison des Lavergne"
   logement?: string;     // "Maison des Lavergne", "Tente dans le jardin", "Se débrouille"
   nbTotal?: number;
+  // Nouveaux champs
+  nombreEnfantsPlus18?: number;  // Enfants de plus de 18 ans
+  consommeAlcool?: string;       // Synthèse alcool (ex: "Marie: Oui, Paul: Non")
+  message?: string;              // Message libre (surtout pour les NON)
 }
 
 export async function POST(request: NextRequest) {
@@ -74,9 +79,13 @@ export async function POST(request: NextRequest) {
     const allergies = body.allergies || "";
     const hebergement = body.hebergement === true; // true uniquement si "Maison des Lavergne"
     const logement = body.logement || "Se débrouille";
+    // Nouveaux champs
+    const nombreEnfantsPlus18 = body.nombreEnfantsPlus18 || 0;
+    const consommeAlcool = body.consommeAlcool || "";
+    const message = body.message || "";
 
     console.log("=== Valeurs normalisées ===");
-    console.log({ inviteId, email, presence, accompagnant, enfants, nombreEnfants, hebergement, logement });
+    console.log({ inviteId, email, presence, accompagnant, enfants, nombreEnfants, hebergement, logement, nombreEnfantsPlus18, consommeAlcool });
 
     // Vérification que l'invité existe (si un ID est fourni)
     let invite = null;
@@ -131,8 +140,18 @@ export async function POST(request: NextRequest) {
       ? prenomsEnfants.filter(p => p && p.trim()).join(", ")
       : "";
 
-    // Ajout de la réponse RSVP dans Google Sheets
-    console.log("=== Écriture dans Google Sheets ===");
+    // ÉTAPE 1: Mise à jour de la colonne "Réponse" dans Liste_Invites
+    if (inviteId) {
+      console.log("=== Mise à jour Liste_Invites ===");
+      const reponseListeInvites = presence ? "OUI" : "NON";
+      const updateSuccess = await updateInviteReponse(inviteId, reponseListeInvites);
+      if (!updateSuccess) {
+        console.warn("La mise à jour de Liste_Invites a échoué (non bloquant)");
+      }
+    }
+
+    // ÉTAPE 2: Ajout de la réponse RSVP dans RSVP_Reponses
+    console.log("=== Écriture dans RSVP_Reponses ===");
     const rsvpData = {
       date: new Date().toISOString(),
       inviteId,
@@ -140,14 +159,17 @@ export async function POST(request: NextRequest) {
       prenom: body.prenom.trim(),
       email,
       presence,
-      accompagnant,
-      prenomConjoint: accompagnant ? prenomConjoint : "",
-      nombreEnfants: enfants ? nombreEnfants : 0,
-      prenomsEnfants: prenomsEnfantsStr,
-      nbTotal,
-      regimes,     // Synthèse des régimes de tout le groupe
-      allergies,   // Synthèse des allergies de tout le groupe
-      logement,    // "Maison des Lavergne", "Tente dans le jardin", "Se débrouille"
+      accompagnant: presence ? accompagnant : false,
+      prenomConjoint: presence && accompagnant ? prenomConjoint : "",
+      nombreEnfants: presence && enfants ? nombreEnfants : 0,
+      prenomsEnfants: presence ? prenomsEnfantsStr : "",
+      nbTotal: presence ? nbTotal : 1,
+      regimes: presence ? regimes : "",     // Synthèse des régimes de tout le groupe
+      allergies: presence ? allergies : "", // Synthèse des allergies de tout le groupe
+      logement: presence ? logement : "",   // "Maison des Lavergne", "Tente dans le jardin", "Se débrouille"
+      nombreEnfantsPlus18: presence ? nombreEnfantsPlus18 : 0,
+      consommeAlcool: presence ? consommeAlcool : "",
+      message,  // Toujours enregistrer le message (surtout utile pour les NON)
     };
     console.log("Données RSVP:", JSON.stringify(rsvpData, null, 2));
 
@@ -230,10 +252,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Réponse succès : le RSVP est enregistré, même si les emails ont échoué
+    const successMessage = presence
+      ? "Votre présence a été confirmée !"
+      : "Votre réponse a bien été enregistrée.";
+
     return NextResponse.json({
       success: true,
-      message: "Votre présence a été confirmée !",
-      nbTotal,
+      message: successMessage,
+      presence,
+      nbTotal: presence ? nbTotal : 0,
       emailEnvoye: emailSuccess,
     });
   } catch (error) {

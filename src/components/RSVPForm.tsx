@@ -15,25 +15,35 @@ interface InviteData {
 
 // Type pour les besoins alimentaires d'une personne
 interface BesoinsAlimentaires {
-  regime: "normal" | "vegetarien" | "vegan" | "halal" | "autre";
+  regime: "normal" | "vegetarien" | "autre";
   regimeAutre: string;
   allergies: string;
+  consommeAlcool: boolean;
 }
 
 interface FormData {
-  nom: string;
+  // Question initiale
+  serezVousParmiNous: boolean | null; // null = pas encore répondu
+  // Identification
   prenom: string;
+  nom: string;
+  // Accompagnant
   accompagnant: boolean;
   prenomConjoint: string;
+  // Enfants (-18 ans)
   enfants: boolean;
   nombreEnfants: number;
   prenomsEnfants: string[];
+  // Enfants (+18 ans)
+  nombreEnfantsPlus18: number;
   // Besoins alimentaires par personne
   besoinsInvite: BesoinsAlimentaires;
   besoinsConjoint: BesoinsAlimentaires;
   besoinsEnfants: BesoinsAlimentaires[];
   // Nouvelle logique hébergement
   hebergementChoix: "lavergne" | "tente" | "autonome";
+  // Message (surtout pour les NON)
+  message: string;
 }
 
 // Liste des hôtels suggérés à proximité
@@ -62,6 +72,7 @@ const defaultBesoins: BesoinsAlimentaires = {
   regime: "normal",
   regimeAutre: "",
   allergies: "",
+  consommeAlcool: true, // Par défaut, on suppose que oui
 };
 
 // Composant pour un bloc de besoins alimentaires
@@ -138,6 +149,17 @@ function BlocBesoinsAlimentaires({
           placeholder="Arachides, fruits de mer, gluten..."
         />
       </div>
+
+      <label className="flex items-center gap-3 cursor-pointer pt-2">
+        <input
+          type="checkbox"
+          checked={besoins.consommeAlcool}
+          onChange={(e) => onChange({ ...besoins, consommeAlcool: e.target.checked })}
+          className="w-5 h-5 rounded border-brand-light text-brand-primary
+                   focus:ring-brand-primary focus:ring-offset-0"
+        />
+        <span className="text-brand-dark text-sm">Je consomme de l&apos;alcool</span>
+      </label>
     </div>
   );
 }
@@ -163,17 +185,20 @@ export default function RSVPForm() {
 
   // Formulaire
   const [formData, setFormData] = useState<FormData>({
-    nom: "",
+    serezVousParmiNous: null, // null = pas encore répondu
     prenom: "",
+    nom: "",
     accompagnant: false,
     prenomConjoint: "",
     enfants: false,
     nombreEnfants: 1,
     prenomsEnfants: [""],
+    nombreEnfantsPlus18: 0,
     besoinsInvite: { ...defaultBesoins },
     besoinsConjoint: { ...defaultBesoins },
     besoinsEnfants: [{ ...defaultBesoins }],
     hebergementChoix: "autonome",
+    message: "",
   });
 
   // Vérification de l'invité par ID
@@ -407,6 +432,26 @@ export default function RSVPForm() {
     return parts.length > 0 ? parts.join(", ") : "";
   };
 
+  // Fonction pour formater la consommation d'ALCOOL pour le Google Sheet
+  const formatAlcoolForSheet = (): string => {
+    const parts: string[] = [];
+
+    // Invité principal
+    const inviteAlcool = formData.besoinsInvite.consommeAlcool ? "Oui" : "Non";
+    parts.push(`${invite?.prenom || "Moi"}: ${inviteAlcool}`);
+
+    // Conjoint
+    if (formData.accompagnant && formData.prenomConjoint) {
+      const conjointAlcool = formData.besoinsConjoint.consommeAlcool ? "Oui" : "Non";
+      parts.push(`${formData.prenomConjoint}: ${conjointAlcool}`);
+    }
+
+    // Enfants (seulement +18 ans, pas les mineurs)
+    // Note: on n'ajoute pas les enfants mineurs car ils ne consomment pas d'alcool
+
+    return parts.join(", ");
+  };
+
   // Soumission du formulaire (avec vérification de réponse existante)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -434,28 +479,34 @@ export default function RSVPForm() {
     setError(null);
     setShowConfirmModal(false);
 
+    const presence = formData.serezVousParmiNous === true;
+
     try {
-      // Calculer le nombre total de personnes
-      const nbTotal =
-        1 + // Invité principal
-        (formData.accompagnant && formData.prenomConjoint ? 1 : 0) +
-        (formData.enfants ? formData.nombreEnfants : 0);
+      // Calculer le nombre total de personnes (seulement si présence = OUI)
+      const nbTotal = presence
+        ? 1 + // Invité principal
+          (formData.accompagnant && formData.prenomConjoint ? 1 : 0) +
+          (formData.enfants ? formData.nombreEnfants : 0) +
+          formData.nombreEnfantsPlus18
+        : 1;
 
       // Déterminer si on demande l'hébergement à la Maison des Lavergne
-      const demandeHebergementLavergne = formData.hebergementChoix === "lavergne";
+      const demandeHebergementLavergne = presence && formData.hebergementChoix === "lavergne";
 
       // Formater l'option logement pour le sheet
       let logement = "";
-      switch (formData.hebergementChoix) {
-        case "lavergne":
-          logement = "Maison des Lavergne";
-          break;
-        case "tente":
-          logement = "Tente dans le jardin";
-          break;
-        case "autonome":
-          logement = "Se débrouille";
-          break;
+      if (presence) {
+        switch (formData.hebergementChoix) {
+          case "lavergne":
+            logement = "Maison des Lavergne";
+            break;
+          case "tente":
+            logement = "Tente dans le jardin";
+            break;
+          case "autonome":
+            logement = "Se débrouille";
+            break;
+        }
       }
 
       const response = await fetch("/api/rsvp", {
@@ -468,17 +519,21 @@ export default function RSVPForm() {
           nom: invite.nom,
           prenom: invite.prenom,
           email: invite.email,
-          presence: true,
-          accompagnant: formData.accompagnant,
-          prenomConjoint: formData.prenomConjoint,
-          enfants: formData.enfants,
-          nombreEnfants: formData.nombreEnfants,
-          prenomsEnfants: formData.prenomsEnfants,
-          regimes: formatRegimesForSheet(),     // Synthèse des régimes
-          allergies: formatAllergiesForSheet(), // Synthèse des allergies
-          hebergement: demandeHebergementLavergne, // true uniquement si "Maison des Lavergne"
+          presence,
+          accompagnant: presence ? formData.accompagnant : false,
+          prenomConjoint: presence ? formData.prenomConjoint : "",
+          enfants: presence ? formData.enfants : false,
+          nombreEnfants: presence ? formData.nombreEnfants : 0,
+          prenomsEnfants: presence ? formData.prenomsEnfants : [],
+          regimes: presence ? formatRegimesForSheet() : "",     // Synthèse des régimes
+          allergies: presence ? formatAllergiesForSheet() : "", // Synthèse des allergies
+          hebergement: demandeHebergementLavergne,
           logement,
           nbTotal,
+          // Nouveaux champs
+          nombreEnfantsPlus18: presence ? formData.nombreEnfantsPlus18 : 0,
+          consommeAlcool: presence ? formatAlcoolForSheet() : "",
+          message: formData.message, // Toujours envoyer le message
         }),
       });
 
@@ -513,25 +568,40 @@ export default function RSVPForm() {
 
   // Affichage du succès
   if (isSuccess) {
+    const isPresent = formData.serezVousParmiNous === true;
+
     return (
       <SectionContainer id="rsvp" className="py-12 md:py-20 bg-brand-light">
         <div className="max-w-2xl mx-auto text-center">
           <div className="bg-white rounded-2xl p-8 md:p-12">
-            <div className="text-6xl mb-6">🎉</div>
+            <div className="text-6xl mb-6">{isPresent ? "🎉" : "💌"}</div>
             <h2 className="font-oswald text-4xl md:text-5xl text-brand-primary mb-4 uppercase">
               Merci {invite?.prenom} !
             </h2>
-            <p className="text-brand-dark text-lg mb-6 font-montserrat">
-              Ta réponse a bien été enregistrée. On a vraiment hâte de te retrouver le 27 juin 2026 pour fêter ça !
-            </p>
-            <p className="text-brand-dark/70 font-montserrat">
-              Tu vas recevoir un email de confirmation avec le récapitulatif de tes choix.
-            </p>
-            <div className="mt-8 p-4 bg-brand-light rounded-xl">
-              <p className="text-brand-accent-deep font-semibold font-montserrat">
-                Rendez-vous le 27 juin 2026 !
-              </p>
-            </div>
+            {isPresent ? (
+              <>
+                <p className="text-brand-dark text-lg mb-6 font-montserrat">
+                  Ta réponse a bien été enregistrée. On a vraiment hâte de te retrouver le 27 juin 2026 pour fêter ça !
+                </p>
+                <p className="text-brand-dark/70 font-montserrat">
+                  Tu vas recevoir un email de confirmation avec le récapitulatif de tes choix.
+                </p>
+                <div className="mt-8 p-4 bg-brand-light rounded-xl">
+                  <p className="text-brand-accent-deep font-semibold font-montserrat">
+                    Rendez-vous le 27 juin 2026 !
+                  </p>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="text-brand-dark text-lg mb-6 font-montserrat">
+                  Ta réponse a bien été enregistrée. C&apos;est dommage que tu ne puisses pas être là, tu vas nous manquer !
+                </p>
+                <p className="text-brand-dark/70 font-montserrat">
+                  On pense à toi et on espère te revoir très bientôt.
+                </p>
+              </>
+            )}
           </div>
         </div>
       </SectionContainer>
@@ -741,6 +811,110 @@ export default function RSVPForm() {
             {/* Le reste du formulaire n'apparaît que si l'invité est identifié */}
             {invite && (
               <>
+                {/* Question principale : Serez-vous parmi nous ? */}
+                <div className="space-y-4">
+                  <h3 className="font-oswald text-xl text-brand-dark border-b border-brand-light pb-2">
+                    Serez-vous parmi nous ?
+                  </h3>
+
+                  <div className="flex gap-4">
+                    <label className="flex-1 flex items-center justify-center gap-3 p-4 border border-brand-light rounded-lg cursor-pointer hover:border-brand-primary/50 transition-colors has-[:checked]:border-brand-primary has-[:checked]:bg-brand-primary/5">
+                      <input
+                        type="radio"
+                        name="presence"
+                        value="oui"
+                        checked={formData.serezVousParmiNous === true}
+                        onChange={() =>
+                          setFormData((prev) => ({ ...prev, serezVousParmiNous: true }))
+                        }
+                        className="w-5 h-5 text-brand-primary focus:ring-brand-primary"
+                      />
+                      <span className="text-brand-dark font-medium text-lg">Oui !</span>
+                    </label>
+
+                    <label className="flex-1 flex items-center justify-center gap-3 p-4 border border-brand-light rounded-lg cursor-pointer hover:border-brand-primary/50 transition-colors has-[:checked]:border-brand-primary has-[:checked]:bg-brand-primary/5">
+                      <input
+                        type="radio"
+                        name="presence"
+                        value="non"
+                        checked={formData.serezVousParmiNous === false}
+                        onChange={() =>
+                          setFormData((prev) => ({ ...prev, serezVousParmiNous: false }))
+                        }
+                        className="w-5 h-5 text-brand-primary focus:ring-brand-primary"
+                      />
+                      <span className="text-brand-dark font-medium text-lg">Non</span>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Si NON : Afficher uniquement le champ Message */}
+                {formData.serezVousParmiNous === false && (
+                  <>
+                    <div className="space-y-4">
+                      <h3 className="font-oswald text-xl text-brand-dark border-b border-brand-light pb-2">
+                        Un petit mot ?
+                      </h3>
+                      <textarea
+                        value={formData.message}
+                        onChange={(e) =>
+                          setFormData((prev) => ({ ...prev, message: e.target.value }))
+                        }
+                        rows={4}
+                        className="w-full px-4 py-3 border border-brand-light rounded-lg bg-white text-brand-dark
+                                 font-montserrat focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20
+                                 transition-all duration-200 resize-none"
+                        placeholder="Laisse-nous un message si tu le souhaites..."
+                      />
+                    </div>
+
+                    {/* Message d'erreur */}
+                    {error && (
+                      <div className="p-4 bg-brand-alert/10 rounded-lg">
+                        <p className="text-brand-alert text-sm">{error}</p>
+                      </div>
+                    )}
+
+                    {/* Bouton de soumission pour NON */}
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="btn btn-on-light w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isSubmitting ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <svg
+                            className="animate-spin h-5 w-5"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            ></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            ></path>
+                          </svg>
+                          Envoi en cours...
+                        </span>
+                      ) : (
+                        "Envoyer ma réponse"
+                      )}
+                    </button>
+                  </>
+                )}
+
+                {/* Si OUI : Afficher tout le formulaire */}
+                {formData.serezVousParmiNous === true && (
+                  <>
                 {/* Section Accompagnant */}
                 <div className="space-y-4">
                   <h3 className="font-oswald text-xl text-brand-dark border-b border-brand-light pb-2">
@@ -894,6 +1068,44 @@ export default function RSVPForm() {
                       </div>
                     </div>
                   )}
+                </div>
+
+                {/* Section Enfants de plus de 18 ans */}
+                <div className="space-y-4">
+                  <h3 className="font-oswald text-xl text-brand-dark border-b border-brand-light pb-2">
+                    Enfants de plus de 18 ans
+                  </h3>
+
+                  <div>
+                    <label
+                      htmlFor="nombreEnfantsPlus18"
+                      className="block text-sm font-medium text-brand-dark mb-1"
+                    >
+                      Nombre d&apos;enfants de plus de 18 ans
+                    </label>
+                    <select
+                      id="nombreEnfantsPlus18"
+                      value={formData.nombreEnfantsPlus18}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          nombreEnfantsPlus18: parseInt(e.target.value, 10),
+                        }))
+                      }
+                      className="w-full px-4 py-3 border border-brand-light rounded-lg bg-white text-brand-dark
+                               focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20
+                               transition-all duration-200"
+                    >
+                      {[0, 1, 2, 3, 4, 5].map((num) => (
+                        <option key={num} value={num}>
+                          {num === 0 ? "Aucun" : num}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-brand-dark/60 text-xs mt-1">
+                      Ces enfants seront comptés comme des adultes pour l&apos;organisation.
+                    </p>
+                  </div>
                 </div>
 
                 {/* Section Besoins Alimentaires - Invité Principal */}
@@ -1080,6 +1292,8 @@ export default function RSVPForm() {
                     "Confirmer ma présence"
                   )}
                 </button>
+                  </>
+                )}
               </>
             )}
           </form>

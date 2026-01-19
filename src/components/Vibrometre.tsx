@@ -6,10 +6,9 @@ import { Volume2, Wine, PartyPopper } from "lucide-react";
 import SectionContainer from "./SectionContainer";
 
 // Interface pour les stats du vibromètre
+// Compte uniquement les "OUI" de la colonne "Réponse" dans Liste_Invites
 interface VibrometerStats {
   totalGuests: number;
-  totalAdults: number;
-  totalChildren: number;
 }
 
 // Seuil à partir duquel le titre change de couleur
@@ -117,8 +116,6 @@ function GaugeBar({
 export default function Vibrometre() {
   const [stats, setStats] = useState<VibrometerStats>({
     totalGuests: 0,
-    totalAdults: 0,
-    totalChildren: 0,
   });
   const [mounted, setMounted] = useState(false);
   const [colorIndex, setColorIndex] = useState(0);
