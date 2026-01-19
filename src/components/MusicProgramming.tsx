@@ -12,22 +12,22 @@ interface Band {
 
 const bands: Band[] = [
   {
+    name: 'Stéliophonie',
+    image: '/photos/musique/steliophonie.jpg',
+    badges: ['Pop', 'Rock'],
+    description: "Stéliophonie, c'est un concentré d'énergie musicale pour chanter et danser sur les tubes de nos 20 ans et ceux de maintenant ! Rock, pop, folk… les 'Stélio' vous embarquent pour un répertoire varié et des rythmes cadencés. Ambiance festive et chaleureuse garantie !",
+  },
+  {
     name: "Watts Up",
     image: '/photos/musique/watts-up.jpg',
     badges: ['Pop', 'Rock'],
     description: "Des amoureux de la musique ravis de jouer ensemble et de vous proposer leurs reprises.",
   },
   {
-    name: 'Steliophonie',
-    image: '/photos/musique/steliophonie.jpg',
-    badges: ['Pop', 'Rock'],
-    description: "Un groupe de reprises survitaminé prêt à faire vibrer les murs de chez Granny avec une énergie contagieuse.",
-  },
-  {
     name: 'À venir...',
     image: '/photos/musique/mystery.jpg',
     badges: ['Surprise'],
-    description: "Une surprise musicale se prépare pour clore cette soirée en beauté... Restez à l'écoute !",
+    description: "Une surprise musicale se prépare pendant la soirée... Restez à l'écoute !",
     isMystery: true,
   },
 ];

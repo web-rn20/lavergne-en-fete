@@ -718,9 +718,87 @@ export interface RSVPReponse {
   nombreEnfants: number;
   prenomsEnfants?: string;
   nbTotal: number;
-  regimes?: string;    // Synthèse des régimes de tout le groupe (ex: "Moi: Vegan, Léo: Halal")
+  regimes?: string;    // Synthèse des régimes de tout le groupe (ex: "Moi: Végétarien")
   allergies?: string;  // Synthèse des allergies de tout le groupe (ex: "Moi: Noix, Clara: Gluten")
   logement?: string;   // "Maison des Lavergne", "Tente dans le jardin", "Se débrouille"
+  nombreEnfantsPlus18?: number;  // Nombre d'enfants de plus de 18 ans
+  consommeAlcool?: string;       // Synthèse alcool (ex: "Marie: Oui, Paul: Non")
+  message?: string;              // Message libre (surtout pour les NON)
+}
+
+// Mise à jour de la colonne "Réponse" dans Liste_Invites
+// Cette fonction est appelée lors de la soumission du formulaire RSVP
+// Pour les réponses NON, on sauvegarde aussi le message dans la colonne "Message"
+export async function updateInviteReponse(
+  inviteId: string,
+  reponse: "OUI" | "NON",
+  message?: string
+): Promise<boolean> {
+  try {
+    console.log("[updateInviteReponse] Mise à jour pour ID:", inviteId, "avec réponse:", reponse);
+
+    const doc = await getGoogleSheet();
+    const sheet = doc.sheetsByTitle["Liste_Invites"] || doc.sheetsByIndex[0];
+
+    const rows = await sheet.getRows();
+    const searchId = inviteId.toLowerCase().trim();
+
+    const row = rows.find((r) => {
+      const rowId = getRowId(r);
+      return rowId?.toLowerCase().trim() === searchId;
+    });
+
+    if (!row) {
+      console.log("[updateInviteReponse] Invité non trouvé pour ID:", inviteId);
+      return false;
+    }
+
+    // Mettre à jour la colonne "Réponse" (ou "Reponse")
+    row.set("Réponse", reponse);
+
+    // Pour les réponses NON, sauvegarder aussi le message dans la colonne "Message"
+    if (reponse === "NON" && message) {
+      row.set("Message", message);
+      console.log("[updateInviteReponse] Message également sauvegardé pour absence:", message.substring(0, 50) + "...");
+    }
+
+    await row.save();
+
+    console.log("[updateInviteReponse] Réponse mise à jour avec succès:", reponse);
+    return true;
+  } catch (error) {
+    console.error("[updateInviteReponse] Erreur:", error);
+    return false;
+  }
+}
+
+// Compter les "OUI" dans la colonne "Réponse" de Liste_Invites (pour le vibromètre)
+export async function countOuiFromListeInvites(): Promise<number> {
+  try {
+    const doc = await getGoogleSheet();
+    const sheet = doc.sheetsByTitle["Liste_Invites"] || doc.sheetsByIndex[0];
+
+    if (!sheet) {
+      console.log("[countOuiFromListeInvites] Onglet Liste_Invites non trouvé");
+      return 0;
+    }
+
+    const rows = await sheet.getRows();
+    let count = 0;
+
+    for (const row of rows) {
+      const reponse = row.get("Réponse") || row.get("Reponse") || "";
+      if (reponse.toString().toUpperCase() === "OUI") {
+        count++;
+      }
+    }
+
+    console.log("[countOuiFromListeInvites] Nombre de OUI:", count);
+    return count;
+  } catch (error) {
+    console.error("[countOuiFromListeInvites] Erreur:", error);
+    return 0;
+  }
 }
 
 // Ajout ou mise à jour d'une réponse RSVP
@@ -754,6 +832,9 @@ export async function addRSVPReponse(
           "Allergies",
           "Logement",
           "Nb_Total",
+          "Nb Enfants Plus 18",
+          "Consomme_Alcool",
+          "Message",
         ],
       });
     }
@@ -774,6 +855,9 @@ export async function addRSVPReponse(
       "Allergies": reponse.allergies || "",
       "Logement": reponse.logement || "Se débrouille",
       "Nb_Total": reponse.nbTotal?.toString() || "1",
+      "Nb Enfants Plus 18": reponse.nombreEnfantsPlus18?.toString() || "0",
+      "Consomme_Alcool": reponse.consommeAlcool || "",
+      "Message": reponse.message || "",
     };
 
     // Debug: afficher l'objet envoyé au Sheet
@@ -817,6 +901,9 @@ export async function addRSVPReponse(
       existingRow.set("Allergies", rowData["Allergies"]);
       existingRow.set("Logement", rowData["Logement"]);
       existingRow.set("Nb_Total", rowData["Nb_Total"]);
+      existingRow.set("Nb Enfants Plus 18", rowData["Nb Enfants Plus 18"]);
+      existingRow.set("Consomme_Alcool", rowData["Consomme_Alcool"]);
+      existingRow.set("Message", rowData["Message"]);
 
       await existingRow.save();
       console.log("Ligne mise à jour avec succès dans RSVP_Reponses");
@@ -830,6 +917,45 @@ export async function addRSVPReponse(
     return true;
   } catch (error) {
     console.error("Erreur lors de l'ajout/mise à jour de la réponse RSVP:", error);
+    return false;
+  }
+}
+
+// Suppression d'une réponse RSVP de l'onglet RSVP_Reponses
+// Utilisé lors d'une désinscription (réponse NON) pour nettoyer les données
+export async function deleteRSVPReponse(inviteId: string): Promise<boolean> {
+  try {
+    console.log("[deleteRSVPReponse] Tentative de suppression pour ID:", inviteId);
+
+    const doc = await getGoogleSheet();
+    const rsvpSheet = doc.sheetsByTitle["RSVP_Reponses"];
+
+    if (!rsvpSheet) {
+      console.log("[deleteRSVPReponse] Onglet RSVP_Reponses non trouvé - rien à supprimer");
+      return true; // Pas d'erreur si l'onglet n'existe pas
+    }
+
+    const rows = await rsvpSheet.getRows();
+    const searchId = inviteId.toLowerCase().trim();
+
+    // Chercher la ligne correspondant à cet invité
+    const existingRow = rows.find((row) => {
+      const rowId = row.get("ID_Invité") || row.get("ID_Invite") || "";
+      return rowId.toString().toLowerCase().trim() === searchId;
+    });
+
+    if (!existingRow) {
+      console.log("[deleteRSVPReponse] Aucune ligne trouvée pour cet invité - rien à supprimer");
+      return true; // Pas d'erreur si la ligne n'existe pas
+    }
+
+    // Supprimer la ligne
+    await existingRow.delete();
+    console.log("[deleteRSVPReponse] Ligne supprimée avec succès pour:", inviteId);
+
+    return true;
+  } catch (error) {
+    console.error("[deleteRSVPReponse] Erreur:", error);
     return false;
   }
 }

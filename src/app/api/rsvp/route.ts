@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   findInviteById,
   addRSVPReponse,
+  deleteRSVPReponse,
   getPlacesRestantesFromConfig,
   recalculerStockHebergement,
+  updateInviteReponse,
 } from "@/lib/google-sheets";
-import { sendRSVPConfirmationEmail, sendRSVPNotificationToHosts } from "@/lib/mailer";
+import { sendRSVPConfirmationEmail, sendRSVPAbsenceEmail, sendRSVPNotificationToHosts } from "@/lib/mailer";
 
 // Interface flexible - seuls nom et prenom sont vraiment obligatoires
 interface RSVPRequestBody {
@@ -20,12 +22,16 @@ interface RSVPRequestBody {
   nombreEnfants?: number;
   prenomsEnfants?: string[];
   // Nouveaux champs séparés pour régimes et allergies
-  regimes?: string;    // Synthèse des régimes (ex: "Moi: Vegan, Léo: Halal")
+  regimes?: string;    // Synthèse des régimes (ex: "Moi: Végétarien")
   allergies?: string;  // Synthèse des allergies (ex: "Moi: Noix, Clara: Gluten")
   // Hébergement
   hebergement?: boolean; // true uniquement si "Maison des Lavergne"
   logement?: string;     // "Maison des Lavergne", "Tente dans le jardin", "Se débrouille"
   nbTotal?: number;
+  // Nouveaux champs
+  nombreEnfantsPlus18?: number;  // Enfants de plus de 18 ans
+  consommeAlcool?: string;       // Synthèse alcool (ex: "Marie: Oui, Paul: Non")
+  message?: string;              // Message libre (surtout pour les NON)
 }
 
 export async function POST(request: NextRequest) {
@@ -74,9 +80,13 @@ export async function POST(request: NextRequest) {
     const allergies = body.allergies || "";
     const hebergement = body.hebergement === true; // true uniquement si "Maison des Lavergne"
     const logement = body.logement || "Se débrouille";
+    // Nouveaux champs
+    const nombreEnfantsPlus18 = body.nombreEnfantsPlus18 || 0;
+    const consommeAlcool = body.consommeAlcool || "";
+    const message = body.message || "";
 
     console.log("=== Valeurs normalisées ===");
-    console.log({ inviteId, email, presence, accompagnant, enfants, nombreEnfants, hebergement, logement });
+    console.log({ inviteId, email, presence, accompagnant, enfants, nombreEnfants, hebergement, logement, nombreEnfantsPlus18, consommeAlcool });
 
     // Vérification que l'invité existe (si un ID est fourni)
     let invite = null;
@@ -92,13 +102,14 @@ export async function POST(request: NextRequest) {
       console.log("Invité trouvé:", invite.prenom, invite.nom);
     }
 
-    // Calcul du nombre total de personnes
+    // Calcul du nombre total de personnes (invité + accompagnant + enfants -18 + enfants +18)
     const nbTotal =
       1 + // L'invité principal
       (accompagnant && prenomConjoint ? 1 : 0) + // Conjoint
-      (enfants && nombreEnfants > 0 ? nombreEnfants : 0); // Enfants
+      (enfants && nombreEnfants > 0 ? nombreEnfants : 0) + // Enfants -18 ans
+      (nombreEnfantsPlus18 > 0 ? nombreEnfantsPlus18 : 0); // Enfants +18 ans
 
-    console.log("Nombre total de personnes:", nbTotal);
+    console.log("Nombre total de personnes:", nbTotal, "(dont", nombreEnfantsPlus18, "enfants +18 ans)");
 
     // Nombre de places d'hébergement demandées (seulement si "Maison des Lavergne")
     const nombrePlacesHebergement = hebergement ? nbTotal : 0;
@@ -131,37 +142,73 @@ export async function POST(request: NextRequest) {
       ? prenomsEnfants.filter(p => p && p.trim()).join(", ")
       : "";
 
-    // Ajout de la réponse RSVP dans Google Sheets
-    console.log("=== Écriture dans Google Sheets ===");
-    const rsvpData = {
-      date: new Date().toISOString(),
-      inviteId,
-      nom: body.nom.trim(),
-      prenom: body.prenom.trim(),
-      email,
-      presence,
-      accompagnant,
-      prenomConjoint: accompagnant ? prenomConjoint : "",
-      nombreEnfants: enfants ? nombreEnfants : 0,
-      prenomsEnfants: prenomsEnfantsStr,
-      nbTotal,
-      regimes,     // Synthèse des régimes de tout le groupe
-      allergies,   // Synthèse des allergies de tout le groupe
-      logement,    // "Maison des Lavergne", "Tente dans le jardin", "Se débrouille"
-    };
-    console.log("Données RSVP:", JSON.stringify(rsvpData, null, 2));
-
-    const rsvpSuccess = await addRSVPReponse(rsvpData);
-
-    if (!rsvpSuccess) {
-      console.error("RSVP échoué lors de l'écriture dans Google Sheets");
-      return NextResponse.json(
-        { success: false, error: "Erreur lors de l'enregistrement dans la base de données" },
-        { status: 500 }
-      );
+    // ÉTAPE 1: Mise à jour de la colonne "Réponse" dans Liste_Invites
+    // Pour les NON, on enregistre aussi le message dans Liste_Invites
+    if (inviteId) {
+      console.log("=== Mise à jour Liste_Invites ===");
+      const reponseListeInvites = presence ? "OUI" : "NON";
+      // Passer le message uniquement pour les réponses NON
+      const messageForAbsence = !presence ? message : undefined;
+      const updateSuccess = await updateInviteReponse(inviteId, reponseListeInvites, messageForAbsence);
+      if (!updateSuccess) {
+        console.warn("La mise à jour de Liste_Invites a échoué (non bloquant)");
+      }
     }
 
-    console.log("=== RSVP enregistré avec succès ===");
+    // ÉTAPE 2: Gestion de RSVP_Reponses selon la présence
+    // - Si OUI : Ajouter ou mettre à jour la ligne dans RSVP_Reponses
+    // - Si NON : Supprimer la ligne existante (si elle existe) pour garder les données propres
+
+    if (presence) {
+      // ===== CAS OUI : Ajout/mise à jour dans RSVP_Reponses =====
+      console.log("=== Présence OUI - Écriture dans RSVP_Reponses ===");
+      const rsvpData = {
+        date: new Date().toISOString(),
+        inviteId,
+        nom: body.nom.trim(),
+        prenom: body.prenom.trim(),
+        email,
+        presence: true,
+        accompagnant,
+        prenomConjoint: accompagnant ? prenomConjoint : "",
+        nombreEnfants: enfants ? nombreEnfants : 0,
+        prenomsEnfants: prenomsEnfantsStr,
+        nbTotal,
+        regimes,
+        allergies,
+        logement,
+        nombreEnfantsPlus18,
+        consommeAlcool,
+        message,
+      };
+      console.log("Données RSVP:", JSON.stringify(rsvpData, null, 2));
+
+      const rsvpSuccess = await addRSVPReponse(rsvpData);
+
+      if (!rsvpSuccess) {
+        console.error("RSVP échoué lors de l'écriture dans Google Sheets");
+        return NextResponse.json(
+          { success: false, error: "Erreur lors de l'enregistrement dans la base de données" },
+          { status: 500 }
+        );
+      }
+
+      console.log("=== RSVP enregistré avec succès ===");
+    } else {
+      // ===== CAS NON : Suppression de l'éventuelle ligne existante dans RSVP_Reponses =====
+      console.log("=== Présence NON - Nettoyage de RSVP_Reponses ===");
+
+      if (inviteId) {
+        const deleteSuccess = await deleteRSVPReponse(inviteId);
+        if (deleteSuccess) {
+          console.log("Ligne RSVP supprimée (ou n'existait pas) - données propres");
+        } else {
+          console.warn("Échec de la suppression de la ligne RSVP (non bloquant)");
+        }
+      }
+
+      console.log("=== Absence enregistrée (pas de ligne dans RSVP_Reponses) ===");
+    }
 
     // RECALCUL TOTAL du stock d'hébergement (méthode auto-correctrice)
     // Parcourt TOUTES les réponses RSVP pour garantir l'exactitude des compteurs
@@ -174,34 +221,44 @@ export async function POST(request: NextRequest) {
       console.warn("Attention: Recalcul du stock échoué:", recalculResult.error);
     }
 
-    // Envoi des emails (non-bloquant : les erreurs ne doivent pas empêcher le succès RSVP)
+    // Envoi des emails (non-bloquant : les erreurs ne doivent pas empêcher le succès)
     let emailSuccess = false;
     try {
-      // Données communes pour les emails
+      // Données complètes pour les emails (sans termes techniques)
       const regimeEtAllergies = [regimes, allergies].filter(s => s).join(" | ");
       const emailData = {
         prenom: body.prenom.trim(),
         nom: body.nom.trim(),
         email,
+        presence,
         prenomConjoint: accompagnant ? prenomConjoint : undefined,
         nombreEnfants: enfants ? nombreEnfants : 0,
         prenomsEnfants: prenomsEnfantsStr,
+        nombreEnfantsPlus18,
         nbTotal,
         regimeAlimentaire: regimeEtAllergies,
         hebergementLabel: logement,
+        consommeAlcool,
+        message,
       };
 
-      // Envoi de l'email de confirmation à l'invité (si email fourni)
-      console.log("--- TEST EMAIL INVITÉ ---");
-      console.log("Destinataire invité:", body.email);
+      // Envoi de l'email à l'invité (si email fourni)
+      console.log("--- ENVOI EMAIL INVITÉ ---");
+      console.log("Destinataire:", body.email, "| Présence:", presence ? "OUI" : "NON");
 
       if (email) {
         try {
-          emailSuccess = await sendRSVPConfirmationEmail(emailData);
-          if (!emailSuccess) {
-            console.warn("L'email de confirmation n'a pas pu être envoyé");
+          // Utiliser le bon template selon la présence
+          if (presence) {
+            emailSuccess = await sendRSVPConfirmationEmail(emailData);
           } else {
-            console.log("Email de confirmation envoyé à l'invité");
+            emailSuccess = await sendRSVPAbsenceEmail(emailData);
+          }
+
+          if (!emailSuccess) {
+            console.warn("L'email n'a pas pu être envoyé");
+          } else {
+            console.log("Email envoyé avec succès à l'invité");
           }
         } catch (emailError) {
           console.error("Erreur mail invité:", emailError);
@@ -210,30 +267,34 @@ export async function POST(request: NextRequest) {
         console.log("Envoi annulé : adresse email de l'invité manquante");
       }
 
-      // Envoi de la notification aux hôtes (indépendant de l'email invité)
+      // Envoi de l'alerte aux organisateurs (indépendant de l'email invité)
       try {
         const hostNotificationSuccess = await sendRSVPNotificationToHosts(emailData);
         if (!hostNotificationSuccess) {
-          console.warn("La notification aux hôtes n'a pas pu être envoyée");
+          console.warn("L'alerte aux organisateurs n'a pas pu être envoyée");
         } else {
-          console.log("Notification envoyée aux hôtes");
+          console.log("Alerte envoyée aux organisateurs");
         }
       } catch (hostEmailError) {
-        console.error("Erreur lors de l'envoi de la notification aux hôtes:", hostEmailError);
+        console.error("Erreur alerte organisateurs:", hostEmailError);
       }
     } catch (emailBlockError) {
-      // Erreur globale dans le bloc email (variable manquante, erreur 400, etc.)
-      // On log mais on ne bloque PAS la réponse succès pour l'invité
+      // Erreur globale dans le bloc email - on continue sans bloquer
       console.error("=== Erreur dans le bloc email (non-bloquant) ===");
       console.error("Type:", emailBlockError instanceof Error ? emailBlockError.constructor.name : typeof emailBlockError);
       console.error("Message:", emailBlockError instanceof Error ? emailBlockError.message : String(emailBlockError));
     }
 
     // Réponse succès : le RSVP est enregistré, même si les emails ont échoué
+    const successMessage = presence
+      ? "Votre présence a été confirmée !"
+      : "Votre réponse a bien été enregistrée.";
+
     return NextResponse.json({
       success: true,
-      message: "Votre présence a été confirmée !",
-      nbTotal,
+      message: successMessage,
+      presence,
+      nbTotal: presence ? nbTotal : 0,
       emailEnvoye: emailSuccess,
     });
   } catch (error) {

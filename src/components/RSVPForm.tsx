@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import SectionContainer from "./SectionContainer";
 
@@ -15,25 +15,38 @@ interface InviteData {
 
 // Type pour les besoins alimentaires d'une personne
 interface BesoinsAlimentaires {
-  regime: "normal" | "vegetarien" | "vegan" | "halal" | "autre";
+  regime: "normal" | "vegetarien" | "autre";
   regimeAutre: string;
   allergies: string;
+  consommeAlcool: boolean;
 }
 
 interface FormData {
-  nom: string;
+  // Question initiale
+  serezVousParmiNous: boolean | null; // null = pas encore répondu
+  // Identification
   prenom: string;
+  nom: string;
+  // Accompagnant
   accompagnant: boolean;
   prenomConjoint: string;
+  // Enfants (-18 ans)
   enfants: boolean;
   nombreEnfants: number;
   prenomsEnfants: string[];
+  // Enfants (+18 ans)
+  enfantsPlus18: boolean;
+  nombreEnfantsPlus18: number;
+  prenomsEnfantsPlus18: string[];
   // Besoins alimentaires par personne
   besoinsInvite: BesoinsAlimentaires;
   besoinsConjoint: BesoinsAlimentaires;
   besoinsEnfants: BesoinsAlimentaires[];
+  besoinsEnfantsPlus18: BesoinsAlimentaires[];
   // Nouvelle logique hébergement
   hebergementChoix: "lavergne" | "tente" | "autonome";
+  // Message (surtout pour les NON)
+  message: string;
 }
 
 // Liste des hôtels suggérés à proximité
@@ -54,6 +67,7 @@ const hotelsSuggeres = [
 const regimeOptions = [
   { value: "normal", label: "Pas de régime spécial" },
   { value: "vegetarien", label: "Végétarien" },
+  { value: "sans-gluten", label: "Sans gluten" },
   { value: "autre", label: "Autre" },
 ];
 
@@ -62,17 +76,21 @@ const defaultBesoins: BesoinsAlimentaires = {
   regime: "normal",
   regimeAutre: "",
   allergies: "",
+  consommeAlcool: false, // Par défaut, décochée
 };
 
 // Composant pour un bloc de besoins alimentaires
+// showAlcool: false pour les enfants -18 ans (par défaut true)
 function BlocBesoinsAlimentaires({
   titre,
   besoins,
   onChange,
+  showAlcool = true,
 }: {
   titre: string;
   besoins: BesoinsAlimentaires;
   onChange: (besoins: BesoinsAlimentaires) => void;
+  showAlcool?: boolean;
 }) {
   return (
     <div className="p-4 bg-brand-light/30 rounded-lg space-y-4">
@@ -93,7 +111,7 @@ function BlocBesoinsAlimentaires({
               regimeAutre: e.target.value !== "autre" ? "" : besoins.regimeAutre,
             })
           }
-          className="w-full px-4 py-3 border border-brand-light rounded-lg bg-white text-brand-dark
+          className="w-full px-4 py-3 pr-12 border border-brand-light rounded-lg bg-white text-brand-dark
                    font-montserrat focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20
                    transition-all duration-200"
         >
@@ -138,6 +156,19 @@ function BlocBesoinsAlimentaires({
           placeholder="Arachides, fruits de mer, gluten..."
         />
       </div>
+
+      {showAlcool && (
+        <label className="flex items-center gap-3 cursor-pointer pt-2">
+          <input
+            type="checkbox"
+            checked={besoins.consommeAlcool}
+            onChange={(e) => onChange({ ...besoins, consommeAlcool: e.target.checked })}
+            className="w-5 h-5 rounded border-brand-light text-brand-primary
+                     focus:ring-brand-primary focus:ring-offset-0"
+          />
+          <span className="text-brand-dark text-sm">Je consomme de l&apos;alcool</span>
+        </label>
+      )}
     </div>
   );
 }
@@ -145,6 +176,9 @@ function BlocBesoinsAlimentaires({
 export default function RSVPForm() {
   const searchParams = useSearchParams();
   const urlId = searchParams.get("id");
+
+  // Ref pour scroller vers le haut après soumission réussie
+  const formContainerRef = useRef<HTMLDivElement>(null);
 
   // États
   const [isLoading, setIsLoading] = useState(true);
@@ -163,17 +197,23 @@ export default function RSVPForm() {
 
   // Formulaire
   const [formData, setFormData] = useState<FormData>({
-    nom: "",
+    serezVousParmiNous: null, // null = pas encore répondu
     prenom: "",
+    nom: "",
     accompagnant: false,
     prenomConjoint: "",
     enfants: false,
     nombreEnfants: 1,
     prenomsEnfants: [""],
+    enfantsPlus18: false,
+    nombreEnfantsPlus18: 1,
+    prenomsEnfantsPlus18: [""],
     besoinsInvite: { ...defaultBesoins },
     besoinsConjoint: { ...defaultBesoins },
     besoinsEnfants: [{ ...defaultBesoins }],
+    besoinsEnfantsPlus18: [{ ...defaultBesoins }],
     hebergementChoix: "autonome",
+    message: "",
   });
 
   // Vérification de l'invité par ID
@@ -248,6 +288,18 @@ export default function RSVPForm() {
 
     init();
   }, [urlId, checkInviteById, fetchHebergement, checkExistingRsvp]);
+
+  // Scroll vers le haut du formulaire après soumission réussie (avec offset de 32px)
+  useEffect(() => {
+    if (isSuccess && formContainerRef.current) {
+      const elementPosition = formContainerRef.current.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.scrollY - 32; // 32px d'offset
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth"
+      });
+    }
+  }, [isSuccess]);
 
   // Recherche manuelle par nom/prénom
   const handleManualSearch = async () => {
@@ -335,6 +387,51 @@ export default function RSVPForm() {
     }));
   };
 
+  // Mise à jour du nombre d'enfants +18 ans
+  const handleNombreEnfantsPlus18Change = (value: number) => {
+    const newPrenoms = [...formData.prenomsEnfantsPlus18];
+    const newBesoins = [...formData.besoinsEnfantsPlus18];
+
+    if (value > newPrenoms.length) {
+      // Ajouter des champs vides
+      for (let i = newPrenoms.length; i < value; i++) {
+        newPrenoms.push("");
+        newBesoins.push({ ...defaultBesoins });
+      }
+    } else {
+      // Réduire le tableau
+      newPrenoms.splice(value);
+      newBesoins.splice(value);
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      nombreEnfantsPlus18: value,
+      prenomsEnfantsPlus18: newPrenoms,
+      besoinsEnfantsPlus18: newBesoins,
+    }));
+  };
+
+  // Mise à jour du prénom d'un enfant +18 ans
+  const handlePrenomEnfantPlus18Change = (index: number, value: string) => {
+    const newPrenoms = [...formData.prenomsEnfantsPlus18];
+    newPrenoms[index] = value;
+    setFormData((prev) => ({
+      ...prev,
+      prenomsEnfantsPlus18: newPrenoms,
+    }));
+  };
+
+  // Mise à jour des besoins d'un enfant +18 ans
+  const handleBesoinsEnfantPlus18Change = (index: number, besoins: BesoinsAlimentaires) => {
+    const newBesoins = [...formData.besoinsEnfantsPlus18];
+    newBesoins[index] = besoins;
+    setFormData((prev) => ({
+      ...prev,
+      besoinsEnfantsPlus18: newBesoins,
+    }));
+  };
+
   // Fonction pour formater les RÉGIMES pour le Google Sheet (colonne Régimes)
   const formatRegimesForSheet = (): string => {
     const parts: string[] = [];
@@ -359,7 +456,7 @@ export default function RSVPForm() {
       }
     }
 
-    // Enfants
+    // Enfants (-18 ans)
     if (formData.enfants) {
       formData.prenomsEnfants.forEach((prenom, index) => {
         const enfantBesoins = formData.besoinsEnfants[index];
@@ -368,6 +465,23 @@ export default function RSVPForm() {
             ? enfantBesoins.regimeAutre
             : regimeOptions.find((o) => o.value === enfantBesoins.regime)?.label;
           const enfantNom = prenom || `Enfant ${index + 1}`;
+
+          if (enfantRegime && enfantRegime !== "Pas de régime spécial") {
+            parts.push(`${enfantNom}: ${enfantRegime}`);
+          }
+        }
+      });
+    }
+
+    // Enfants (+18 ans)
+    if (formData.enfantsPlus18) {
+      formData.prenomsEnfantsPlus18.forEach((prenom, index) => {
+        const enfantBesoins = formData.besoinsEnfantsPlus18[index];
+        if (enfantBesoins) {
+          const enfantRegime = enfantBesoins.regime === "autre"
+            ? enfantBesoins.regimeAutre
+            : regimeOptions.find((o) => o.value === enfantBesoins.regime)?.label;
+          const enfantNom = prenom || `Enfant +18 ${index + 1}`;
 
           if (enfantRegime && enfantRegime !== "Pas de régime spécial") {
             parts.push(`${enfantNom}: ${enfantRegime}`);
@@ -393,7 +507,7 @@ export default function RSVPForm() {
       parts.push(`${formData.prenomConjoint}: ${formData.besoinsConjoint.allergies}`);
     }
 
-    // Enfants
+    // Enfants (-18 ans)
     if (formData.enfants) {
       formData.prenomsEnfants.forEach((prenom, index) => {
         const enfantBesoins = formData.besoinsEnfants[index];
@@ -404,7 +518,49 @@ export default function RSVPForm() {
       });
     }
 
+    // Enfants (+18 ans)
+    if (formData.enfantsPlus18) {
+      formData.prenomsEnfantsPlus18.forEach((prenom, index) => {
+        const enfantBesoins = formData.besoinsEnfantsPlus18[index];
+        if (enfantBesoins && enfantBesoins.allergies) {
+          const enfantNom = prenom || `Enfant +18 ${index + 1}`;
+          parts.push(`${enfantNom}: ${enfantBesoins.allergies}`);
+        }
+      });
+    }
+
     return parts.length > 0 ? parts.join(", ") : "";
+  };
+
+  // Fonction pour formater la consommation d'ALCOOL pour le Google Sheet
+  // Note: on ne demande JAMAIS l'alcool pour les enfants -18 ans
+  // Format: "Prénom: Oui" ou "Prénom: Non" pour chaque personne majeure
+  const formatAlcoolForSheet = (): string => {
+    const parts: string[] = [];
+
+    // Invité principal
+    const inviteAlcool = formData.besoinsInvite.consommeAlcool ? "Oui" : "Non";
+    parts.push(`${invite?.prenom || "Moi"}: ${inviteAlcool}`);
+
+    // Conjoint
+    if (formData.accompagnant && formData.prenomConjoint) {
+      const conjointAlcool = formData.besoinsConjoint.consommeAlcool ? "Oui" : "Non";
+      parts.push(`${formData.prenomConjoint}: ${conjointAlcool}`);
+    }
+
+    // Enfants +18 ans (seuls les majeurs peuvent consommer de l'alcool)
+    if (formData.enfantsPlus18) {
+      formData.prenomsEnfantsPlus18.forEach((prenom, index) => {
+        const enfantBesoins = formData.besoinsEnfantsPlus18[index];
+        if (enfantBesoins) {
+          const enfantAlcool = enfantBesoins.consommeAlcool ? "Oui" : "Non";
+          const enfantNom = prenom || `Enfant +18 ${index + 1}`;
+          parts.push(`${enfantNom}: ${enfantAlcool}`);
+        }
+      });
+    }
+
+    return parts.join(", ");
   };
 
   // Soumission du formulaire (avec vérification de réponse existante)
@@ -434,28 +590,37 @@ export default function RSVPForm() {
     setError(null);
     setShowConfirmModal(false);
 
+    const presence = formData.serezVousParmiNous === true;
+
     try {
-      // Calculer le nombre total de personnes
-      const nbTotal =
-        1 + // Invité principal
-        (formData.accompagnant && formData.prenomConjoint ? 1 : 0) +
-        (formData.enfants ? formData.nombreEnfants : 0);
+      // Calculer le nombre d'enfants +18 ans (seulement si la case est cochée)
+      const nbEnfantsPlus18 = formData.enfantsPlus18 ? formData.nombreEnfantsPlus18 : 0;
+
+      // Calculer le nombre total de personnes (seulement si présence = OUI)
+      const nbTotal = presence
+        ? 1 + // Invité principal
+          (formData.accompagnant && formData.prenomConjoint ? 1 : 0) +
+          (formData.enfants ? formData.nombreEnfants : 0) +
+          nbEnfantsPlus18
+        : 1;
 
       // Déterminer si on demande l'hébergement à la Maison des Lavergne
-      const demandeHebergementLavergne = formData.hebergementChoix === "lavergne";
+      const demandeHebergementLavergne = presence && formData.hebergementChoix === "lavergne";
 
       // Formater l'option logement pour le sheet
       let logement = "";
-      switch (formData.hebergementChoix) {
-        case "lavergne":
-          logement = "Maison des Lavergne";
-          break;
-        case "tente":
-          logement = "Tente dans le jardin";
-          break;
-        case "autonome":
-          logement = "Se débrouille";
-          break;
+      if (presence) {
+        switch (formData.hebergementChoix) {
+          case "lavergne":
+            logement = "Maison des Lavergne";
+            break;
+          case "tente":
+            logement = "Tente dans le jardin";
+            break;
+          case "autonome":
+            logement = "Se débrouille";
+            break;
+        }
       }
 
       const response = await fetch("/api/rsvp", {
@@ -468,17 +633,21 @@ export default function RSVPForm() {
           nom: invite.nom,
           prenom: invite.prenom,
           email: invite.email,
-          presence: true,
-          accompagnant: formData.accompagnant,
-          prenomConjoint: formData.prenomConjoint,
-          enfants: formData.enfants,
-          nombreEnfants: formData.nombreEnfants,
-          prenomsEnfants: formData.prenomsEnfants,
-          regimes: formatRegimesForSheet(),     // Synthèse des régimes
-          allergies: formatAllergiesForSheet(), // Synthèse des allergies
-          hebergement: demandeHebergementLavergne, // true uniquement si "Maison des Lavergne"
+          presence,
+          accompagnant: presence ? formData.accompagnant : false,
+          prenomConjoint: presence ? formData.prenomConjoint : "",
+          enfants: presence ? formData.enfants : false,
+          nombreEnfants: presence ? formData.nombreEnfants : 0,
+          prenomsEnfants: presence ? formData.prenomsEnfants : [],
+          regimes: presence ? formatRegimesForSheet() : "",     // Synthèse des régimes
+          allergies: presence ? formatAllergiesForSheet() : "", // Synthèse des allergies
+          hebergement: demandeHebergementLavergne,
           logement,
           nbTotal,
+          // Nouveaux champs
+          nombreEnfantsPlus18: presence ? nbEnfantsPlus18 : 0,
+          consommeAlcool: presence ? formatAlcoolForSheet() : "",
+          message: formData.message, // Toujours envoyer le message
         }),
       });
 
@@ -513,25 +682,40 @@ export default function RSVPForm() {
 
   // Affichage du succès
   if (isSuccess) {
+    const isPresent = formData.serezVousParmiNous === true;
+
     return (
       <SectionContainer id="rsvp" className="py-12 md:py-20 bg-brand-light">
-        <div className="max-w-2xl mx-auto text-center">
+        <div ref={formContainerRef} className="max-w-2xl mx-auto text-center">
           <div className="bg-white rounded-2xl p-8 md:p-12">
-            <div className="text-6xl mb-6">🎉</div>
+            <div className="text-6xl mb-6">{isPresent ? "🎉" : "💌"}</div>
             <h2 className="font-oswald text-4xl md:text-5xl text-brand-primary mb-4 uppercase">
               Merci {invite?.prenom} !
             </h2>
-            <p className="text-brand-dark text-lg mb-6 font-montserrat">
-              Ta réponse a bien été enregistrée. On a vraiment hâte de te retrouver le 27 juin 2026 pour fêter ça !
-            </p>
-            <p className="text-brand-dark/70 font-montserrat">
-              Tu vas recevoir un email de confirmation avec le récapitulatif de tes choix.
-            </p>
-            <div className="mt-8 p-4 bg-brand-light rounded-xl">
-              <p className="text-brand-accent-deep font-semibold font-montserrat">
-                Rendez-vous le 27 juin 2026 !
-              </p>
-            </div>
+            {isPresent ? (
+              <>
+                <p className="text-brand-dark text-lg mb-6 font-montserrat">
+                  Ta réponse a bien été enregistrée. On a vraiment hâte de te retrouver le 27 juin 2026 pour fêter ça !
+                </p>
+                <p className="text-brand-dark/70 font-montserrat">
+                  Tu vas recevoir un email de confirmation avec le récapitulatif de tes choix.
+                </p>
+                <div className="mt-8 p-4 bg-brand-light rounded-xl">
+                  <p className="text-brand-accent-deep font-semibold font-montserrat">
+                    Rendez-vous le 27 juin 2026 !
+                  </p>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="text-brand-dark text-lg mb-6 font-montserrat">
+                  Ta réponse a bien été enregistrée. C&apos;est dommage que tu ne puisses pas être là, tu vas nous manquer !
+                </p>
+                <p className="text-brand-dark/70 font-montserrat">
+                  On pense à toi et on espère te revoir très bientôt.
+                </p>
+              </>
+            )}
           </div>
         </div>
       </SectionContainer>
@@ -741,6 +925,110 @@ export default function RSVPForm() {
             {/* Le reste du formulaire n'apparaît que si l'invité est identifié */}
             {invite && (
               <>
+                {/* Question principale : Serez-vous parmi nous ? */}
+                <div className="space-y-4">
+                  <h3 className="font-oswald text-xl text-brand-dark border-b border-brand-light pb-2">
+                    Serez-vous parmi nous ?
+                  </h3>
+
+                  <div className="flex gap-4">
+                    <label className="flex-1 flex items-center justify-center gap-3 p-4 border border-brand-light rounded-lg cursor-pointer hover:border-brand-primary/50 transition-colors has-[:checked]:border-brand-primary has-[:checked]:bg-brand-primary/5">
+                      <input
+                        type="radio"
+                        name="presence"
+                        value="oui"
+                        checked={formData.serezVousParmiNous === true}
+                        onChange={() =>
+                          setFormData((prev) => ({ ...prev, serezVousParmiNous: true }))
+                        }
+                        className="w-5 h-5 text-brand-primary focus:ring-brand-primary"
+                      />
+                      <span className="text-brand-dark font-medium text-lg">Oui !</span>
+                    </label>
+
+                    <label className="flex-1 flex items-center justify-center gap-3 p-4 border border-brand-light rounded-lg cursor-pointer hover:border-brand-primary/50 transition-colors has-[:checked]:border-brand-primary has-[:checked]:bg-brand-primary/5">
+                      <input
+                        type="radio"
+                        name="presence"
+                        value="non"
+                        checked={formData.serezVousParmiNous === false}
+                        onChange={() =>
+                          setFormData((prev) => ({ ...prev, serezVousParmiNous: false }))
+                        }
+                        className="w-5 h-5 text-brand-primary focus:ring-brand-primary"
+                      />
+                      <span className="text-brand-dark font-medium text-lg">Non</span>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Si NON : Afficher uniquement le champ Message */}
+                {formData.serezVousParmiNous === false && (
+                  <>
+                    <div className="space-y-4">
+                      <h3 className="font-oswald text-xl text-brand-dark border-b border-brand-light pb-2">
+                        Un petit mot ?
+                      </h3>
+                      <textarea
+                        value={formData.message}
+                        onChange={(e) =>
+                          setFormData((prev) => ({ ...prev, message: e.target.value }))
+                        }
+                        rows={4}
+                        className="w-full px-4 py-3 border border-brand-light rounded-lg bg-white text-brand-dark
+                                 font-montserrat focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20
+                                 transition-all duration-200 resize-none"
+                        placeholder="Laisse-nous un message si tu le souhaites..."
+                      />
+                    </div>
+
+                    {/* Message d'erreur */}
+                    {error && (
+                      <div className="p-4 bg-brand-alert/10 rounded-lg">
+                        <p className="text-brand-alert text-sm">{error}</p>
+                      </div>
+                    )}
+
+                    {/* Bouton de soumission pour NON */}
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="btn btn-on-light w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isSubmitting ? (
+                        <span className="flex items-center justify-center gap-2">
+                          <svg
+                            className="animate-spin h-5 w-5"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            ></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            ></path>
+                          </svg>
+                          Envoi en cours...
+                        </span>
+                      ) : (
+                        "Envoyer ma réponse"
+                      )}
+                    </button>
+                  </>
+                )}
+
+                {/* Si OUI : Afficher tout le formulaire */}
+                {formData.serezVousParmiNous === true && (
+                  <>
                 {/* Section Accompagnant */}
                 <div className="space-y-4">
                   <h3 className="font-oswald text-xl text-brand-dark border-b border-brand-light pb-2">
@@ -805,12 +1093,13 @@ export default function RSVPForm() {
                   )}
                 </div>
 
-                {/* Section Enfants */}
+                {/* Section Enfants (regroupée : -18 ans et +18 ans) */}
                 <div className="space-y-4">
                   <h3 className="font-oswald text-xl text-brand-dark border-b border-brand-light pb-2">
                     Enfants
                   </h3>
 
+                  {/* Enfants de moins de 18 ans */}
                   <label className="flex items-center gap-3 cursor-pointer">
                     <input
                       type="checkbox"
@@ -845,7 +1134,7 @@ export default function RSVPForm() {
                           onChange={(e) =>
                             handleNombreEnfantsChange(parseInt(e.target.value, 10))
                           }
-                          className="w-full px-4 py-3 border border-brand-light rounded-lg bg-white text-brand-dark
+                          className="w-full px-4 py-3 pr-12 border border-brand-light rounded-lg bg-white text-brand-dark
                                    focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20
                                    transition-all duration-200"
                         >
@@ -881,12 +1170,98 @@ export default function RSVPForm() {
                               />
                             </div>
 
-                            {/* Besoins alimentaires de l'enfant */}
+                            {/* Besoins alimentaires de l'enfant (-18 ans, pas d'alcool) */}
                             {prenom && (
                               <BlocBesoinsAlimentaires
                                 titre={`Besoins spécifiques de ${prenom}`}
                                 besoins={formData.besoinsEnfants[index] || defaultBesoins}
                                 onChange={(besoins) => handleBesoinsEnfantChange(index, besoins)}
+                                showAlcool={false}
+                              />
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Enfants de plus de 18 ans */}
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.enfantsPlus18}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          enfantsPlus18: e.target.checked,
+                          nombreEnfantsPlus18: e.target.checked ? 1 : 0,
+                          prenomsEnfantsPlus18: e.target.checked ? [""] : [],
+                          besoinsEnfantsPlus18: e.target.checked ? [{ ...defaultBesoins }] : [],
+                        }))
+                      }
+                      className="w-5 h-5 rounded border-brand-light text-brand-primary
+                               focus:ring-brand-primary focus:ring-offset-0"
+                    />
+                    <span className="text-brand-dark">Je viens avec des enfants (+18 ans)</span>
+                  </label>
+
+                  {formData.enfantsPlus18 && (
+                    <div className="ml-8 space-y-4">
+                      <div>
+                        <label
+                          htmlFor="nombreEnfantsPlus18"
+                          className="block text-sm font-medium text-brand-dark mb-1"
+                        >
+                          Nombre d&apos;enfants (+18 ans)
+                        </label>
+                        <select
+                          id="nombreEnfantsPlus18"
+                          value={formData.nombreEnfantsPlus18}
+                          onChange={(e) =>
+                            handleNombreEnfantsPlus18Change(parseInt(e.target.value, 10))
+                          }
+                          className="w-full px-4 py-3 pr-12 border border-brand-light rounded-lg bg-white text-brand-dark
+                                   focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20
+                                   transition-all duration-200"
+                        >
+                          {[1, 2, 3, 4, 5].map((num) => (
+                            <option key={num} value={num}>
+                              {num} enfant{num > 1 ? "s" : ""}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="space-y-6">
+                        {formData.prenomsEnfantsPlus18.map((prenom, index) => (
+                          <div key={index} className="space-y-3">
+                            <div>
+                              <label
+                                htmlFor={`enfant-plus18-${index}`}
+                                className="block text-sm font-medium text-brand-dark mb-1"
+                              >
+                                Prénom de l&apos;enfant (+18) {index + 1}
+                              </label>
+                              <input
+                                type="text"
+                                id={`enfant-plus18-${index}`}
+                                value={prenom}
+                                onChange={(e) =>
+                                  handlePrenomEnfantPlus18Change(index, e.target.value)
+                                }
+                                className="w-full px-4 py-3 border border-brand-light rounded-lg bg-white text-brand-dark
+                                         focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20
+                                         transition-all duration-200"
+                                placeholder={`Prénom de l'enfant (+18) ${index + 1}`}
+                              />
+                            </div>
+
+                            {/* Besoins alimentaires de l'enfant +18 */}
+                            {prenom && (
+                              <BlocBesoinsAlimentaires
+                                titre={`Besoins spécifiques de ${prenom}`}
+                                besoins={formData.besoinsEnfantsPlus18[index] || defaultBesoins}
+                                onChange={(besoins) => handleBesoinsEnfantPlus18Change(index, besoins)}
                               />
                             )}
                           </div>
@@ -1080,6 +1455,8 @@ export default function RSVPForm() {
                     "Confirmer ma présence"
                   )}
                 </button>
+                  </>
+                )}
               </>
             )}
           </form>
