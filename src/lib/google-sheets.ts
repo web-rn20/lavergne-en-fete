@@ -920,3 +920,42 @@ export async function addRSVPReponse(
     return false;
   }
 }
+
+// Suppression d'une réponse RSVP de l'onglet RSVP_Reponses
+// Utilisé lors d'une désinscription (réponse NON) pour nettoyer les données
+export async function deleteRSVPReponse(inviteId: string): Promise<boolean> {
+  try {
+    console.log("[deleteRSVPReponse] Tentative de suppression pour ID:", inviteId);
+
+    const doc = await getGoogleSheet();
+    const rsvpSheet = doc.sheetsByTitle["RSVP_Reponses"];
+
+    if (!rsvpSheet) {
+      console.log("[deleteRSVPReponse] Onglet RSVP_Reponses non trouvé - rien à supprimer");
+      return true; // Pas d'erreur si l'onglet n'existe pas
+    }
+
+    const rows = await rsvpSheet.getRows();
+    const searchId = inviteId.toLowerCase().trim();
+
+    // Chercher la ligne correspondant à cet invité
+    const existingRow = rows.find((row) => {
+      const rowId = row.get("ID_Invité") || row.get("ID_Invite") || "";
+      return rowId.toString().toLowerCase().trim() === searchId;
+    });
+
+    if (!existingRow) {
+      console.log("[deleteRSVPReponse] Aucune ligne trouvée pour cet invité - rien à supprimer");
+      return true; // Pas d'erreur si la ligne n'existe pas
+    }
+
+    // Supprimer la ligne
+    await existingRow.delete();
+    console.log("[deleteRSVPReponse] Ligne supprimée avec succès pour:", inviteId);
+
+    return true;
+  } catch (error) {
+    console.error("[deleteRSVPReponse] Erreur:", error);
+    return false;
+  }
+}

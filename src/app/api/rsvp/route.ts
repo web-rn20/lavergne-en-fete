@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   findInviteById,
   addRSVPReponse,
+  deleteRSVPReponse,
   getPlacesRestantesFromConfig,
   recalculerStockHebergement,
   updateInviteReponse,
@@ -154,40 +155,60 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // ÉTAPE 2: Ajout de la réponse RSVP dans RSVP_Reponses
-    console.log("=== Écriture dans RSVP_Reponses ===");
-    const rsvpData = {
-      date: new Date().toISOString(),
-      inviteId,
-      nom: body.nom.trim(),
-      prenom: body.prenom.trim(),
-      email,
-      presence,
-      accompagnant: presence ? accompagnant : false,
-      prenomConjoint: presence && accompagnant ? prenomConjoint : "",
-      nombreEnfants: presence && enfants ? nombreEnfants : 0,
-      prenomsEnfants: presence ? prenomsEnfantsStr : "",
-      nbTotal: presence ? nbTotal : 1,
-      regimes: presence ? regimes : "",     // Synthèse des régimes de tout le groupe
-      allergies: presence ? allergies : "", // Synthèse des allergies de tout le groupe
-      logement: presence ? logement : "",   // "Maison des Lavergne", "Tente dans le jardin", "Se débrouille"
-      nombreEnfantsPlus18: presence ? nombreEnfantsPlus18 : 0,
-      consommeAlcool: presence ? consommeAlcool : "",
-      message,  // Toujours enregistrer le message (surtout utile pour les NON)
-    };
-    console.log("Données RSVP:", JSON.stringify(rsvpData, null, 2));
+    // ÉTAPE 2: Gestion de RSVP_Reponses selon la présence
+    // - Si OUI : Ajouter ou mettre à jour la ligne dans RSVP_Reponses
+    // - Si NON : Supprimer la ligne existante (si elle existe) pour garder les données propres
 
-    const rsvpSuccess = await addRSVPReponse(rsvpData);
+    if (presence) {
+      // ===== CAS OUI : Ajout/mise à jour dans RSVP_Reponses =====
+      console.log("=== Présence OUI - Écriture dans RSVP_Reponses ===");
+      const rsvpData = {
+        date: new Date().toISOString(),
+        inviteId,
+        nom: body.nom.trim(),
+        prenom: body.prenom.trim(),
+        email,
+        presence: true,
+        accompagnant,
+        prenomConjoint: accompagnant ? prenomConjoint : "",
+        nombreEnfants: enfants ? nombreEnfants : 0,
+        prenomsEnfants: prenomsEnfantsStr,
+        nbTotal,
+        regimes,
+        allergies,
+        logement,
+        nombreEnfantsPlus18,
+        consommeAlcool,
+        message,
+      };
+      console.log("Données RSVP:", JSON.stringify(rsvpData, null, 2));
 
-    if (!rsvpSuccess) {
-      console.error("RSVP échoué lors de l'écriture dans Google Sheets");
-      return NextResponse.json(
-        { success: false, error: "Erreur lors de l'enregistrement dans la base de données" },
-        { status: 500 }
-      );
+      const rsvpSuccess = await addRSVPReponse(rsvpData);
+
+      if (!rsvpSuccess) {
+        console.error("RSVP échoué lors de l'écriture dans Google Sheets");
+        return NextResponse.json(
+          { success: false, error: "Erreur lors de l'enregistrement dans la base de données" },
+          { status: 500 }
+        );
+      }
+
+      console.log("=== RSVP enregistré avec succès ===");
+    } else {
+      // ===== CAS NON : Suppression de l'éventuelle ligne existante dans RSVP_Reponses =====
+      console.log("=== Présence NON - Nettoyage de RSVP_Reponses ===");
+
+      if (inviteId) {
+        const deleteSuccess = await deleteRSVPReponse(inviteId);
+        if (deleteSuccess) {
+          console.log("Ligne RSVP supprimée (ou n'existait pas) - données propres");
+        } else {
+          console.warn("Échec de la suppression de la ligne RSVP (non bloquant)");
+        }
+      }
+
+      console.log("=== Absence enregistrée (pas de ligne dans RSVP_Reponses) ===");
     }
-
-    console.log("=== RSVP enregistré avec succès ===");
 
     // RECALCUL TOTAL du stock d'hébergement (méthode auto-correctrice)
     // Parcourt TOUTES les réponses RSVP pour garantir l'exactitude des compteurs
