@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
-import { MapPin, GlassWater, Utensils, Music } from "lucide-react";
+import { MapPin, Music, PartyPopper, UtensilsCrossed } from "lucide-react";
 import SectionContainer from "./SectionContainer";
 
 interface ProgramStep {
@@ -15,31 +15,31 @@ interface ProgramStep {
 
 const programSteps: ProgramStep[] = [
   {
-    time: "18h30",
-    title: "L'Arrivée",
-    description: "Accueil & Rafraîchissements sous les arbres.",
+    time: "18h00",
+    title: "Début des Festivités",
+    description: "Accueil & Rafraîchissements.",
     icon: MapPin,
     bgColor: "bg-brand-light", // Lavender Blush
   },
   {
-    time: "19h30",
-    title: "Le Cocktail",
-    description: "Cocktail & Amuse-bouches (début des hostilités).",
-    icon: GlassWater,
+    time: "19h00 - 22h00",
+    title: "Concerts",
+    description: "La Scène de Granny.",
+    icon: Music,
     bgColor: "bg-brand-primary/15", // Bubblegum Pink légèrement transparent
   },
   {
-    time: "21h00",
-    title: "Le Festin",
-    description: "Dîner de fête & surprises.",
-    icon: Utensils,
+    time: "Dès 22h00",
+    title: "La Fiesta",
+    description: "Fiesta jusqu'au bout de la nuit & Scène ouverte (pour ceux qui veulent jouer un morceau).",
+    icon: PartyPopper,
     bgColor: "bg-brand-light", // Lavender Blush
   },
   {
-    time: "23h00",
-    title: "La Fiesta",
-    description: "Ouverture du bal & dancefloor jusqu'au bout de la nuit.",
-    icon: Music,
+    time: "Toute la soirée",
+    title: "Buffet",
+    description: "Buffet servi en continu pour régaler tout le monde.",
+    icon: UtensilsCrossed,
     bgColor: "bg-brand-primary/15", // Bubblegum Pink légèrement transparent
   },
 ];
