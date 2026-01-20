@@ -56,7 +56,7 @@ const infoPratiques = [
       </svg>
     ),
     titre: "Cadeau",
-    description: "Votre présence est notre plus beau cadeau. Une urne sera toutefois disponible pour ceux qui souhaitent contribuer à nos futurs projets.",
+    description: "Votre présence est notre plus beau cadeau. Une tirelire sera toutefois disponible pour ceux qui souhaitent contribuer à nos futurs projets.",
   },
 ];
 
