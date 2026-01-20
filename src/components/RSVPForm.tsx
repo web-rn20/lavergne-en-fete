@@ -18,7 +18,6 @@ interface BesoinsAlimentaires {
   regime: "normal" | "vegetarien" | "autre";
   regimeAutre: string;
   allergies: string;
-  consommeAlcool: boolean;
 }
 
 interface FormData {
@@ -76,21 +75,17 @@ const defaultBesoins: BesoinsAlimentaires = {
   regime: "normal",
   regimeAutre: "",
   allergies: "",
-  consommeAlcool: false, // Par défaut, décochée
 };
 
 // Composant pour un bloc de besoins alimentaires
-// showAlcool: false pour les enfants -18 ans (par défaut true)
 function BlocBesoinsAlimentaires({
   titre,
   besoins,
   onChange,
-  showAlcool = true,
 }: {
   titre: string;
   besoins: BesoinsAlimentaires;
   onChange: (besoins: BesoinsAlimentaires) => void;
-  showAlcool?: boolean;
 }) {
   return (
     <div className="p-4 bg-brand-light/30 rounded-lg space-y-4">
@@ -156,19 +151,6 @@ function BlocBesoinsAlimentaires({
           placeholder="Arachides, fruits de mer, gluten..."
         />
       </div>
-
-      {showAlcool && (
-        <label className="flex items-center gap-3 cursor-pointer pt-2">
-          <input
-            type="checkbox"
-            checked={besoins.consommeAlcool}
-            onChange={(e) => onChange({ ...besoins, consommeAlcool: e.target.checked })}
-            className="w-5 h-5 rounded border-brand-light text-brand-primary
-                     focus:ring-brand-primary focus:ring-offset-0"
-          />
-          <span className="text-brand-dark text-sm">Je consomme de l&apos;alcool</span>
-        </label>
-      )}
     </div>
   );
 }
@@ -532,37 +514,6 @@ export default function RSVPForm() {
     return parts.length > 0 ? parts.join(", ") : "";
   };
 
-  // Fonction pour formater la consommation d'ALCOOL pour le Google Sheet
-  // Note: on ne demande JAMAIS l'alcool pour les enfants -18 ans
-  // Format: "Prénom: Oui" ou "Prénom: Non" pour chaque personne majeure
-  const formatAlcoolForSheet = (): string => {
-    const parts: string[] = [];
-
-    // Invité principal
-    const inviteAlcool = formData.besoinsInvite.consommeAlcool ? "Oui" : "Non";
-    parts.push(`${invite?.prenom || "Moi"}: ${inviteAlcool}`);
-
-    // Conjoint
-    if (formData.accompagnant && formData.prenomConjoint) {
-      const conjointAlcool = formData.besoinsConjoint.consommeAlcool ? "Oui" : "Non";
-      parts.push(`${formData.prenomConjoint}: ${conjointAlcool}`);
-    }
-
-    // Enfants +18 ans (seuls les majeurs peuvent consommer de l'alcool)
-    if (formData.enfantsPlus18) {
-      formData.prenomsEnfantsPlus18.forEach((prenom, index) => {
-        const enfantBesoins = formData.besoinsEnfantsPlus18[index];
-        if (enfantBesoins) {
-          const enfantAlcool = enfantBesoins.consommeAlcool ? "Oui" : "Non";
-          const enfantNom = prenom || `Enfant +18 ${index + 1}`;
-          parts.push(`${enfantNom}: ${enfantAlcool}`);
-        }
-      });
-    }
-
-    return parts.join(", ");
-  };
-
   // Soumission du formulaire (avec vérification de réponse existante)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -646,7 +597,6 @@ export default function RSVPForm() {
           nbTotal,
           // Nouveaux champs
           nombreEnfantsPlus18: presence ? nbEnfantsPlus18 : 0,
-          consommeAlcool: presence ? formatAlcoolForSheet() : "",
           message: formData.message, // Toujours envoyer le message
         }),
       });
@@ -1170,13 +1120,12 @@ export default function RSVPForm() {
                               />
                             </div>
 
-                            {/* Besoins alimentaires de l'enfant (-18 ans, pas d'alcool) */}
+                            {/* Besoins alimentaires de l'enfant */}
                             {prenom && (
                               <BlocBesoinsAlimentaires
                                 titre={`Besoins spécifiques de ${prenom}`}
                                 besoins={formData.besoinsEnfants[index] || defaultBesoins}
                                 onChange={(besoins) => handleBesoinsEnfantChange(index, besoins)}
-                                showAlcool={false}
                               />
                             )}
                           </div>

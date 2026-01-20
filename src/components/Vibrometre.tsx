@@ -33,14 +33,14 @@ function calculateNiveauSonore(nTotal: number): number {
 
 /**
  * Calcul du débit de Potion Magique (Litres)
- * Formule : (N_buveurs × 2) + ((N_total - N_buveurs) × 0.5)
- * - 2L par buveur (alcool)
- * - 0.5L par non-buveur (softs)
+ * Nouvelle formule : (N_adultes × 1.5) + (N_enfants_mineurs × 0.5)
+ * - 1.5L par adulte (invité principal + accompagnant + enfants +18 ans)
+ * - 0.5L par enfant mineur (-18 ans)
  */
-function calculateDebitPotionMagique(nTotal: number, nBuveurs: number): number {
-  const alcool = nBuveurs * 2;
-  const softs = (nTotal - nBuveurs) * 0.5;
-  return Math.round(alcool + softs);
+function calculateDebitPotionMagique(nAdultes: number, nEnfants: number): number {
+  const adultes = nAdultes * 1.5;
+  const enfants = nEnfants * 0.5;
+  return Math.round(adultes + enfants);
 }
 
 /**
@@ -223,11 +223,11 @@ export default function Vibrometre() {
   }
 
   // Variables de calcul
-  const { nTotal, nBuveurs } = stats;
+  const { nTotal, nAdultes, nEnfants } = stats;
 
   // Calcul des indicateurs avec les nouvelles formules
   const niveauSonore = calculateNiveauSonore(nTotal);
-  const debitPotion = calculateDebitPotionMagique(nTotal, nBuveurs);
+  const debitPotion = calculateDebitPotionMagique(nAdultes, nEnfants);
   const probaChenille = calculateProbabiliteChenille(nTotal);
 
   // Intensité de vibration globale indexée sur N_total
@@ -357,8 +357,8 @@ export default function Vibrometre() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.5 }}
         >
-          Calculé selon le nombre de gosiers assoiffés et de jambes prêtes à
-          danser.
+          Calculé selon le nombre d&apos;adultes prêts à faire la fête et
+          d&apos;enfants à divertir.
         </motion.p>
       </motion.div>
     </SectionContainer>
