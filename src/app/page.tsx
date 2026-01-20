@@ -8,6 +8,7 @@ import MusicProgramming from "@/components/MusicProgramming";
 import RSVPForm from "@/components/RSVPForm";
 import LogisticsSection from "@/components/LogisticsSection";
 import GuestbookSection from "@/components/GuestbookSection";
+import MusicSuggestionForm from "@/components/MusicSuggestionForm";
 import SectionContainer from "@/components/SectionContainer";
 
 // Fallback pour le chargement du formulaire RSVP
@@ -44,6 +45,9 @@ export default function Home() {
 
       {/* Programmation Musicale - La Scène de Granny */}
       <MusicProgramming />
+
+      {/* Dansons Ensemble - Suggestions musicales des invités */}
+      <MusicSuggestionForm />
 
       {/* Formulaire RSVP - Confirmation de présence */}
       <Suspense fallback={<RSVPFormFallback />}>
