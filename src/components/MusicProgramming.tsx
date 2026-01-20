@@ -21,7 +21,7 @@ const bands: Band[] = [
     name: "Watts Up",
     image: '/photos/musique/watts-up.jpg',
     badges: ['Pop', 'Rock'],
-    description: "Des amoureux de la musique ravis de jouer ensemble et de vous proposer leurs reprises.",
+    description: "Une décharge de passion pop-rock pour vibrer ensemble sur vos morceaux préférés à la sauce Watts UP! Entre classiques électriques et mélodies entraînantes, les 'Watts Up' partagent leur amour de la musique à travers un répertoire de reprises dynamiques. Convivialité et plaisir de jouer garantis !",
   },
   {
     name: 'À venir...',

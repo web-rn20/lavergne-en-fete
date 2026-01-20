@@ -148,7 +148,7 @@ function BlocBesoinsAlimentaires({
           className="w-full px-4 py-3 border border-brand-light rounded-lg bg-white text-brand-dark
                    font-montserrat focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20
                    transition-all duration-200"
-          placeholder="Arachides, fruits de mer, gluten..."
+          placeholder="Arachides, fruits de mer, lactose..."
         />
       </div>
     </div>
@@ -1409,6 +1409,17 @@ export default function RSVPForm() {
               </>
             )}
           </form>
+
+          {/* Texte de support */}
+          <p className="text-center text-sm text-brand-dark/60 mt-6">
+            Un souci avec le formulaire ? Contactez-nous sur{" "}
+            <a
+              href="mailto:verochris.lavergne@gmail.com"
+              className="text-brand-primary hover:underline"
+            >
+              verochris.lavergne@gmail.com
+            </a>
+          </p>
         </div>
       </div>
     </SectionContainer>
