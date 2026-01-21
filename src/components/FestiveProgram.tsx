@@ -30,7 +30,7 @@ const programSteps: ProgramStep[] = [
   },
   {
     time: "22h00",
-    title: "Jusqu'au bout de la nuit (ou épuisement des fûts !)",
+    title: "Jusqu'à épuisement des fûts !",
     description: "Fiesta & Scène ouverte pour ceux qui veulent jouer un morceau.",
     icon: PartyPopper,
     bgColor: "bg-brand-light", // Lavender Blush

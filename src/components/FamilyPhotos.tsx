@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import BounceCards from './BounceCards';
 import SectionContainer from './SectionContainer';
 
@@ -12,20 +13,13 @@ const familyImages = [
   '/photos/famille/IMG_1312.jpg',
 ];
 
+// Transformations pour desktop avec photos plus espacées
 const transformStyles = [
-  'rotate(5deg) translate(-280px)',
-  'rotate(0deg) translate(-140px)',
+  'rotate(5deg) translate(-320px)',
+  'rotate(0deg) translate(-160px)',
   'rotate(-5deg)',
-  'rotate(5deg) translate(140px)',
-  'rotate(-5deg) translate(280px)'
-];
-
-const mobileTransformStyles = [
-  'rotate(5deg) translate(-80px)',
-  'rotate(0deg) translate(-40px)',
-  'rotate(-5deg)',
-  'rotate(5deg) translate(40px)',
-  'rotate(-5deg) translate(80px)'
+  'rotate(5deg) translate(160px)',
+  'rotate(-5deg) translate(320px)'
 ];
 
 export default function FamilyPhotos() {
@@ -41,28 +35,49 @@ export default function FamilyPhotos() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const containerWidth = isMobile ? 300 : 1000;
-  const containerHeight = isMobile ? 280 : 500;
-  const currentTransforms = isMobile ? mobileTransformStyles : transformStyles;
-
   return (
-    <SectionContainer id="famille" className="py-12 md:py-20 bg-brand-light">
-      <div className="max-w-4xl mx-auto flex flex-col items-center justify-center">
-        <h2 className="font-serif text-4xl md:text-5xl text-brand-accent-deep mb-4 text-center">
+    <SectionContainer id="famille" className="py-12 md:py-20 lg:py-24 bg-brand-light">
+      <div className="max-w-6xl mx-auto flex flex-col items-center justify-center px-4">
+        <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl text-brand-accent-deep mb-4 text-center">
           La Famille
         </h2>
-        <p className="text-brand-dark/70 text-center max-w-2xl mb-12">
+        <p className="text-brand-dark/70 text-center max-w-2xl mb-12 lg:mb-16">
           En 2025, nous avons fêté plein de choses, nos 30 ans de mariage, les 27 ans de Romain, les 25 ans de Maxime et les 20 ans de Jade.<br />
           Cela mérite d&apos;être partagé avec famille et amis lors d&apos;une soirée musicale et festive.
         </p>
-        <BounceCards
-          images={familyImages}
-          containerWidth={containerWidth}
-          containerHeight={containerHeight}
-          transformStyles={currentTransforms}
-          enableHover
-          className="mx-auto"
-        />
+
+        {/* Mobile : affichage en colonne verticale */}
+        {isMobile ? (
+          <div className="flex flex-col gap-6 w-full max-w-sm">
+            {familyImages.map((src, index) => (
+              <div
+                key={src}
+                className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden"
+                style={{
+                  transform: `rotate(${index % 2 === 0 ? 2 : -2}deg)`,
+                }}
+              >
+                <Image
+                  src={src}
+                  alt={`Photo de famille ${index + 1}`}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 400px"
+                />
+              </div>
+            ))}
+          </div>
+        ) : (
+          /* Desktop : BounceCards agrandi */
+          <BounceCards
+            images={familyImages}
+            containerWidth={1200}
+            containerHeight={600}
+            transformStyles={transformStyles}
+            enableHover
+            className="mx-auto"
+          />
+        )}
       </div>
     </SectionContainer>
   );
