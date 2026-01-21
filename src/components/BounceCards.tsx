@@ -2,13 +2,24 @@
 
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
-import { motion } from 'framer-motion';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Image from 'next/image';
 import { usePartyMode } from './PartyMode';
 
+// Register ScrollTrigger plugin
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger);
+}
+
+export interface FamilyMember {
+  name: string;
+  description: string;
+  image: string;
+}
+
 interface BounceCardsProps {
   className?: string;
-  images?: string[];
+  members: FamilyMember[];
   containerWidth?: number;
   containerHeight?: number;
   animationDelay?: number;
@@ -20,53 +31,84 @@ interface BounceCardsProps {
 
 export default function BounceCards({
   className = '',
-  images = [],
-  containerWidth = 400,
+  members = [],
+  containerWidth = 900,
   containerHeight = 400,
-  animationDelay = 0.5,
-  animationStagger = 0.06,
+  animationDelay = 0.3,
+  animationStagger = 0.08,
   easeType = 'elastic.out(1, 0.8)',
   transformStyles = [
-    'rotate(10deg) translate(-170px)',
-    'rotate(5deg) translate(-85px)',
-    'rotate(-3deg)',
-    'rotate(-10deg) translate(85px)',
-    'rotate(2deg) translate(170px)'
+    'rotate(8deg) translate(-320px)',
+    'rotate(4deg) translate(-160px)',
+    'rotate(0deg) translate(0px)',
+    'rotate(-4deg) translate(160px)',
+    'rotate(-8deg) translate(320px)'
   ],
-  enableHover = false
+  enableHover = true
 }: BounceCardsProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const hasAnimated = useRef(false);
   const { isPartyModeActive } = usePartyMode();
 
-  // Animation de vibration pour le mode fête
-  const partyVariants = {
-    idle: {},
-    party: {
-      rotate: [0, -2, 2, -2, 2, 0],
-      scale: [1, 1.02, 1, 1.02, 1],
-      transition: {
-        duration: 0.5,
-        repeat: Infinity,
-        ease: 'easeInOut' as const,
-      },
-    },
-  };
-
+  // Initial animation on scroll
   useEffect(() => {
+    if (!containerRef.current || hasAnimated.current) return;
+
     const ctx = gsap.context(() => {
-      gsap.fromTo(
-        '.bounce-card',
-        { scale: 0 },
-        {
-          scale: 1,
-          stagger: animationStagger,
-          ease: easeType,
-          delay: animationDelay
+      // Set initial state
+      gsap.set('.bounce-card', { scale: 0, opacity: 0 });
+
+      // Create scroll trigger animation
+      ScrollTrigger.create({
+        trigger: containerRef.current,
+        start: 'top 80%',
+        once: true,
+        onEnter: () => {
+          hasAnimated.current = true;
+          gsap.to('.bounce-card', {
+            scale: 1,
+            opacity: 1,
+            stagger: animationStagger,
+            ease: easeType,
+            delay: animationDelay,
+            duration: 1
+          });
         }
-      );
+      });
     }, containerRef);
+
     return () => ctx.revert();
   }, [animationDelay, animationStagger, easeType]);
+
+  // Party mode animation
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const cards = containerRef.current.querySelectorAll('.bounce-card');
+
+    if (isPartyModeActive) {
+      cards.forEach((card, i) => {
+        gsap.to(card, {
+          rotation: `+=${i % 2 === 0 ? 3 : -3}`,
+          scale: 1.02,
+          duration: 0.3,
+          repeat: -1,
+          yoyo: true,
+          ease: 'power1.inOut'
+        });
+      });
+    } else {
+      cards.forEach((card, i) => {
+        gsap.killTweensOf(card);
+        gsap.to(card, {
+          rotation: 0,
+          scale: 1,
+          duration: 0.3,
+          ease: 'power2.out'
+        });
+      });
+    }
+  }, [isPartyModeActive]);
 
   const getNoRotationTransform = (transformStr: string): string => {
     const hasRotate = /rotate\([\s\S]*?\)/.test(transformStr);
@@ -95,7 +137,7 @@ export default function BounceCards({
     if (!enableHover || !containerRef.current) return;
     const q = gsap.utils.selector(containerRef);
 
-    images.forEach((_, i) => {
+    members.forEach((_, i) => {
       const selector = q(`.bounce-card-${i}`);
       gsap.killTweensOf(selector);
 
@@ -105,19 +147,23 @@ export default function BounceCards({
         const noRotation = getNoRotationTransform(baseTransform);
         gsap.to(selector, {
           transform: noRotation,
+          scale: 1.05,
+          zIndex: 10,
           duration: 0.4,
           ease: 'back.out(1.4)',
           overwrite: 'auto'
         });
       } else {
-        const offsetX = i < hoveredIdx ? -160 : 160;
+        const offsetX = i < hoveredIdx ? -80 : 80;
         const pushedTransform = getPushedTransform(baseTransform, offsetX);
 
         const distance = Math.abs(hoveredIdx - i);
-        const delay = distance * 0.05;
+        const delay = distance * 0.03;
 
         gsap.to(selector, {
           transform: pushedTransform,
+          scale: 1,
+          zIndex: i,
           duration: 0.4,
           ease: 'back.out(1.4)',
           delay,
@@ -131,13 +177,15 @@ export default function BounceCards({
     if (!enableHover || !containerRef.current) return;
     const q = gsap.utils.selector(containerRef);
 
-    images.forEach((_, i) => {
+    members.forEach((_, i) => {
       const selector = q(`.bounce-card-${i}`);
       gsap.killTweensOf(selector);
 
       const baseTransform = transformStyles[i] || 'none';
       gsap.to(selector, {
         transform: baseTransform,
+        scale: 1,
+        zIndex: i,
         duration: 0.4,
         ease: 'back.out(1.4)',
         overwrite: 'auto'
@@ -146,20 +194,18 @@ export default function BounceCards({
   };
 
   return (
-    <motion.div
+    <div
       className={`relative flex items-center justify-center ${className}`}
       ref={containerRef}
       style={{
         width: containerWidth,
         height: containerHeight
       }}
-      variants={partyVariants}
-      animate={isPartyModeActive ? 'party' : 'idle'}
     >
-      {images.map((src, idx) => (
+      {members.map((member, idx) => (
         <div
           key={idx}
-          className={`bounce-card bounce-card-${idx} absolute w-[150px] md:w-[300px] aspect-square border-8 border-white rounded-[30px] overflow-hidden`}
+          className={`bounce-card bounce-card-${idx} absolute flex flex-col items-center`}
           style={{
             transform: transformStyles[idx] || 'none',
             zIndex: idx
@@ -167,15 +213,28 @@ export default function BounceCards({
           onMouseEnter={() => pushSiblings(idx)}
           onMouseLeave={() => resetSiblings()}
         >
-          <Image
-            src={src}
-            alt={`Photo de famille ${idx + 1}`}
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 150px, 300px"
-          />
+          {/* Card with image */}
+          <div className="w-[140px] aspect-[4/5] border-4 border-brand-primary rounded-2xl overflow-hidden bg-brand-light">
+            <Image
+              src={member.image}
+              alt={`Photo de ${member.name}`}
+              fill
+              className="object-cover !relative"
+              sizes="140px"
+            />
+          </div>
+
+          {/* Name and description below card */}
+          <div className="mt-2 text-center">
+            <h3 className="font-yanone text-lg text-brand-accent-deep font-semibold leading-tight">
+              {member.name}
+            </h3>
+            <p className="font-meow text-base text-brand-dark/70 leading-tight">
+              {member.description}
+            </p>
+          </div>
         </div>
       ))}
-    </motion.div>
+    </div>
   );
 }
