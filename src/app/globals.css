@@ -13,7 +13,7 @@
 
   /* Polices Google Fonts */
   --font-yanone: "Yanone Kaffeesatz", Arial, sans-serif;
-  --font-dosis: "Dosis", Arial, sans-serif;
+  --font-meow: "Meow Script", cursive;
   --font-montserrat: "Montserrat", Arial, sans-serif;
   --font-caveat: "Caveat", cursive;
 }
@@ -30,14 +30,13 @@
 
   /* Polices */
   --font-yanone: var(--font-yanone);
-  --font-dosis: var(--font-dosis);
+  --font-meow: var(--font-meow);
   --font-montserrat: var(--font-montserrat);
   --font-caveat: var(--font-caveat);
   --font-serif: var(--font-yanone);
   --font-sans: var(--font-montserrat);
   /* Alias pour compatibilité avec les classes existantes */
   --font-oswald: var(--font-yanone);
-  --font-meow: var(--font-dosis);
 
   /* Animations pour le Vertical Marquee */
   --animate-marquee-up: marquee-up 25s linear infinite;
@@ -82,10 +81,9 @@ h1, h2 {
   text-transform: uppercase;
 }
 
-/* Classe utilitaire pour Dosis (textes décoratifs) */
-.font-meow,
-.font-dosis {
-  font-family: var(--font-dosis);
+/* Classe utilitaire pour Meow Script (textes décoratifs) */
+.font-meow {
+  font-family: var(--font-meow);
 }
 
 .font-montserrat {

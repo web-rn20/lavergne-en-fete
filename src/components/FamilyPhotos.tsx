@@ -35,12 +35,12 @@ export default function FamilyPhotos() {
   }, []);
 
   return (
-    <SectionContainer id="famille" className="py-12 md:py-20 lg:py-24 bg-brand-light">
+    <SectionContainer id="famille" className="py-8 md:py-12 lg:py-16 bg-brand-light">
       <div className="max-w-6xl mx-auto flex flex-col items-center justify-center px-4">
         <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl text-brand-accent-deep mb-4 text-center">
           La Famille
         </h2>
-        <p className="text-brand-dark/70 text-center max-w-2xl mb-12 lg:mb-16">
+        <p className="text-brand-dark/70 text-center max-w-2xl mb-8 lg:mb-10">
           En 2025, nous avons fêté plein de choses, nos 30 ans de mariage, les 25 ans de Maxime et les 20 ans de Jade.<br />
           Cela mérite d&apos;être partagé avec famille et amis lors d&apos;une soirée musicale et festive.
         </p>
