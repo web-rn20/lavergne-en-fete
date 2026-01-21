@@ -201,6 +201,35 @@ export default function JukeboxSection() {
             <p className="text-brand-light/50 text-center text-sm mt-4">
               Tu peux envoyer plusieurs suggestions, ton pseudo sera conservé !
             </p>
+
+            {/* Lien direct vers la playlist Deezer */}
+            <div className="mt-6 text-center">
+              <a
+                href="https://link.deezer.com/s/32dM9lsoKhVK6jpTm2KjQ"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-brand-light/70 hover:text-brand-light text-sm underline underline-offset-2 transition-colors duration-200"
+              >
+                <span>Envie d&apos;ajouter tout un album ou plusieurs titres d&apos;un coup ?</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                  />
+                </svg>
+              </a>
+              <p className="text-brand-light/50 text-xs mt-1">
+                Rendez-vous directement sur la playlist Deezer
+              </p>
+            </div>
           </div>
 
           {/* Colonne droite : Playlist Deezer */}
