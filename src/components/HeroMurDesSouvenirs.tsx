@@ -57,26 +57,23 @@ END:VCALENDAR`;
   URL.revokeObjectURL(url);
 }
 
-// Photos disponibles dans public/photos/parents
+// Photos disponibles dans public/photos/parents (nouvelles photos recadrées)
 const parentPhotos = [
-  "/photos/parents/mariage.jpg",
-  "/photos/parents/20150222_152405.jpg",
-  "/photos/parents/20220402_125213.jpg",
-  "/photos/parents/IMG_1767.JPG",
-  "/photos/parents/PXL_20230330_161354908.jpg",
-  "/photos/parents/PXL_20230604_130602424.MP.jpg",
-  "/photos/parents/PXL_20230604_130852428.jpg",
-  "/photos/parents/PXL_20231026_205931762.jpg",
-  "/photos/parents/PXL_20240822_115356056.jpg",
-  "/photos/parents/PXL_20240823_090657876.jpg",
-  "/photos/parents/PXL_20250809_150947063.jpg",
-  "/photos/parents/PXL_20250826_182933846.jpg",
-  "/photos/parents/Photo_2026-01-10_162010.jpg",
-  "/photos/parents/Photo_2026-01-10_162126 (2) (1).jpg",
-  "/photos/parents/Photo_2026-01-10_162707.jpg",
-  "/photos/parents/Photo_2026-01-10_162818.jpg",
-  "/photos/parents/Photo_2026-01-10_172411.jpg",
-  "/photos/parents/webcam1.jpg",
+  "/photos/parents/parents-lavergne-recadré-01.jpg",
+  "/photos/parents/parents-lavergne-recadré-02.jpg",
+  "/photos/parents/parents-lavergne-recadré-03.jpg",
+  "/photos/parents/parents-lavergne-recadré-04.jpg",
+  "/photos/parents/parents-lavergne-recadré-05.jpg",
+  "/photos/parents/parents-lavergne-recadré-06.jpg",
+  "/photos/parents/parents-lavergne-recadré-07.jpg",
+  "/photos/parents/parents-lavergne-recadré-08.jpg",
+  "/photos/parents/parents-lavergne-recadré-09.jpg",
+  "/photos/parents/parents-lavergne-recadré-10.jpg",
+  "/photos/parents/parents-lavergne-recadré-11.jpg",
+  "/photos/parents/parents-lavergne-recadré-12.jpg",
+  "/photos/parents/parents-lavergne-recadré-13.jpg",
+  "/photos/parents/parents-lavergne-recadré-14.jpg",
+  "/photos/parents/parents-lavergne-recadré-15.jpg",
 ];
 
 // Distribution des photos dans les colonnes
@@ -161,11 +158,11 @@ export default function HeroMurDesSouvenirs() {
               {column.photos.map((photo, photoIndex) => (
                 <div
                   key={`first-${photoIndex}`}
-                  className="relative aspect-[3/4] w-full flex-shrink-0 overflow-hidden rounded-lg"
+                  className="relative aspect-[4/5] w-full flex-shrink-0 overflow-hidden rounded-lg"
                 >
                   <Image
                     src={photo}
-                    alt={`Souvenir de famille ${columnIndex * 6 + photoIndex + 1}`}
+                    alt={`Souvenir de famille ${columnIndex * 5 + photoIndex + 1}`}
                     fill
                     className="object-cover"
                     sizes="33vw"
@@ -177,11 +174,11 @@ export default function HeroMurDesSouvenirs() {
               {column.photos.map((photo, photoIndex) => (
                 <div
                   key={`second-${photoIndex}`}
-                  className="relative aspect-[3/4] w-full flex-shrink-0 overflow-hidden rounded-lg"
+                  className="relative aspect-[4/5] w-full flex-shrink-0 overflow-hidden rounded-lg"
                 >
                   <Image
                     src={photo}
-                    alt={`Souvenir de famille ${columnIndex * 6 + photoIndex + 1}`}
+                    alt={`Souvenir de famille ${columnIndex * 5 + photoIndex + 1}`}
                     fill
                     className="object-cover"
                     sizes="33vw"
@@ -214,11 +211,11 @@ export default function HeroMurDesSouvenirs() {
               {column.photos.map((photo, photoIndex) => (
                 <div
                   key={`first-${photoIndex}`}
-                  className="relative aspect-[3/4] w-full flex-shrink-0 overflow-hidden rounded-lg"
+                  className="relative aspect-[4/5] w-full flex-shrink-0 overflow-hidden rounded-lg"
                 >
                   <Image
                     src={photo}
-                    alt={`Souvenir de famille ${columnIndex * 5 + photoIndex + 1}`}
+                    alt={`Souvenir de famille ${columnIndex * 4 + photoIndex + 1}`}
                     fill
                     className="object-cover"
                     sizes="25vw"
@@ -230,11 +227,11 @@ export default function HeroMurDesSouvenirs() {
               {column.photos.map((photo, photoIndex) => (
                 <div
                   key={`second-${photoIndex}`}
-                  className="relative aspect-[3/4] w-full flex-shrink-0 overflow-hidden rounded-lg"
+                  className="relative aspect-[4/5] w-full flex-shrink-0 overflow-hidden rounded-lg"
                 >
                   <Image
                     src={photo}
-                    alt={`Souvenir de famille ${columnIndex * 5 + photoIndex + 1}`}
+                    alt={`Souvenir de famille ${columnIndex * 4 + photoIndex + 1}`}
                     fill
                     className="object-cover"
                     sizes="25vw"
@@ -255,7 +252,7 @@ export default function HeroMurDesSouvenirs() {
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
         {/* Conteneur avec fond Black Cherry - Réduit sur mobile */}
         <div className="bg-brand-accent-deep p-4 sm:p-6 md:p-8 rounded-2xl max-w-fit text-brand-light">
-          <h1 className="font-oswald text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold mb-2 sm:mb-4">
+          <h1 className="font-yanone text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold mb-2 sm:mb-4">
             Véronique &amp; Christophe : 30 ans de mariage
           </h1>
           <p className="font-meow text-2xl sm:text-3xl md:text-5xl mb-2 sm:mb-4">
@@ -281,7 +278,7 @@ export default function HeroMurDesSouvenirs() {
           {/* Date cliquable */}
           <button
             onClick={() => setCalendarMenuOpen(!calendarMenuOpen)}
-            className="font-oswald text-2xl text-brand-accent-deep font-bold cursor-pointer hover:text-brand-dark transition-colors duration-300 bg-transparent border-none outline-none"
+            className="font-yanone text-2xl text-brand-accent-deep font-bold cursor-pointer hover:text-brand-dark transition-colors duration-300 bg-transparent border-none outline-none"
             aria-label="Ajouter au calendrier"
           >
             27 Juin 2026
@@ -335,7 +332,7 @@ export default function HeroMurDesSouvenirs() {
           {/* Date cliquable */}
           <button
             onClick={() => setCalendarMenuOpen(!calendarMenuOpen)}
-            className="font-oswald text-2xl md:text-3xl text-brand-accent-deep font-bold cursor-pointer hover:text-brand-dark transition-colors duration-300 bg-transparent border-none outline-none"
+            className="font-yanone text-2xl md:text-3xl text-brand-accent-deep font-bold cursor-pointer hover:text-brand-dark transition-colors duration-300 bg-transparent border-none outline-none"
             aria-label="Ajouter au calendrier"
           >
             27 Juin 2026
