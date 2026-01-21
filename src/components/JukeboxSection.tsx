@@ -214,18 +214,35 @@ export default function JukeboxSection() {
               Tu peux envoyer plusieurs suggestions, ton pseudo sera conservé !
             </p>
 
-            {/* Lien direct vers la playlist Deezer */}
-            <div className="mt-6 text-center">
+            {/* Lien direct vers la playlist Deezer - Plus visible */}
+            <div className="mt-8 text-center">
+              <p className="text-brand-light/80 text-base mb-4 font-medium">
+                Envie d&apos;ajouter tout un album ou plusieurs titres d&apos;un coup ?
+              </p>
               <a
                 href="https://link.deezer.com/s/32dM9lsoKhVK6jpTm2KjQ"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-brand-light/70 hover:text-brand-light text-sm underline underline-offset-2 transition-colors duration-200"
+                className="inline-flex items-center gap-3 bg-brand-primary hover:bg-brand-primary/90 text-white font-bold text-lg px-6 py-4 rounded-xl transition-all duration-200 hover:scale-105"
               >
-                <span>Envie d&apos;ajouter tout un album ou plusieurs titres d&apos;un coup ?</span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
+                  />
+                </svg>
+                <span>Ouvrir la playlist Deezer</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -238,8 +255,8 @@ export default function JukeboxSection() {
                   />
                 </svg>
               </a>
-              <p className="text-brand-light/50 text-xs mt-1">
-                Rendez-vous directement sur la playlist Deezer
+              <p className="text-brand-light/50 text-sm mt-3">
+                Ajoute directement tes titres dans la playlist collaborative
               </p>
             </div>
           </div>

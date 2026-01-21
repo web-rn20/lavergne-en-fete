@@ -785,7 +785,7 @@ export default function RSVPForm() {
         {/* Bannière date limite - très visible */}
         <div className="mb-6 p-4 bg-brand-primary/10 border-2 border-brand-primary rounded-xl text-center">
           <p className="font-oswald text-lg md:text-xl text-brand-primary uppercase tracking-wide">
-            Granny ferme les listes le 29 mars, ne trainez pas !
+            Granny ferme les listes le 29 mars, ne tardez pas !
           </p>
         </div>
 
@@ -1271,13 +1271,13 @@ export default function RSVPForm() {
                             Dormir à la Maison des Lavergne
                           </span>
                           <p className="text-brand-dark/60 text-sm mt-1">
-                            {placesRestantes} place{placesRestantes > 1 ? "s" : ""} disponible{placesRestantes > 1 ? "s" : ""}
+                            Places limitées
                           </p>
                         </div>
                       </label>
                     )}
 
-                    {/* Option 2: Tente dans le jardin */}
+                    {/* Option 2: Tente/Van dans le jardin */}
                     <label className="flex items-start gap-3 p-4 border border-brand-light rounded-lg cursor-pointer hover:border-brand-primary/50 transition-colors">
                       <input
                         type="radio"
@@ -1291,10 +1291,10 @@ export default function RSVPForm() {
                       />
                       <div>
                         <span className="text-brand-dark font-medium">
-                          Planter la tente dans le jardin
+                          Dormir sur place (tente ou van)
                         </span>
                         <p className="text-brand-dark/60 text-sm mt-1">
-                          Espace disponible pour les campeurs
+                          Espace disponible dans le jardin
                         </p>
                       </div>
                     </label>

@@ -146,7 +146,7 @@ export async function sendRSVPConfirmationEmail(
             </div>
 
             <p style="color: ${colors.text}; line-height: 1.7; margin: 20px 0 0 0; font-size: 16px;">
-              Si tu as une guitare ou une voix de rockstar qui traîne, n'oublie pas qu'on t'attend sur scène après les concerts !
+              Si tu as une guitare, un ukulélé, un triangle, ou une voix de rock star, et l'envie de partager, tu pourras exprimer ton talent sur notre scène après les concerts.
             </p>
 
             <p style="color: ${colors.primary}; line-height: 1.7; margin: 25px 0 0 0; font-size: 18px; font-weight: 600;">
