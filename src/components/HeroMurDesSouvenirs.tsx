@@ -158,7 +158,7 @@ export default function HeroMurDesSouvenirs() {
               {column.photos.map((photo, photoIndex) => (
                 <div
                   key={`first-${photoIndex}`}
-                  className="bounce-card-photo relative aspect-[4/5] w-full flex-shrink-0 overflow-hidden rounded-lg transition-transform duration-300 hover:scale-105 hover:z-10"
+                  className="relative aspect-[4/5] w-full flex-shrink-0 overflow-hidden rounded-lg"
                 >
                   <Image
                     src={photo}
@@ -174,7 +174,7 @@ export default function HeroMurDesSouvenirs() {
               {column.photos.map((photo, photoIndex) => (
                 <div
                   key={`second-${photoIndex}`}
-                  className="bounce-card-photo relative aspect-[4/5] w-full flex-shrink-0 overflow-hidden rounded-lg transition-transform duration-300 hover:scale-105 hover:z-10"
+                  className="relative aspect-[4/5] w-full flex-shrink-0 overflow-hidden rounded-lg"
                 >
                   <Image
                     src={photo}
@@ -211,7 +211,7 @@ export default function HeroMurDesSouvenirs() {
               {column.photos.map((photo, photoIndex) => (
                 <div
                   key={`first-${photoIndex}`}
-                  className="bounce-card-photo relative aspect-[4/5] w-full flex-shrink-0 overflow-hidden rounded-lg transition-transform duration-300 hover:scale-105 hover:z-10"
+                  className="relative aspect-[4/5] w-full flex-shrink-0 overflow-hidden rounded-lg"
                 >
                   <Image
                     src={photo}
@@ -227,7 +227,7 @@ export default function HeroMurDesSouvenirs() {
               {column.photos.map((photo, photoIndex) => (
                 <div
                   key={`second-${photoIndex}`}
-                  className="bounce-card-photo relative aspect-[4/5] w-full flex-shrink-0 overflow-hidden rounded-lg transition-transform duration-300 hover:scale-105 hover:z-10"
+                  className="relative aspect-[4/5] w-full flex-shrink-0 overflow-hidden rounded-lg"
                 >
                   <Image
                     src={photo}
@@ -252,7 +252,7 @@ export default function HeroMurDesSouvenirs() {
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
         {/* Conteneur avec fond Black Cherry - Réduit sur mobile */}
         <div className="bg-brand-accent-deep p-4 sm:p-6 md:p-8 rounded-2xl max-w-fit text-brand-light">
-          <h1 className="font-oswald text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold mb-2 sm:mb-4">
+          <h1 className="font-yanone text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold mb-2 sm:mb-4">
             Véronique &amp; Christophe : 30 ans de mariage
           </h1>
           <p className="font-meow text-2xl sm:text-3xl md:text-5xl mb-2 sm:mb-4">
@@ -278,7 +278,7 @@ export default function HeroMurDesSouvenirs() {
           {/* Date cliquable */}
           <button
             onClick={() => setCalendarMenuOpen(!calendarMenuOpen)}
-            className="font-oswald text-2xl text-brand-accent-deep font-bold cursor-pointer hover:text-brand-dark transition-colors duration-300 bg-transparent border-none outline-none"
+            className="font-yanone text-2xl text-brand-accent-deep font-bold cursor-pointer hover:text-brand-dark transition-colors duration-300 bg-transparent border-none outline-none"
             aria-label="Ajouter au calendrier"
           >
             27 Juin 2026
@@ -332,7 +332,7 @@ export default function HeroMurDesSouvenirs() {
           {/* Date cliquable */}
           <button
             onClick={() => setCalendarMenuOpen(!calendarMenuOpen)}
-            className="font-oswald text-2xl md:text-3xl text-brand-accent-deep font-bold cursor-pointer hover:text-brand-dark transition-colors duration-300 bg-transparent border-none outline-none"
+            className="font-yanone text-2xl md:text-3xl text-brand-accent-deep font-bold cursor-pointer hover:text-brand-dark transition-colors duration-300 bg-transparent border-none outline-none"
             aria-label="Ajouter au calendrier"
           >
             27 Juin 2026
