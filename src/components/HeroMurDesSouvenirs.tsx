@@ -57,26 +57,23 @@ END:VCALENDAR`;
   URL.revokeObjectURL(url);
 }
 
-// Photos disponibles dans public/photos/parents
+// Photos disponibles dans public/photos/parents (nouvelles photos recadrées)
 const parentPhotos = [
-  "/photos/parents/mariage.jpg",
-  "/photos/parents/20150222_152405.jpg",
-  "/photos/parents/20220402_125213.jpg",
-  "/photos/parents/IMG_1767.JPG",
-  "/photos/parents/PXL_20230330_161354908.jpg",
-  "/photos/parents/PXL_20230604_130602424.MP.jpg",
-  "/photos/parents/PXL_20230604_130852428.jpg",
-  "/photos/parents/PXL_20231026_205931762.jpg",
-  "/photos/parents/PXL_20240822_115356056.jpg",
-  "/photos/parents/PXL_20240823_090657876.jpg",
-  "/photos/parents/PXL_20250809_150947063.jpg",
-  "/photos/parents/PXL_20250826_182933846.jpg",
-  "/photos/parents/Photo_2026-01-10_162010.jpg",
-  "/photos/parents/Photo_2026-01-10_162126 (2) (1).jpg",
-  "/photos/parents/Photo_2026-01-10_162707.jpg",
-  "/photos/parents/Photo_2026-01-10_162818.jpg",
-  "/photos/parents/Photo_2026-01-10_172411.jpg",
-  "/photos/parents/webcam1.jpg",
+  "/photos/parents/parents-lavergne-recadré-01.jpg",
+  "/photos/parents/parents-lavergne-recadré-02.jpg",
+  "/photos/parents/parents-lavergne-recadré-03.jpg",
+  "/photos/parents/parents-lavergne-recadré-04.jpg",
+  "/photos/parents/parents-lavergne-recadré-05.jpg",
+  "/photos/parents/parents-lavergne-recadré-06.jpg",
+  "/photos/parents/parents-lavergne-recadré-07.jpg",
+  "/photos/parents/parents-lavergne-recadré-08.jpg",
+  "/photos/parents/parents-lavergne-recadré-09.jpg",
+  "/photos/parents/parents-lavergne-recadré-10.jpg",
+  "/photos/parents/parents-lavergne-recadré-11.jpg",
+  "/photos/parents/parents-lavergne-recadré-12.jpg",
+  "/photos/parents/parents-lavergne-recadré-13.jpg",
+  "/photos/parents/parents-lavergne-recadré-14.jpg",
+  "/photos/parents/parents-lavergne-recadré-15.jpg",
 ];
 
 // Distribution des photos dans les colonnes
@@ -161,11 +158,11 @@ export default function HeroMurDesSouvenirs() {
               {column.photos.map((photo, photoIndex) => (
                 <div
                   key={`first-${photoIndex}`}
-                  className="relative aspect-[3/4] w-full flex-shrink-0 overflow-hidden rounded-lg"
+                  className="bounce-card-photo relative aspect-[4/5] w-full flex-shrink-0 overflow-hidden rounded-lg transition-transform duration-300 hover:scale-105 hover:z-10"
                 >
                   <Image
                     src={photo}
-                    alt={`Souvenir de famille ${columnIndex * 6 + photoIndex + 1}`}
+                    alt={`Souvenir de famille ${columnIndex * 5 + photoIndex + 1}`}
                     fill
                     className="object-cover"
                     sizes="33vw"
@@ -177,11 +174,11 @@ export default function HeroMurDesSouvenirs() {
               {column.photos.map((photo, photoIndex) => (
                 <div
                   key={`second-${photoIndex}`}
-                  className="relative aspect-[3/4] w-full flex-shrink-0 overflow-hidden rounded-lg"
+                  className="bounce-card-photo relative aspect-[4/5] w-full flex-shrink-0 overflow-hidden rounded-lg transition-transform duration-300 hover:scale-105 hover:z-10"
                 >
                   <Image
                     src={photo}
-                    alt={`Souvenir de famille ${columnIndex * 6 + photoIndex + 1}`}
+                    alt={`Souvenir de famille ${columnIndex * 5 + photoIndex + 1}`}
                     fill
                     className="object-cover"
                     sizes="33vw"
@@ -214,11 +211,11 @@ export default function HeroMurDesSouvenirs() {
               {column.photos.map((photo, photoIndex) => (
                 <div
                   key={`first-${photoIndex}`}
-                  className="relative aspect-[3/4] w-full flex-shrink-0 overflow-hidden rounded-lg"
+                  className="bounce-card-photo relative aspect-[4/5] w-full flex-shrink-0 overflow-hidden rounded-lg transition-transform duration-300 hover:scale-105 hover:z-10"
                 >
                   <Image
                     src={photo}
-                    alt={`Souvenir de famille ${columnIndex * 5 + photoIndex + 1}`}
+                    alt={`Souvenir de famille ${columnIndex * 4 + photoIndex + 1}`}
                     fill
                     className="object-cover"
                     sizes="25vw"
@@ -230,11 +227,11 @@ export default function HeroMurDesSouvenirs() {
               {column.photos.map((photo, photoIndex) => (
                 <div
                   key={`second-${photoIndex}`}
-                  className="relative aspect-[3/4] w-full flex-shrink-0 overflow-hidden rounded-lg"
+                  className="bounce-card-photo relative aspect-[4/5] w-full flex-shrink-0 overflow-hidden rounded-lg transition-transform duration-300 hover:scale-105 hover:z-10"
                 >
                   <Image
                     src={photo}
-                    alt={`Souvenir de famille ${columnIndex * 5 + photoIndex + 1}`}
+                    alt={`Souvenir de famille ${columnIndex * 4 + photoIndex + 1}`}
                     fill
                     className="object-cover"
                     sizes="25vw"
