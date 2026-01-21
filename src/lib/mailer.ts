@@ -146,7 +146,11 @@ export async function sendRSVPConfirmationEmail(
             </div>
 
             <p style="color: ${colors.text}; line-height: 1.7; margin: 20px 0 0 0; font-size: 16px;">
-              Si tu as une guitare ou une voix de rockstar qui traîne, n'oublie pas qu'on t'attend sur scène après les concerts !
+              Si tu as une guitare, un ukulélé, un triangle, ou une voix de rock star, et l'envie de partager, tu pourras exprimer ton talent sur notre scène après les concerts.
+            </p>
+
+            <p style="color: ${colors.text}; line-height: 1.7; margin: 20px 0 0 0; font-size: 15px;">
+              Petit rappel : si tu veux participer au cadeau commun, une tirelire sera disponible sur place le jour J.
             </p>
 
             <p style="color: ${colors.primary}; line-height: 1.7; margin: 25px 0 0 0; font-size: 18px; font-weight: 600;">
@@ -157,6 +161,7 @@ export async function sendRSVPConfirmationEmail(
           <!-- Footer -->
           <div style="text-align: center; font-size: 13px; color: ${colors.text}; opacity: 0.7;">
             <p style="margin: 0;">Avec amour, Romain, Maxime & Jade</p>
+            <p style="margin: 8px 0 0 0;">Une question ? <a href="mailto:verochris.lavergne@gmail.com" style="color: ${colors.primary};">verochris.lavergne@gmail.com</a></p>
           </div>
         </div>
       </body>
@@ -241,6 +246,10 @@ export async function sendRSVPAbsenceEmail(
             </p>
             ` : ''}
 
+            <p style="color: ${colors.text}; line-height: 1.7; margin: 20px 0 0 0; font-size: 15px;">
+              Tu aurais pu sortir ta guitare, ton ukulélé ou ton triangle sur notre scène ouverte... Ce sera pour la prochaine !
+            </p>
+
             <p style="color: ${colors.primary}; line-height: 1.7; margin: 25px 0 0 0; font-size: 18px; font-weight: 600;">
               On se rattrape très vite !
             </p>
@@ -249,6 +258,7 @@ export async function sendRSVPAbsenceEmail(
           <!-- Footer -->
           <div style="text-align: center; font-size: 13px; color: ${colors.text}; opacity: 0.7;">
             <p style="margin: 0;">Avec amour, Romain, Maxime & Jade</p>
+            <p style="margin: 8px 0 0 0;">Une question ? <a href="mailto:verochris.lavergne@gmail.com" style="color: ${colors.primary};">verochris.lavergne@gmail.com</a></p>
           </div>
         </div>
       </body>
@@ -363,13 +373,14 @@ export async function sendRSVPNotificationToHosts(
             ` : ''}
 
             <p style="color: ${colors.text}; line-height: 1.7; margin: 20px 0 0 0; font-size: 15px; font-style: italic;">
-              Le vibromètre de la fête vient de grimper d'un cran. À plus !
+              Le vibromètre de la fête vient de grimper d'un cran !
             </p>
           </div>
 
           <!-- Footer -->
           <div style="text-align: center; font-size: 12px; color: ${colors.text}; opacity: 0.7;">
             <p style="margin: 0;">Reçu le ${new Date().toLocaleString("fr-FR")}</p>
+            <p style="margin: 8px 0 0 0;">Contact support : <a href="mailto:verochris.lavergne@gmail.com" style="color: ${colors.primary};">verochris.lavergne@gmail.com</a></p>
           </div>
         </div>
       </body>

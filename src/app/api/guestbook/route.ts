@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { addLivreOrMessage, getLivreOrMessages } from "@/lib/google-sheets";
+import { addLivreOrMessage, getLivreOrMessages, clearLivreOr } from "@/lib/google-sheets";
 
 // Interface pour la requête POST
 interface GuestbookRequestBody {
@@ -110,6 +110,53 @@ export async function GET(request: NextRequest) {
         success: false,
         error: "Erreur lors de la récupération des messages",
         messages: [],
+      },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE - Supprimer tous les messages du livre d'or (reset pour nettoyage)
+// Protégé par un secret pour éviter les suppressions accidentelles
+export async function DELETE(request: NextRequest) {
+  try {
+    // Vérifier le secret dans les headers pour protéger l'opération
+    const authHeader = request.headers.get("x-admin-secret");
+    const expectedSecret = process.env.ADMIN_SECRET || "lavergne2026-reset";
+
+    if (authHeader !== expectedSecret) {
+      console.log("DELETE /guestbook - Accès non autorisé");
+      return NextResponse.json(
+        { success: false, error: "Non autorisé" },
+        { status: 401 }
+      );
+    }
+
+    console.log("=== API /guestbook - Suppression de tous les messages ===");
+
+    const success = await clearLivreOr();
+
+    if (!success) {
+      return NextResponse.json(
+        { success: false, error: "Erreur lors de la suppression des messages" },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: "Tous les messages ont été supprimés du livre d'or",
+    });
+  } catch (error) {
+    console.error("=== Erreur API Guestbook DELETE ===");
+    console.error("Type:", error instanceof Error ? error.constructor.name : typeof error);
+    console.error("Message:", error instanceof Error ? error.message : String(error));
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Erreur serveur lors de la suppression",
+        details: error instanceof Error ? error.message : "Erreur inconnue",
       },
       { status: 500 }
     );

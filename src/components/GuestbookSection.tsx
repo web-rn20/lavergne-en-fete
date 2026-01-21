@@ -119,7 +119,7 @@ export default function GuestbookSection() {
         {/* Sous-titre */}
         <p className="text-brand-dark/70 text-center mb-12 max-w-2xl mx-auto">
           Laisse un petit mot, une anecdote ou un souvenir pour Véronique et Christophe.
-          Ton message sera précieusement conservé !
+          Ton message sera précieusement conservé ! Et si tu es plus analogique que numérique, un livre d&apos;or papier sera également disponible le jour J.
         </p>
 
         {/* Formulaire */}

@@ -290,6 +290,35 @@ export async function addLivreOrMessage(
   }
 }
 
+// Suppression de tous les messages du livre d'or (reset pour nettoyer les tests)
+export async function clearLivreOr(): Promise<boolean> {
+  try {
+    console.log("=== Suppression de tous les messages du Livre d'Or ===");
+
+    const doc = await getGoogleSheet();
+    const sheet = doc.sheetsByTitle["Livre_dOr"];
+
+    if (!sheet) {
+      console.log("Onglet Livre_dOr non trouvé, rien à supprimer");
+      return true;
+    }
+
+    const rows = await sheet.getRows();
+    console.log(`Nombre de messages à supprimer: ${rows.length}`);
+
+    // Supprimer toutes les lignes (en commençant par la fin pour éviter les décalages d'index)
+    for (let i = rows.length - 1; i >= 0; i--) {
+      await rows[i].delete();
+    }
+
+    console.log("Tous les messages ont été supprimés du Livre d'Or");
+    return true;
+  } catch (error) {
+    console.error("Erreur lors de la suppression du livre d'or:", error);
+    return false;
+  }
+}
+
 // Récupération des messages du livre d'or (les plus récents en premier)
 export async function getLivreOrMessages(
   limit?: number

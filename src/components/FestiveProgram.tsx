@@ -29,9 +29,9 @@ const programSteps: ProgramStep[] = [
     bgColor: "bg-brand-primary/15", // Bubblegum Pink légèrement transparent
   },
   {
-    time: "22h00 - 2h00",
-    title: "La Fiesta",
-    description: "Fiesta jusqu'au bout de la nuit & Scène ouverte (pour ceux qui veulent jouer un morceau). Le bar fermera ses portes à 2h00.",
+    time: "22h00",
+    title: "Jusqu'à épuisement des fûts !",
+    description: "Fiesta & Scène ouverte pour ceux qui veulent jouer un morceau.",
     icon: PartyPopper,
     bgColor: "bg-brand-light", // Lavender Blush
   },

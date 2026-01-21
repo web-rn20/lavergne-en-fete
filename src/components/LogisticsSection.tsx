@@ -7,8 +7,8 @@ const RECEPTION_NAME = "Chez Granny";
 const RECEPTION_ADDRESS = "35 chemin de l'église, 31700 Cornebarrieu";
 const RECEPTION_ADDRESS_ENCODED = encodeURIComponent(`${RECEPTION_NAME}, ${RECEPTION_ADDRESS}`);
 
-// Lien Google Maps partagé pour le lieu
-const RECEPTION_MAPS_LINK = "https://share.google/gu5MfJ1OBj9OsJiZY";
+// Lien Google Maps direct pour l'itinéraire vers le lieu
+const RECEPTION_MAPS_LINK = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent("Chez Granny, 35 chemin de l'église, 31700 Cornebarrieu")}`;
 
 // Coordonnées exactes de Chez Granny pour le marqueur (plus précis)
 const CHEZ_GRANNY_COORDS = "43.6214,1.3343";
