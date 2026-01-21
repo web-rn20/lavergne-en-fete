@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import SectionContainer from "@/components/SectionContainer";
 
 export default function JukeboxSection() {
@@ -9,6 +10,8 @@ export default function JukeboxSection() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  // État pour forcer le rechargement de l'iframe Deezer
+  const [playlistKey, setPlaylistKey] = useState(0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,6 +49,8 @@ export default function JukeboxSection() {
         setSubmitStatus("success");
         // Vider seulement le champ musique, garder le pseudo
         setMusique("");
+        // Incrémenter playlistKey pour rafraîchir l'iframe Deezer
+        setPlaylistKey((prev) => prev + 1);
         setTimeout(() => setSubmitStatus("idle"), 5000);
       } else {
         setSubmitStatus("error");
@@ -237,18 +242,27 @@ export default function JukeboxSection() {
             <h3 className="font-oswald text-2xl text-brand-light mb-4">
               La Playlist en direct
             </h3>
-            <div className="rounded-2xl overflow-hidden bg-brand-dark">
-              <iframe
-                title="deezer-widget"
-                src="https://widget.deezer.com/widget/dark/playlist/14843323423"
-                width="100%"
-                height="300"
-                frameBorder="0"
-                allowTransparency={true}
-                allow="encrypted-media; clipboard-write"
-                className="w-full"
-              />
-            </div>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={playlistKey}
+                initial={{ opacity: 0.6, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0.6, scale: 0.98 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+                className="rounded-2xl overflow-hidden bg-brand-dark"
+              >
+                <iframe
+                  title="deezer-widget"
+                  src={`https://widget.deezer.com/widget/dark/playlist/14843323423?rb=${playlistKey}`}
+                  width="100%"
+                  height="300"
+                  frameBorder="0"
+                  allowTransparency={true}
+                  allow="encrypted-media; clipboard-write"
+                  className="w-full"
+                />
+              </motion.div>
+            </AnimatePresence>
             <p className="text-brand-light/50 text-center text-sm mt-4">
               Retrouve ici les morceaux suggérés par les invités !
             </p>
