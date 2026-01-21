@@ -55,7 +55,7 @@ export default function Countdown() {
   // Évite le flash de 0 au chargement côté serveur
   if (!mounted) {
     return (
-      <SectionContainer id="countdown" className="py-12 md:py-20 lg:py-24 bg-brand-light">
+      <SectionContainer id="countdown" className="py-8 md:py-12 lg:py-16 bg-brand-light">
         <div className="max-w-5xl mx-auto text-center">
           <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl text-brand-dark mb-12 lg:mb-16">
             Compte à rebours
@@ -85,7 +85,7 @@ export default function Countdown() {
   ];
 
   return (
-    <SectionContainer id="countdown" className="py-12 md:py-20 lg:py-24 bg-brand-light">
+    <SectionContainer id="countdown" className="py-8 md:py-12 lg:py-16 bg-brand-light">
       <div className="max-w-5xl mx-auto text-center">
         <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl text-brand-dark mb-12 lg:mb-16">
           Compte à rebours

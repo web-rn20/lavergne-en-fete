@@ -12,7 +12,7 @@
   --foreground: var(--brand-dark);
 
   /* Polices Google Fonts */
-  --font-oswald: "Oswald", Arial, sans-serif;
+  --font-yanone: "Yanone Kaffeesatz", Arial, sans-serif;
   --font-meow: "Meow Script", cursive;
   --font-montserrat: "Montserrat", Arial, sans-serif;
   --font-caveat: "Caveat", cursive;
@@ -29,12 +29,14 @@
   --color-brand-alert: var(--brand-alert);
 
   /* Polices */
-  --font-oswald: var(--font-oswald);
+  --font-yanone: var(--font-yanone);
   --font-meow: var(--font-meow);
   --font-montserrat: var(--font-montserrat);
   --font-caveat: var(--font-caveat);
-  --font-serif: var(--font-oswald);
+  --font-serif: var(--font-yanone);
   --font-sans: var(--font-montserrat);
+  /* Alias pour compatibilité avec les classes existantes */
+  --font-oswald: var(--font-yanone);
 
   /* Animations pour le Vertical Marquee */
   --animate-marquee-up: marquee-up 25s linear infinite;
@@ -68,16 +70,18 @@ body {
 
 /* Typographie - Titres */
 h1, h2 {
-  font-family: var(--font-oswald);
+  font-family: var(--font-yanone);
   text-transform: uppercase;
 }
 
-/* Classe utilitaire pour forcer uppercase sur Oswald */
-.font-oswald {
-  font-family: var(--font-oswald);
+/* Classe utilitaire pour Yanone Kaffeesatz (titres) */
+.font-oswald,
+.font-yanone {
+  font-family: var(--font-yanone);
   text-transform: uppercase;
 }
 
+/* Classe utilitaire pour Meow Script (textes décoratifs) */
 .font-meow {
   font-family: var(--font-meow);
 }

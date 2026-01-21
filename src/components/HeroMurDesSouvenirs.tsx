@@ -272,10 +272,10 @@ export default function HeroMurDesSouvenirs() {
         </div>
       </div>
 
-      {/* Date et adresse de l'événement en bas - Mobile (remonté de 40px) */}
+      {/* Date et adresse de l'événement en bas - Mobile (remonté de 40px + 20px supplémentaires) */}
       <div
         ref={menuRef}
-        className="absolute bottom-[72px] left-1/2 -translate-x-1/2 text-center md:hidden"
+        className="absolute bottom-[72px] left-1/2 -translate-x-1/2 -translate-y-5 text-center md:hidden"
       >
         <div className="relative group flex flex-col items-center">
           {/* Date cliquable */}

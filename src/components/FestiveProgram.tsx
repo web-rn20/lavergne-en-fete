@@ -92,11 +92,11 @@ function ProgramStepCard({
       >
         {/* Icône dans un cercle */}
         <div className="flex items-center gap-4 mb-3">
-          <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-brand-accent-deep flex items-center justify-center flex-shrink-0">
+          <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-brand-primary flex items-center justify-center flex-shrink-0">
             <Icon className="w-6 h-6 md:w-7 md:h-7 text-brand-light" />
           </div>
           {/* Heure en Oswald très gros et coloré */}
-          <span className="font-oswald text-3xl md:text-4xl text-brand-primary font-bold">
+          <span className="font-oswald text-3xl md:text-4xl text-brand-accent-deep font-bold">
             {step.time}
           </span>
         </div>
