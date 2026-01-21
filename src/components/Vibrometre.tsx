@@ -140,7 +140,7 @@ function GaugeBar({
         <div className="absolute inset-0 flex items-center justify-center">
           <motion.span
             className="font-oswald text-lg md:text-xl font-bold"
-            style={{ color: percentage > 50 ? "#FFF8F0" : "#38040E" }}
+            style={{ color: percentage > 50 ? "#f6e8ea" : "#22181c" }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1 }}
@@ -164,12 +164,12 @@ export default function Vibrometre() {
   const [mounted, setMounted] = useState(false);
   const [colorIndex, setColorIndex] = useState(0);
 
-  // Couleurs pour l'animation cyclique du titre - Red Wine Palette
+  // Couleurs pour l'animation cyclique du titre
   const titleColors = [
-    "#640D14", // Black Cherry (default)
-    "#AD2831", // Brown Red
-    "#800E13", // Dark Wine
-    "#38040E", // Rich Mahogany Light
+    "#5a0001", // Black Cherry (default)
+    "#f45b69", // Bubblegum Pink
+    "#f13030", // Cinnabar
+    "#22181c", // Coffee Bean
   ];
 
   // Récupération des données RSVP agrégées (avec désactivation du cache)
@@ -237,7 +237,7 @@ export default function Vibrometre() {
   const containerShake = Math.min(1.5, nTotal / 40);
 
   return (
-    <SectionContainer id="vibrometre" className="py-12 md:py-20 bg-brand-cream">
+    <SectionContainer id="vibrometre" className="py-12 md:py-20 bg-brand-light">
       <motion.div
         className="max-w-4xl mx-auto"
         animate={
@@ -260,7 +260,7 @@ export default function Vibrometre() {
             color:
               nTotal >= TITRE_SEUIL_ANIMATION
                 ? titleColors[colorIndex]
-                : "#640D14",
+                : "#5a0001",
           }}
           animate={
             nTotal >= TITRE_SEUIL_ANIMATION
@@ -303,7 +303,7 @@ export default function Vibrometre() {
           <>
             {/* Grille des 3 jauges */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
-              {/* Jauge 1: Niveau sonore - Plus clair (intensité faible) */}
+              {/* Jauge 1: Niveau sonore */}
               <GaugeBar
                 value={niveauSonore}
                 maxValue={110}
@@ -311,10 +311,10 @@ export default function Vibrometre() {
                 unit="dB"
                 icon={Volume2}
                 shakeIntensity={shakeIntensity}
-                color="#AD2831"
+                color="#f45b69"
               />
 
-              {/* Jauge 2: Débit de Potion Magique - Moyen */}
+              {/* Jauge 2: Débit de Potion Magique */}
               <GaugeBar
                 value={debitPotion}
                 maxValue={Math.max(100, debitPotion + 30)}
@@ -322,10 +322,10 @@ export default function Vibrometre() {
                 unit="L"
                 icon={Wine}
                 shakeIntensity={shakeIntensity}
-                color="#800E13"
+                color="#5a0001"
               />
 
-              {/* Jauge 3: Probabilité de Chenille - Plus sombre (intensité forte) */}
+              {/* Jauge 3: Probabilité de Chenille */}
               <GaugeBar
                 value={probaChenille}
                 maxValue={100}
@@ -333,7 +333,7 @@ export default function Vibrometre() {
                 unit="%"
                 icon={PartyPopper}
                 shakeIntensity={shakeIntensity}
-                color="#640D14"
+                color="#f13030"
               />
             </div>
 

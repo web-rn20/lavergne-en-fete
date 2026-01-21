@@ -28,7 +28,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="antialiased bg-brand-darker text-brand-cream">
+      <body className="antialiased bg-brand-light text-brand-dark">
         <PartyModeWrapper>
           {children}
         </PartyModeWrapper>

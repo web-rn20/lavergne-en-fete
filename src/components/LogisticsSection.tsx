@@ -62,7 +62,7 @@ const infoPratiques = [
 
 export default function LogisticsSection() {
   return (
-    <SectionContainer id="logistique" className="py-12 md:py-20 bg-brand-cream">
+    <SectionContainer id="logistique" className="py-12 md:py-20 bg-brand-light">
       <div className="max-w-6xl mx-auto">
         {/* Titre de section */}
         <h2 className="font-oswald text-4xl md:text-5xl text-brand-dark text-center mb-12">
@@ -132,7 +132,7 @@ export default function LogisticsSection() {
               >
                 {/* Badge "À 5 min" */}
                 <div className="absolute top-4 right-4">
-                  <span className="bg-brand-light text-brand-cream text-xs font-semibold px-3 py-1 rounded-full">
+                  <span className="bg-brand-primary text-white text-xs font-semibold px-3 py-1 rounded-full">
                     À 5 min du lieu
                   </span>
                 </div>

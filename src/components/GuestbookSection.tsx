@@ -109,7 +109,7 @@ export default function GuestbookSection() {
   };
 
   return (
-    <SectionContainer id="livre-or" className="py-12 md:py-20 bg-brand-cream">
+    <SectionContainer id="livre-or" className="py-12 md:py-20 bg-brand-light">
       <div className="max-w-6xl mx-auto">
         {/* Titre de section */}
         <h2 className="font-oswald text-4xl md:text-5xl text-brand-dark text-center mb-4">
