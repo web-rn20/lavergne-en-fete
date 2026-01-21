@@ -1,16 +1,8 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import Image from 'next/image';
+import { useState, useEffect } from 'react';
 import SectionContainer from './SectionContainer';
 import BounceCards, { FamilyMember } from './BounceCards';
-
-// Register ScrollTrigger plugin
-if (typeof window !== 'undefined') {
-  gsap.registerPlugin(ScrollTrigger);
-}
 
 const familyMembers: FamilyMember[] = [
   {
@@ -40,78 +32,63 @@ const familyMembers: FamilyMember[] = [
   },
 ];
 
-// Mobile card component with GSAP scroll animation
-function MobileCard({ member, index }: { member: FamilyMember; index: number }) {
-  const cardRef = useRef<HTMLDivElement>(null);
+// Desktop transform styles for fan effect
+const desktopTransformStyles = [
+  'rotate(5deg) translate(-320px, -30px)',
+  'rotate(0deg) translate(-160px, 0px)',
+  'rotate(-5deg) translate(0px, 0px)',
+  'rotate(5deg) translate(160px, 15px)',
+  'rotate(-5deg) translate(320px, -30px)'
+];
 
-  useEffect(() => {
-    if (!cardRef.current) return;
-
-    const ctx = gsap.context(() => {
-      gsap.set(cardRef.current, {
-        opacity: 0,
-        y: 60,
-        scale: 0.9
-      });
-
-      ScrollTrigger.create({
-        trigger: cardRef.current,
-        start: 'top 85%',
-        once: true,
-        onEnter: () => {
-          gsap.to(cardRef.current, {
-            opacity: 1,
-            y: 0,
-            scale: 1,
-            duration: 0.8,
-            delay: index * 0.1,
-            ease: 'elastic.out(1, 0.6)'
-          });
-        }
-      });
-    });
-
-    return () => ctx.revert();
-  }, [index]);
-
-  return (
-    <div ref={cardRef} className="flex flex-col items-center w-full max-w-[180px]">
-      {/* Photo card */}
-      <div className="relative aspect-[4/5] w-full overflow-hidden rounded-xl border-4 border-brand-primary bg-brand-light">
-        <Image
-          src={member.image}
-          alt={`Photo de ${member.name}`}
-          fill
-          className="object-cover"
-          sizes="180px"
-        />
-      </div>
-
-      {/* Name and description */}
-      <div className="mt-2 text-center">
-        <h3 className="font-yanone text-xl text-brand-accent-deep font-semibold">
-          {member.name}
-        </h3>
-        <p className="font-meow text-lg text-brand-dark/70">
-          {member.description}
-        </p>
-      </div>
-    </div>
-  );
-}
+// Mobile transform styles - tighter fan to fit screen
+const mobileTransformStyles = [
+  'rotate(8deg) translate(-120px, -15px)',
+  'rotate(4deg) translate(-60px, 0px)',
+  'rotate(0deg) translate(0px, 0px)',
+  'rotate(-4deg) translate(60px, 0px)',
+  'rotate(-8deg) translate(120px, -15px)'
+];
 
 export default function FamilyPhotos() {
-  const [isMobile, setIsMobile] = useState(false);
+  const [containerWidth, setContainerWidth] = useState(1200);
+  const [containerHeight, setContainerHeight] = useState(600);
+  const [transformStyles, setTransformStyles] = useState(desktopTransformStyles);
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 1024);
+
+    const updateDimensions = () => {
+      const screenWidth = window.innerWidth;
+
+      if (screenWidth < 768) {
+        // Mobile: compact fan
+        setContainerWidth(Math.min(screenWidth - 32, 400));
+        setContainerHeight(350);
+        setTransformStyles(mobileTransformStyles);
+      } else if (screenWidth < 1024) {
+        // Tablet: medium fan
+        setContainerWidth(Math.min(screenWidth - 64, 800));
+        setContainerHeight(450);
+        setTransformStyles([
+          'rotate(6deg) translate(-200px, -20px)',
+          'rotate(3deg) translate(-100px, 0px)',
+          'rotate(0deg) translate(0px, 0px)',
+          'rotate(-3deg) translate(100px, 10px)',
+          'rotate(-6deg) translate(200px, -20px)'
+        ]);
+      } else {
+        // Desktop: full fan
+        setContainerWidth(1200);
+        setContainerHeight(600);
+        setTransformStyles(desktopTransformStyles);
+      }
     };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+
+    updateDimensions();
+    window.addEventListener('resize', updateDimensions);
+    return () => window.removeEventListener('resize', updateDimensions);
   }, []);
 
   // Prevent hydration mismatch
@@ -130,56 +107,39 @@ export default function FamilyPhotos() {
             Cela mérite d&apos;être partagé avec famille et amis lors d&apos;une soirée musicale et festive.
           </p>
           {/* Loading placeholder */}
-          <div className="h-[350px]" />
+          <div className="h-[600px]" />
         </div>
       </SectionContainer>
     );
   }
 
   return (
-    <SectionContainer id="famille" className="py-6 md:py-8 bg-brand-light">
+    <SectionContainer id="famille" className="py-6 md:py-8 bg-brand-light overflow-hidden">
       <div className="max-w-6xl mx-auto flex flex-col items-center justify-center px-4">
         <h2 className="font-yanone text-3xl md:text-4xl lg:text-5xl text-brand-accent-deep mb-2 text-center">
           La Famille
         </h2>
         <p className="font-meow text-xl md:text-2xl text-brand-dark/70 text-center max-w-2xl mb-2">
-          En 2025, nous avons fete plein de choses...
+          En 2025, nous avons fêté plein de choses...
         </p>
         <p className="font-montserrat text-sm text-brand-dark/70 text-center max-w-xl mb-6">
           Nos 30 ans de mariage, les 25 ans de Maxime et les 20 ans de Jade.
-          Cela merite d&apos;etre partage avec famille et amis lors d&apos;une soiree musicale et festive.
+          Cela mérite d&apos;être partagé avec famille et amis lors d&apos;une soirée musicale et festive.
         </p>
 
-        {/* Desktop: BounceCards with lateral spread effect */}
-        {!isMobile && (
-          <div className="w-full flex justify-center">
-            <BounceCards
-              members={familyMembers}
-              containerWidth={900}
-              containerHeight={350}
-              animationDelay={0.2}
-              animationStagger={0.1}
-              easeType="elastic.out(1, 0.7)"
-              transformStyles={[
-                'rotate(6deg) translate(-300px)',
-                'rotate(3deg) translate(-150px)',
-                'rotate(0deg) translate(0px)',
-                'rotate(-3deg) translate(150px)',
-                'rotate(-6deg) translate(300px)'
-              ]}
-              enableHover={true}
-            />
-          </div>
-        )}
-
-        {/* Mobile: Vertical column with elastic scroll animation */}
-        {isMobile && (
-          <div className="w-full grid grid-cols-2 sm:grid-cols-3 gap-4 justify-items-center">
-            {familyMembers.map((member, index) => (
-              <MobileCard key={member.name} member={member} index={index} />
-            ))}
-          </div>
-        )}
+        {/* BounceCards with responsive fan effect */}
+        <div className="w-full flex justify-center">
+          <BounceCards
+            members={familyMembers}
+            containerWidth={containerWidth}
+            containerHeight={containerHeight}
+            animationDelay={0.5}
+            animationStagger={0.06}
+            easeType="elastic.out(1, 0.8)"
+            transformStyles={transformStyles}
+            enableHover={true}
+          />
+        </div>
       </div>
     </SectionContainer>
   );

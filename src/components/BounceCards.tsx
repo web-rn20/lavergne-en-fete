@@ -4,7 +4,6 @@ import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Image from 'next/image';
-import { usePartyMode } from './PartyMode';
 
 // Register ScrollTrigger plugin
 if (typeof window !== 'undefined') {
@@ -32,31 +31,30 @@ interface BounceCardsProps {
 export default function BounceCards({
   className = '',
   members = [],
-  containerWidth = 900,
-  containerHeight = 400,
-  animationDelay = 0.3,
-  animationStagger = 0.08,
+  containerWidth = 1200,
+  containerHeight = 600,
+  animationDelay = 0.5,
+  animationStagger = 0.06,
   easeType = 'elastic.out(1, 0.8)',
   transformStyles = [
-    'rotate(8deg) translate(-320px)',
-    'rotate(4deg) translate(-160px)',
-    'rotate(0deg) translate(0px)',
-    'rotate(-4deg) translate(160px)',
-    'rotate(-8deg) translate(320px)'
+    'rotate(5deg) translate(-320px, -30px)',
+    'rotate(0deg) translate(-160px, 0px)',
+    'rotate(-5deg) translate(0px, 0px)',
+    'rotate(5deg) translate(160px, 15px)',
+    'rotate(-5deg) translate(320px, -30px)'
   ],
   enableHover = true
 }: BounceCardsProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const hasAnimated = useRef(false);
-  const { isPartyModeActive } = usePartyMode();
 
-  // Initial animation on scroll
+  // Initial GSAP animation on scroll
   useEffect(() => {
     if (!containerRef.current || hasAnimated.current) return;
 
     const ctx = gsap.context(() => {
-      // Set initial state
-      gsap.set('.bounce-card', { scale: 0, opacity: 0 });
+      // Set initial state - scale to 0
+      gsap.set('.bounce-card', { scale: 0 });
 
       // Create scroll trigger animation
       ScrollTrigger.create({
@@ -65,14 +63,16 @@ export default function BounceCards({
         once: true,
         onEnter: () => {
           hasAnimated.current = true;
-          gsap.to('.bounce-card', {
-            scale: 1,
-            opacity: 1,
-            stagger: animationStagger,
-            ease: easeType,
-            delay: animationDelay,
-            duration: 1
-          });
+          gsap.fromTo(
+            '.bounce-card',
+            { scale: 0 },
+            {
+              scale: 1,
+              stagger: animationStagger,
+              ease: easeType,
+              delay: animationDelay
+            }
+          );
         }
       });
     }, containerRef);
@@ -80,36 +80,7 @@ export default function BounceCards({
     return () => ctx.revert();
   }, [animationDelay, animationStagger, easeType]);
 
-  // Party mode animation
-  useEffect(() => {
-    if (!containerRef.current) return;
-
-    const cards = containerRef.current.querySelectorAll('.bounce-card');
-
-    if (isPartyModeActive) {
-      cards.forEach((card, i) => {
-        gsap.to(card, {
-          rotation: `+=${i % 2 === 0 ? 3 : -3}`,
-          scale: 1.02,
-          duration: 0.3,
-          repeat: -1,
-          yoyo: true,
-          ease: 'power1.inOut'
-        });
-      });
-    } else {
-      cards.forEach((card, i) => {
-        gsap.killTweensOf(card);
-        gsap.to(card, {
-          rotation: 0,
-          scale: 1,
-          duration: 0.3,
-          ease: 'power2.out'
-        });
-      });
-    }
-  }, [isPartyModeActive]);
-
+  // Helper: remove rotation from transform string
   const getNoRotationTransform = (transformStr: string): string => {
     const hasRotate = /rotate\([\s\S]*?\)/.test(transformStr);
     if (hasRotate) {
@@ -121,18 +92,24 @@ export default function BounceCards({
     }
   };
 
+  // Helper: add offset to translate in transform string
   const getPushedTransform = (baseTransform: string, offsetX: number): string => {
-    const translateRegex = /translate\(([-0-9.]+)px\)/;
+    // Match translate with 1 or 2 values: translate(Xpx) or translate(Xpx, Ypx)
+    const translateRegex = /translate\(([-0-9.]+)px(?:,\s*([-0-9.]+)px)?\)/;
     const match = baseTransform.match(translateRegex);
     if (match) {
       const currentX = parseFloat(match[1]);
+      const currentY = match[2] ? parseFloat(match[2]) : 0;
       const newX = currentX + offsetX;
-      return baseTransform.replace(translateRegex, `translate(${newX}px)`);
+      return baseTransform.replace(translateRegex, `translate(${newX}px, ${currentY}px)`);
     } else {
-      return baseTransform === 'none' ? `translate(${offsetX}px)` : `${baseTransform} translate(${offsetX}px)`;
+      return baseTransform === 'none'
+        ? `translate(${offsetX}px, 0px)`
+        : `${baseTransform} translate(${offsetX}px, 0px)`;
     }
   };
 
+  // Push siblings away on hover
   const pushSiblings = (hoveredIdx: number) => {
     if (!enableHover || !containerRef.current) return;
     const q = gsap.utils.selector(containerRef);
@@ -144,6 +121,7 @@ export default function BounceCards({
       const baseTransform = transformStyles[i] || 'none';
 
       if (i === hoveredIdx) {
+        // Hovered card: remove rotation, slight scale up
         const noRotation = getNoRotationTransform(baseTransform);
         gsap.to(selector, {
           transform: noRotation,
@@ -154,11 +132,12 @@ export default function BounceCards({
           overwrite: 'auto'
         });
       } else {
-        const offsetX = i < hoveredIdx ? -80 : 80;
+        // Other cards: push away
+        const offsetX = i < hoveredIdx ? -160 : 160;
         const pushedTransform = getPushedTransform(baseTransform, offsetX);
 
         const distance = Math.abs(hoveredIdx - i);
-        const delay = distance * 0.03;
+        const delay = distance * 0.05;
 
         gsap.to(selector, {
           transform: pushedTransform,
@@ -173,6 +152,7 @@ export default function BounceCards({
     });
   };
 
+  // Reset all cards to original position
   const resetSiblings = () => {
     if (!enableHover || !containerRef.current) return;
     const q = gsap.utils.selector(containerRef);
@@ -205,34 +185,22 @@ export default function BounceCards({
       {members.map((member, idx) => (
         <div
           key={idx}
-          className={`bounce-card bounce-card-${idx} absolute flex flex-col items-center`}
+          className={`bounce-card bounce-card-${idx} absolute w-[150px] md:w-[300px] aspect-square border-8 border-white rounded-[30px] overflow-hidden cursor-pointer`}
           style={{
             transform: transformStyles[idx] || 'none',
-            zIndex: idx
+            zIndex: idx,
+            pointerEvents: 'auto'
           }}
           onMouseEnter={() => pushSiblings(idx)}
           onMouseLeave={() => resetSiblings()}
         >
-          {/* Card with image */}
-          <div className="w-[140px] aspect-[4/5] border-4 border-brand-primary rounded-2xl overflow-hidden bg-brand-light">
-            <Image
-              src={member.image}
-              alt={`Photo de ${member.name}`}
-              fill
-              className="object-cover !relative"
-              sizes="140px"
-            />
-          </div>
-
-          {/* Name and description below card */}
-          <div className="mt-2 text-center">
-            <h3 className="font-yanone text-lg text-brand-accent-deep font-semibold leading-tight">
-              {member.name}
-            </h3>
-            <p className="font-meow text-base text-brand-dark/70 leading-tight">
-              {member.description}
-            </p>
-          </div>
+          <Image
+            src={member.image}
+            alt={`Photo de ${member.name}`}
+            fill
+            className="object-cover pointer-events-none"
+            sizes="(max-width: 768px) 150px, 300px"
+          />
         </div>
       ))}
     </div>
