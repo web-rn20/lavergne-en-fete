@@ -59,21 +59,21 @@ END:VCALENDAR`;
 
 // Photos disponibles dans public/photos/parents (nouvelles photos recadrées)
 const parentPhotos = [
-  "/photos/parents/parents-lavergne-recadré-01.jpg",
-  "/photos/parents/parents-lavergne-recadré-02.jpg",
-  "/photos/parents/parents-lavergne-recadré-03.jpg",
-  "/photos/parents/parents-lavergne-recadré-04.jpg",
-  "/photos/parents/parents-lavergne-recadré-05.jpg",
-  "/photos/parents/parents-lavergne-recadré-06.jpg",
-  "/photos/parents/parents-lavergne-recadré-07.jpg",
-  "/photos/parents/parents-lavergne-recadré-08.jpg",
-  "/photos/parents/parents-lavergne-recadré-09.jpg",
-  "/photos/parents/parents-lavergne-recadré-10.jpg",
-  "/photos/parents/parents-lavergne-recadré-11.jpg",
-  "/photos/parents/parents-lavergne-recadré-12.jpg",
-  "/photos/parents/parents-lavergne-recadré-13.jpg",
-  "/photos/parents/parents-lavergne-recadré-14.jpg",
-  "/photos/parents/parents-lavergne-recadré-15.jpg",
+  "/photos/parents/parents-lavergne-recadre-01.jpg",
+  "/photos/parents/parents-lavergne-recadre-02.jpg",
+  "/photos/parents/parents-lavergne-recadre-03.jpg",
+  "/photos/parents/parents-lavergne-recadre-04.jpg",
+  "/photos/parents/parents-lavergne-recadre-05.jpg",
+  "/photos/parents/parents-lavergne-recadre-06.jpg",
+  "/photos/parents/parents-lavergne-recadre-07.jpg",
+  "/photos/parents/parents-lavergne-recadre-08.jpg",
+  "/photos/parents/parents-lavergne-recadre-09.jpg",
+  "/photos/parents/parents-lavergne-recadre-10.jpg",
+  "/photos/parents/parents-lavergne-recadre-11.jpg",
+  "/photos/parents/parents-lavergne-recadre-12.jpg",
+  "/photos/parents/parents-lavergne-recadre-13.jpg",
+  "/photos/parents/parents-lavergne-recadre-14.jpg",
+  "/photos/parents/parents-lavergne-recadre-15.jpg",
 ];
 
 // Distribution des photos dans les colonnes
