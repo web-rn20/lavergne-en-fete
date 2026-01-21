@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
 import BounceCards from './BounceCards';
 import SectionContainer from './SectionContainer';
 
@@ -42,31 +41,26 @@ export default function FamilyPhotos() {
           La Famille
         </h2>
         <p className="text-brand-dark/70 text-center max-w-2xl mb-12 lg:mb-16">
-          En 2025, nous avons fêté plein de choses, nos 30 ans de mariage, les 27 ans de Romain, les 25 ans de Maxime et les 20 ans de Jade.<br />
+          En 2025, nous avons fêté plein de choses, nos 30 ans de mariage, les 25 ans de Maxime et les 20 ans de Jade.<br />
           Cela mérite d&apos;être partagé avec famille et amis lors d&apos;une soirée musicale et festive.
         </p>
 
-        {/* Mobile : affichage en colonne verticale */}
+        {/* Mobile : affichage en colonne verticale avec BounceCards */}
         {isMobile ? (
-          <div className="flex flex-col gap-6 w-full max-w-sm">
-            {familyImages.map((src, index) => (
-              <div
-                key={src}
-                className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden"
-                style={{
-                  transform: `rotate(${index % 2 === 0 ? 2 : -2}deg)`,
-                }}
-              >
-                <Image
-                  src={src}
-                  alt={`Photo de famille ${index + 1}`}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 400px"
-                />
-              </div>
-            ))}
-          </div>
+          <BounceCards
+            images={familyImages}
+            containerWidth={320}
+            containerHeight={1400}
+            transformStyles={[
+              'rotate(2deg) translateY(-560px)',
+              'rotate(-2deg) translateY(-280px)',
+              'rotate(2deg) translateY(0px)',
+              'rotate(-2deg) translateY(280px)',
+              'rotate(2deg) translateY(560px)'
+            ]}
+            enableHover={false}
+            className="mx-auto"
+          />
         ) : (
           /* Desktop : BounceCards agrandi */
           <BounceCards

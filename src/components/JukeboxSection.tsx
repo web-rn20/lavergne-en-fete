@@ -96,13 +96,13 @@ export default function JukeboxSection() {
               onSubmit={handleSubmit}
               className="bg-brand-light rounded-2xl p-6 md:p-8"
             >
-              {/* Champ Pseudo */}
+              {/* Champ Prénom */}
               <div className="mb-5">
                 <label
                   htmlFor="jukebox-pseudo"
                   className="block text-brand-dark font-medium mb-2"
                 >
-                  Ton pseudo *
+                  Prénom *
                 </label>
                 <input
                   type="text"
@@ -210,9 +210,6 @@ export default function JukeboxSection() {
                 </button>
               </div>
             </form>
-            <p className="text-brand-light/50 text-center text-sm mt-4">
-              Tu peux envoyer plusieurs suggestions, ton pseudo sera conservé !
-            </p>
 
             {/* Lien direct vers la playlist Deezer - Plus visible */}
             <div className="mt-8 text-center">
@@ -240,20 +237,6 @@ export default function JukeboxSection() {
                   />
                 </svg>
                 <span>Ouvrir la playlist Deezer</span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                  />
-                </svg>
               </a>
               <p className="text-brand-light/50 text-sm mt-3">
                 Ajoute directement tes titres dans la playlist collaborative
@@ -326,7 +309,7 @@ export default function JukeboxSection() {
                     frameBorder="0"
                     allowTransparency={true}
                     allow="encrypted-media; clipboard-write"
-                    className="w-full"
+                    className="w-full lg:h-[580px]"
                   />
                 </motion.div>
               </AnimatePresence>

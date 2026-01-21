@@ -785,7 +785,7 @@ export default function RSVPForm() {
         {/* Bannière date limite - très visible */}
         <div className="mb-6 p-4 bg-brand-primary/10 border-2 border-brand-primary rounded-xl text-center">
           <p className="font-oswald text-lg md:text-xl text-brand-primary uppercase tracking-wide">
-            Granny ferme les listes le 29 mars, ne tardez pas !
+            Ne tardez pas, les inscriptions s&apos;arrêtent le 29 mars !
           </p>
         </div>
 
