@@ -55,7 +55,7 @@ export default function Countdown() {
   // Évite le flash de 0 au chargement côté serveur
   if (!mounted) {
     return (
-      <SectionContainer id="countdown" className="py-12 md:py-20 lg:py-24 bg-brand-light">
+      <SectionContainer id="countdown" className="py-12 md:py-20 lg:py-24 bg-brand-cream">
         <div className="max-w-5xl mx-auto text-center">
           <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl text-brand-dark mb-12 lg:mb-16">
             Compte à rebours
@@ -63,7 +63,7 @@ export default function Countdown() {
           <div className="grid auto-cols-max grid-flow-col gap-5 md:gap-8 lg:gap-12 justify-center">
             {["jours", "heures", "min", "sec"].map((label) => (
               <div key={label} className="flex flex-col items-center">
-                <span className="font-oswald text-5xl md:text-6xl lg:text-8xl xl:text-9xl font-bold text-brand-accent-deep">
+                <span className="font-oswald text-5xl md:text-6xl lg:text-8xl xl:text-9xl font-bold text-brand-primary">
                   --
                 </span>
                 <span className="font-montserrat text-sm md:text-base lg:text-lg text-brand-dark uppercase tracking-wide mt-2 lg:mt-4">
@@ -85,7 +85,7 @@ export default function Countdown() {
   ];
 
   return (
-    <SectionContainer id="countdown" className="py-12 md:py-20 lg:py-24 bg-brand-light">
+    <SectionContainer id="countdown" className="py-12 md:py-20 lg:py-24 bg-brand-cream">
       <div className="max-w-5xl mx-auto text-center">
         <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl text-brand-dark mb-12 lg:mb-16">
           Compte à rebours
@@ -94,7 +94,7 @@ export default function Countdown() {
           {timeUnits.map(({ value, label }) => (
             <div key={label} className="flex flex-col items-center">
               <span
-                className="font-oswald text-5xl md:text-6xl lg:text-8xl xl:text-9xl font-bold text-brand-accent-deep"
+                className="font-oswald text-5xl md:text-6xl lg:text-8xl xl:text-9xl font-bold text-brand-primary"
                 style={{ "--value": value } as React.CSSProperties}
                 aria-live="polite"
                 aria-label={`${value} ${label}`}

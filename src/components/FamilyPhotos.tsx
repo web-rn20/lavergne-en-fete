@@ -35,9 +35,9 @@ export default function FamilyPhotos() {
   }, []);
 
   return (
-    <SectionContainer id="famille" className="py-12 md:py-20 lg:py-24 bg-brand-light">
+    <SectionContainer id="famille" className="py-12 md:py-20 lg:py-24 bg-brand-cream">
       <div className="max-w-6xl mx-auto flex flex-col items-center justify-center px-4">
-        <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl text-brand-accent-deep mb-4 text-center">
+        <h2 className="font-serif text-4xl md:text-5xl lg:text-6xl text-brand-primary mb-4 text-center">
           La Famille
         </h2>
         <p className="text-brand-dark/70 text-center max-w-2xl mb-12 lg:mb-16">

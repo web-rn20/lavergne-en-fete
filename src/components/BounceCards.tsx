@@ -159,7 +159,7 @@ export default function BounceCards({
       {images.map((src, idx) => (
         <div
           key={idx}
-          className={`bounce-card bounce-card-${idx} absolute w-[150px] md:w-[300px] aspect-square border-8 border-white rounded-[30px] overflow-hidden`}
+          className={`bounce-card bounce-card-${idx} absolute w-[150px] md:w-[300px] aspect-square border-8 border-brand-cream rounded-[30px] overflow-hidden`}
           style={{
             transform: transformStyles[idx] || 'none',
             zIndex: idx

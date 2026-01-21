@@ -19,7 +19,7 @@ const programSteps: ProgramStep[] = [
     title: "Début des Festivités",
     description: "Accueil & Rafraîchissements.",
     icon: MapPin,
-    bgColor: "bg-brand-light", // Lavender Blush
+    bgColor: "bg-brand-cream", // Lavender Blush
   },
   {
     time: "19h00 - 22h00",
@@ -33,7 +33,7 @@ const programSteps: ProgramStep[] = [
     title: "Jusqu'à épuisement des fûts !",
     description: "Fiesta & Scène ouverte pour ceux qui veulent jouer un morceau.",
     icon: PartyPopper,
-    bgColor: "bg-brand-light", // Lavender Blush
+    bgColor: "bg-brand-cream", // Lavender Blush
   },
   {
     time: "Toute la soirée",
@@ -92,8 +92,8 @@ function ProgramStepCard({
       >
         {/* Icône dans un cercle */}
         <div className="flex items-center gap-4 mb-3">
-          <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-brand-accent-deep flex items-center justify-center flex-shrink-0">
-            <Icon className="w-6 h-6 md:w-7 md:h-7 text-brand-light" />
+          <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-brand-primary flex items-center justify-center flex-shrink-0">
+            <Icon className="w-6 h-6 md:w-7 md:h-7 text-brand-cream" />
           </div>
           {/* Heure en Oswald très gros et coloré */}
           <span className="font-oswald text-3xl md:text-4xl text-brand-primary font-bold">
@@ -136,15 +136,15 @@ function SolidPathDesktop() {
            Q 108 880, 64 960
            Q 20 1040, 64 1120"
         fill="none"
-        stroke="#f45b69"
+        stroke="#AD2831"
         strokeWidth="3"
         className="opacity-40"
       />
       {/* Points de connexion aux étapes */}
-      <circle cx="64" cy="100" r="8" fill="#f45b69" />
-      <circle cx="64" cy="340" r="8" fill="#f45b69" />
-      <circle cx="64" cy="580" r="8" fill="#f45b69" />
-      <circle cx="64" cy="820" r="8" fill="#f45b69" />
+      <circle cx="64" cy="100" r="8" fill="#AD2831" />
+      <circle cx="64" cy="340" r="8" fill="#AD2831" />
+      <circle cx="64" cy="580" r="8" fill="#AD2831" />
+      <circle cx="64" cy="820" r="8" fill="#AD2831" />
     </svg>
   );
 }
@@ -163,7 +163,7 @@ export default function FestiveProgram() {
   return (
     <SectionContainer
       id="programme-soiree"
-      className="py-16 md:py-24 bg-brand-light overflow-hidden"
+      className="py-16 md:py-24 bg-brand-cream overflow-hidden"
     >
       <section ref={sectionRef}>
         {/* Titre de la section avec animation */}
@@ -173,7 +173,7 @@ export default function FestiveProgram() {
           transition={{ type: "spring", stiffness: 100, damping: 20 }}
           className="text-center mb-16 md:mb-20"
         >
-          <h2 className="font-oswald text-4xl md:text-5xl lg:text-6xl text-brand-accent-deep mb-4">
+          <h2 className="font-oswald text-4xl md:text-5xl lg:text-6xl text-brand-primary mb-4">
             Le Chemin de la Fête
           </h2>
           <p className="font-montserrat text-lg md:text-xl text-brand-dark/70 max-w-lg mx-auto">

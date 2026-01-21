@@ -73,15 +73,15 @@ export default function JukeboxSection() {
   };
 
   return (
-    <SectionContainer id="jukebox" className="py-12 md:py-20 bg-brand-accent-deep">
+    <SectionContainer id="jukebox" className="py-12 md:py-20 bg-brand-darker">
       <div className="max-w-6xl mx-auto">
         {/* Titre de section */}
-        <h2 className="font-oswald text-4xl md:text-5xl text-brand-light text-center mb-4">
+        <h2 className="font-oswald text-4xl md:text-5xl text-brand-cream text-center mb-4">
           Le Jukebox des Invités
         </h2>
 
         {/* Introduction */}
-        <p className="text-brand-light/80 text-center mb-10 max-w-2xl mx-auto">
+        <p className="text-brand-cream/80 text-center mb-10 max-w-2xl mx-auto">
           À vous de jouer ! Proposez vos pépites et découvrez la playlist de la soirée en direct.
         </p>
 
@@ -89,12 +89,12 @@ export default function JukeboxSection() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
           {/* Colonne gauche : Formulaire de suggestion */}
           <div>
-            <h3 className="font-oswald text-2xl text-brand-light mb-4">
+            <h3 className="font-oswald text-2xl text-brand-cream mb-4">
               Propose un morceau
             </h3>
             <form
               onSubmit={handleSubmit}
-              className="bg-brand-light rounded-2xl p-6 md:p-8"
+              className="bg-brand-cream rounded-2xl p-6 md:p-8"
             >
               {/* Champ Prénom */}
               <div className="mb-5">
@@ -213,14 +213,14 @@ export default function JukeboxSection() {
 
             {/* Lien direct vers la playlist Deezer - Plus visible */}
             <div className="mt-8 text-center">
-              <p className="text-brand-light/80 text-base mb-4 font-medium">
+              <p className="text-brand-cream/80 text-base mb-4 font-medium">
                 Envie d&apos;ajouter tout un album ou plusieurs titres d&apos;un coup ?
               </p>
               <a
                 href="https://link.deezer.com/s/32dM9lsoKhVK6jpTm2KjQ"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-3 bg-brand-primary hover:bg-brand-primary/90 text-white font-bold text-lg px-6 py-4 rounded-xl transition-all duration-200 hover:scale-105"
+                className="inline-flex items-center gap-3 bg-brand-light hover:bg-brand-medium text-brand-cream font-bold text-lg px-6 py-4 rounded-xl transition-all duration-200 hover:scale-105"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -238,7 +238,7 @@ export default function JukeboxSection() {
                 </svg>
                 <span>Ouvrir la playlist Deezer</span>
               </a>
-              <p className="text-brand-light/50 text-sm mt-3">
+              <p className="text-brand-cream/50 text-sm mt-3">
                 Ajoute directement tes titres dans la playlist collaborative
               </p>
             </div>
@@ -246,7 +246,7 @@ export default function JukeboxSection() {
 
           {/* Colonne droite : Playlist Deezer */}
           <div className="flex flex-col h-full">
-            <h3 className="font-oswald text-2xl text-brand-light mb-4">
+            <h3 className="font-oswald text-2xl text-brand-cream mb-4">
               La Playlist en direct
             </h3>
             <div className="relative flex-1">
@@ -258,33 +258,33 @@ export default function JukeboxSection() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.3 }}
-                    className="absolute -top-2 left-1/2 -translate-x-1/2 z-10 bg-brand-primary px-4 py-2 rounded-full flex items-center gap-2"
+                    className="absolute -top-2 left-1/2 -translate-x-1/2 z-10 bg-brand-light px-4 py-2 rounded-full flex items-center gap-2"
                   >
                     {/* Notes de musique animées */}
                     <div className="flex gap-1">
                       <motion.span
                         animate={{ y: [0, -4, 0] }}
                         transition={{ duration: 0.5, repeat: Infinity, delay: 0 }}
-                        className="text-brand-light text-sm"
+                        className="text-brand-cream text-sm"
                       >
                         ♪
                       </motion.span>
                       <motion.span
                         animate={{ y: [0, -4, 0] }}
                         transition={{ duration: 0.5, repeat: Infinity, delay: 0.15 }}
-                        className="text-brand-light text-sm"
+                        className="text-brand-cream text-sm"
                       >
                         ♫
                       </motion.span>
                       <motion.span
                         animate={{ y: [0, -4, 0] }}
                         transition={{ duration: 0.5, repeat: Infinity, delay: 0.3 }}
-                        className="text-brand-light text-sm"
+                        className="text-brand-cream text-sm"
                       >
                         ♪
                       </motion.span>
                     </div>
-                    <span className="text-brand-light text-sm font-medium whitespace-nowrap">
+                    <span className="text-brand-cream text-sm font-medium whitespace-nowrap">
                       Synchronisation de la playlist...
                     </span>
                   </motion.div>
@@ -314,7 +314,7 @@ export default function JukeboxSection() {
                 </motion.div>
               </AnimatePresence>
             </div>
-            <p className="text-brand-light/50 text-center text-sm mt-4">
+            <p className="text-brand-cream/50 text-center text-sm mt-4">
               Retrouve ici les morceaux suggérés par les invités !
             </p>
           </div>

@@ -246,15 +246,15 @@ export default function HeroMurDesSouvenirs() {
         ))}
       </div>
 
-      {/* Overlay dégradé : transparent en haut vers bg-brand-light en bas */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-brand-light" />
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-brand-light/40 via-transparent to-transparent" />
-      <div className="pointer-events-none absolute inset-0 bg-brand-light/30" />
+      {/* Overlay dégradé : transparent en haut vers bg-brand-cream en bas */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-brand-cream" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-brand-cream/40 via-transparent to-transparent" />
+      <div className="pointer-events-none absolute inset-0 bg-brand-cream/30" />
 
       {/* Contenu du Hero centré */}
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
         {/* Conteneur avec fond Black Cherry - Réduit sur mobile */}
-        <div className="bg-brand-accent-deep p-4 sm:p-6 md:p-8 rounded-2xl max-w-fit text-brand-light">
+        <div className="bg-brand-primary p-4 sm:p-6 md:p-8 rounded-2xl max-w-fit text-brand-cream">
           <h1 className="font-oswald text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold mb-2 sm:mb-4">
             Véronique &amp; Christophe : 30 ans de mariage
           </h1>
@@ -309,7 +309,7 @@ export default function HeroMurDesSouvenirs() {
               href={generateGoogleCalendarUrl()}
               target="_blank"
               rel="noopener noreferrer"
-              className="block px-4 py-2 font-montserrat text-sm text-brand-dark hover:bg-brand-light transition-colors duration-200 whitespace-nowrap"
+              className="block px-4 py-2 font-montserrat text-sm text-brand-dark hover:bg-brand-cream transition-colors duration-200 whitespace-nowrap"
               onClick={() => setCalendarMenuOpen(false)}
             >
               Google Calendar
@@ -319,7 +319,7 @@ export default function HeroMurDesSouvenirs() {
                 downloadIcsFile();
                 setCalendarMenuOpen(false);
               }}
-              className="block w-full text-left px-4 py-2 font-montserrat text-sm text-brand-dark hover:bg-brand-light transition-colors duration-200 whitespace-nowrap border-none bg-transparent cursor-pointer"
+              className="block w-full text-left px-4 py-2 font-montserrat text-sm text-brand-dark hover:bg-brand-cream transition-colors duration-200 whitespace-nowrap border-none bg-transparent cursor-pointer"
             >
               Apple / Outlook (.ics)
             </button>
@@ -372,7 +372,7 @@ export default function HeroMurDesSouvenirs() {
               href={generateGoogleCalendarUrl()}
               target="_blank"
               rel="noopener noreferrer"
-              className="block px-4 py-2 font-montserrat text-sm text-brand-dark hover:bg-brand-light transition-colors duration-200 whitespace-nowrap"
+              className="block px-4 py-2 font-montserrat text-sm text-brand-dark hover:bg-brand-cream transition-colors duration-200 whitespace-nowrap"
               onClick={() => setCalendarMenuOpen(false)}
             >
               Google Calendar
@@ -382,7 +382,7 @@ export default function HeroMurDesSouvenirs() {
                 downloadIcsFile();
                 setCalendarMenuOpen(false);
               }}
-              className="block w-full text-left px-4 py-2 font-montserrat text-sm text-brand-dark hover:bg-brand-light transition-colors duration-200 whitespace-nowrap border-none bg-transparent cursor-pointer"
+              className="block w-full text-left px-4 py-2 font-montserrat text-sm text-brand-dark hover:bg-brand-cream transition-colors duration-200 whitespace-nowrap border-none bg-transparent cursor-pointer"
             >
               Apple / Outlook (.ics)
             </button>
