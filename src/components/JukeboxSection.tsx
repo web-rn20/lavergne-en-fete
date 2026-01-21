@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import SectionContainer from "@/components/SectionContainer";
 
 export default function JukeboxSection() {
@@ -9,6 +10,10 @@ export default function JukeboxSection() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  // État pour forcer le rechargement de l'iframe Deezer
+  const [playlistKey, setPlaylistKey] = useState(0);
+  // État pour l'indicateur de synchronisation
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,6 +51,13 @@ export default function JukeboxSection() {
         setSubmitStatus("success");
         // Vider seulement le champ musique, garder le pseudo
         setMusique("");
+        // Démarrer la synchronisation
+        setIsSyncing(true);
+        // Attendre 3 secondes avant de rafraîchir l'iframe
+        setTimeout(() => {
+          setPlaylistKey((prev) => prev + 1);
+          setIsSyncing(false);
+        }, 3000);
         setTimeout(() => setSubmitStatus("idle"), 5000);
       } else {
         setSubmitStatus("error");
@@ -74,7 +86,7 @@ export default function JukeboxSection() {
         </p>
 
         {/* Grille 2 colonnes */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
           {/* Colonne gauche : Formulaire de suggestion */}
           <div>
             <h3 className="font-oswald text-2xl text-brand-light mb-4">
@@ -201,24 +213,106 @@ export default function JukeboxSection() {
             <p className="text-brand-light/50 text-center text-sm mt-4">
               Tu peux envoyer plusieurs suggestions, ton pseudo sera conservé !
             </p>
+
+            {/* Lien direct vers la playlist Deezer */}
+            <div className="mt-6 text-center">
+              <a
+                href="https://link.deezer.com/s/32dM9lsoKhVK6jpTm2KjQ"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-brand-light/70 hover:text-brand-light text-sm underline underline-offset-2 transition-colors duration-200"
+              >
+                <span>Envie d&apos;ajouter tout un album ou plusieurs titres d&apos;un coup ?</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                  />
+                </svg>
+              </a>
+              <p className="text-brand-light/50 text-xs mt-1">
+                Rendez-vous directement sur la playlist Deezer
+              </p>
+            </div>
           </div>
 
           {/* Colonne droite : Playlist Deezer */}
-          <div>
+          <div className="flex flex-col h-full">
             <h3 className="font-oswald text-2xl text-brand-light mb-4">
               La Playlist en direct
             </h3>
-            <div className="rounded-2xl overflow-hidden bg-brand-dark">
-              <iframe
-                title="deezer-widget"
-                src="https://widget.deezer.com/widget/dark/playlist/14843323423"
-                width="100%"
-                height="300"
-                frameBorder="0"
-                allowTransparency={true}
-                allow="encrypted-media; clipboard-write"
-                className="w-full"
-              />
+            <div className="relative flex-1">
+              {/* Indicateur de synchronisation */}
+              <AnimatePresence>
+                {isSyncing && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.3 }}
+                    className="absolute -top-2 left-1/2 -translate-x-1/2 z-10 bg-brand-primary px-4 py-2 rounded-full flex items-center gap-2"
+                  >
+                    {/* Notes de musique animées */}
+                    <div className="flex gap-1">
+                      <motion.span
+                        animate={{ y: [0, -4, 0] }}
+                        transition={{ duration: 0.5, repeat: Infinity, delay: 0 }}
+                        className="text-brand-light text-sm"
+                      >
+                        ♪
+                      </motion.span>
+                      <motion.span
+                        animate={{ y: [0, -4, 0] }}
+                        transition={{ duration: 0.5, repeat: Infinity, delay: 0.15 }}
+                        className="text-brand-light text-sm"
+                      >
+                        ♫
+                      </motion.span>
+                      <motion.span
+                        animate={{ y: [0, -4, 0] }}
+                        transition={{ duration: 0.5, repeat: Infinity, delay: 0.3 }}
+                        className="text-brand-light text-sm"
+                      >
+                        ♪
+                      </motion.span>
+                    </div>
+                    <span className="text-brand-light text-sm font-medium whitespace-nowrap">
+                      Synchronisation de la playlist...
+                    </span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Widget Deezer avec animation */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={playlistKey}
+                  initial={{ opacity: 0.6, scale: 0.98 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0.6, scale: 0.98 }}
+                  transition={{ duration: 0.4, ease: "easeOut" }}
+                  className="rounded-2xl overflow-hidden bg-brand-dark"
+                >
+                  <iframe
+                    title="deezer-widget"
+                    src={`https://widget.deezer.com/widget/dark/playlist/14843323423?cache=${playlistKey}`}
+                    width="100%"
+                    height="450"
+                    frameBorder="0"
+                    allowTransparency={true}
+                    allow="encrypted-media; clipboard-write"
+                    className="w-full"
+                  />
+                </motion.div>
+              </AnimatePresence>
             </div>
             <p className="text-brand-light/50 text-center text-sm mt-4">
               Retrouve ici les morceaux suggérés par les invités !

@@ -46,13 +46,13 @@ export default function Home() {
       {/* Programmation Musicale - La Scène de Granny */}
       <MusicProgramming />
 
-      {/* Le Jukebox des Invités - Suggestions musicales et playlist Deezer */}
-      <JukeboxSection />
-
       {/* Formulaire RSVP - Confirmation de présence */}
       <Suspense fallback={<RSVPFormFallback />}>
         <RSVPForm />
       </Suspense>
+
+      {/* Le Jukebox des Invités - Suggestions musicales et playlist Deezer */}
+      <JukeboxSection />
 
       {/* Section Logistique & Hébergement */}
       <LogisticsSection />

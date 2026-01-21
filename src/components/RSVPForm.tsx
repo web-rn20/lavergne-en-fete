@@ -782,6 +782,13 @@ export default function RSVPForm() {
           </p>
         )}
 
+        {/* Bannière date limite - très visible */}
+        <div className="mb-6 p-4 bg-brand-primary/10 border-2 border-brand-primary rounded-xl text-center">
+          <p className="font-oswald text-lg md:text-xl text-brand-primary uppercase tracking-wide">
+            Granny ferme les listes le 29 mars, ne trainez pas !
+          </p>
+        </div>
+
         <div className="bg-white rounded-2xl p-6 md:p-8">
           <form onSubmit={handleSubmit} className="space-y-6 font-montserrat">
             {/* Section Identification */}
