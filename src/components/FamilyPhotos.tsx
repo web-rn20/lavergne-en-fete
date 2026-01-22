@@ -41,13 +41,13 @@ const desktopTransformStyles = [
   'rotate(-5deg) translate(320px, -30px)'
 ];
 
-// Mobile transform styles - tighter fan to fit screen
+// Mobile transform styles - vertical stack with Y offsets
 const mobileTransformStyles = [
-  'rotate(8deg) translate(-120px, -15px)',
-  'rotate(4deg) translate(-60px, 0px)',
+  'rotate(3deg) translate(0px, -160px)',
+  'rotate(-2deg) translate(0px, -80px)',
   'rotate(0deg) translate(0px, 0px)',
-  'rotate(-4deg) translate(60px, 0px)',
-  'rotate(-8deg) translate(120px, -15px)'
+  'rotate(2deg) translate(0px, 80px)',
+  'rotate(-3deg) translate(0px, 160px)'
 ];
 
 export default function FamilyPhotos() {
@@ -55,6 +55,7 @@ export default function FamilyPhotos() {
   const [containerHeight, setContainerHeight] = useState(600);
   const [transformStyles, setTransformStyles] = useState(desktopTransformStyles);
   const [isClient, setIsClient] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
@@ -63,12 +64,14 @@ export default function FamilyPhotos() {
       const screenWidth = window.innerWidth;
 
       if (screenWidth < 768) {
-        // Mobile: compact fan
+        // Mobile: vertical stack with Y offsets
+        setIsMobile(true);
         setContainerWidth(Math.min(screenWidth - 32, 400));
-        setContainerHeight(350);
+        setContainerHeight(650);
         setTransformStyles(mobileTransformStyles);
       } else if (screenWidth < 1024) {
-        // Tablet: medium fan
+        // Tablet: medium horizontal fan
+        setIsMobile(false);
         setContainerWidth(Math.min(screenWidth - 64, 800));
         setContainerHeight(450);
         setTransformStyles([
@@ -79,7 +82,8 @@ export default function FamilyPhotos() {
           'rotate(-6deg) translate(200px, -20px)'
         ]);
       } else {
-        // Desktop: full fan
+        // Desktop: full horizontal fan
+        setIsMobile(false);
         setContainerWidth(1200);
         setContainerHeight(600);
         setTransformStyles(desktopTransformStyles);
@@ -138,6 +142,7 @@ export default function FamilyPhotos() {
             easeType="elastic.out(1, 0.8)"
             transformStyles={transformStyles}
             enableHover={true}
+            isMobile={isMobile}
           />
         </div>
       </div>
