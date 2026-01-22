@@ -492,7 +492,7 @@ export function generateInvitationHtml(data: Pick<InvitationEmailData, 'prenom'>
                 Samedi 27 juin 2026
               </p>
               <p style="color: ${colors.text}; font-size: 17px; margin: 0 0 40px 0;">
-                chez Granny, à partir de <strong style="color: ${colors.primary};">18h30</strong>
+                chez Granny, à partir de <strong style="color: ${colors.primary};">18h</strong>
               </p>
 
               <!-- Le programme musical -->
