@@ -44,11 +44,12 @@ export interface RSVPEmailData {
 
 // Styles communs pour les emails
 const colors = {
-  background: "#f6e8ea",
+  background: "#f6e8ea",      // Lavender Blush
+  emailBackground: "#F9F9F9", // Fond gris très léger pour emails
   white: "#ffffff",
-  primary: "#5a0001",
-  text: "#22181c",
-  accent: "#f45b69",
+  primary: "#f45b69",         // Bubblegum Pink - brand-primary
+  text: "#22181c",            // Coffee Bean - text-brand-dark
+  accent: "#5a0001",          // Black Cherry - brand-accent-deep
 };
 
 // Compter le nombre de personnes qui consomment de l'alcool
@@ -426,8 +427,14 @@ export interface InvitationEmailData {
 
 /**
  * Génère le HTML du template d'invitation (sans envoyer l'email)
+ * Design Flat & Faire-part avec effet carte posée
  */
 export function generateInvitationHtml(data: Pick<InvitationEmailData, 'prenom'>): string {
+  // Polices fallback pour emails (les polices custom sont souvent bloquées)
+  const fontTitle = "Impact, 'Arial Narrow', Helvetica, sans-serif"; // Style condensé (Yanone)
+  const fontScript = "'Brush Script MT', 'Segoe Script', cursive";   // Style manuscrit (Meow)
+  const fontBody = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
+
   return `
       <!DOCTYPE html>
       <html lang="fr">
@@ -436,72 +443,101 @@ export function generateInvitationHtml(data: Pick<InvitationEmailData, 'prenom'>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Invitation - La famille Lavergne</title>
       </head>
-      <body style="margin: 0; padding: 0; background-color: ${colors.white}; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
-        <div style="max-width: 600px; margin: 0 auto; background-color: ${colors.white}; padding: 60px 30px;">
+      <body style="margin: 0; padding: 0; background-color: ${colors.emailBackground}; font-family: ${fontBody};">
 
-          <!-- Contenu principal centré -->
-          <div style="text-align: center;">
+        <!-- Conteneur externe avec fond gris clair -->
+        <div style="background-color: ${colors.emailBackground}; padding: 40px 20px;">
 
-            <!-- Salutation -->
-            <p style="color: ${colors.text}; font-size: 18px; margin: 0 0 40px 0;">
-              Cher(e) ${data.prenom},
-            </p>
+          <!-- Carte blanche centrale avec bordure brand-primary en haut -->
+          <div style="max-width: 580px; margin: 0 auto; background-color: ${colors.white}; border-top: 8px solid ${colors.primary}; border-radius: 0 0 4px 4px;">
 
-            <!-- Accroche -->
-            <p style="color: ${colors.text}; line-height: 1.8; margin: 0 0 30px 0; font-size: 16px;">
-              En 2025, nous avons fêté plein de choses : nos <span style="color: ${colors.primary}; font-weight: 600;">30 ans de mariage</span>, les <span style="color: ${colors.primary}; font-weight: 600;">25 ans de Maxime</span> et les <span style="color: ${colors.primary}; font-weight: 600;">20 ans de Jade</span>.
-            </p>
+            <!-- Contenu de la carte -->
+            <div style="padding: 50px 40px; text-align: center;">
 
-            <!-- Transition -->
-            <p style="color: ${colors.text}; line-height: 1.8; margin: 0 0 40px 0; font-size: 16px;">
-              Cela mérite d'être partagé avec famille et amis lors d'une soirée musicale et festive.
-            </p>
+              <!-- En-tête avec titre style faire-part -->
+              <h1 style="font-family: ${fontTitle}; font-size: 32px; color: ${colors.text}; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 3px;">
+                30 Ans d'Amour
+              </h1>
+              <p style="font-family: ${fontScript}; font-size: 22px; color: ${colors.accent}; margin: 0 0 35px 0;">
+                Les noces de perle
+              </p>
 
-            <!-- Séparateur -->
-            <div style="width: 60px; height: 2px; background-color: ${colors.primary}; margin: 0 auto 40px auto;"></div>
+              <!-- Séparateur décoratif -->
+              <div style="width: 80px; height: 2px; background-color: ${colors.primary}; margin: 0 auto 35px auto;"></div>
 
-            <!-- L'invitation -->
-            <p style="color: ${colors.text}; line-height: 1.8; margin: 0 0 30px 0; font-size: 18px; font-weight: 500;">
-              On vous donne rendez-vous le<br>
-              <span style="color: ${colors.primary}; font-size: 22px; font-weight: 600;">samedi 27 juin 2026</span><br>
-              chez Granny à partir de <span style="color: ${colors.primary}; font-weight: 600;">[HEURE_A_PRECISER]</span>.
-            </p>
+              <!-- Salutation personnalisée -->
+              <p style="font-family: ${fontScript}; color: ${colors.text}; font-size: 24px; margin: 0 0 30px 0;">
+                Cher(e) ${data.prenom},
+              </p>
 
-            <!-- Le programme -->
-            <p style="color: ${colors.text}; line-height: 1.8; margin: 0 0 50px 0; font-size: 16px;">
-              L'occasion d'écouter et chanter avec<br>
-              <span style="color: ${colors.primary}; font-weight: 600;">Watts UP</span>, <span style="color: ${colors.primary}; font-weight: 600;">Steliophonie</span>, et <span style="color: ${colors.primary}; font-weight: 600;">[NOM_DU_3EME_GROUPE_OU_SURPRISE]</span> ?
-            </p>
+              <!-- Intro : l'accroche -->
+              <p style="color: ${colors.text}; line-height: 1.9; margin: 0 0 25px 0; font-size: 16px;">
+                En 2025, nous avons fêté plein de choses : nos <strong style="color: ${colors.primary};">30 ans de mariage</strong>,<br>
+                les <strong style="color: ${colors.primary};">25 ans de Maxime</strong> et les <strong style="color: ${colors.primary};">20 ans de Jade</strong>.
+              </p>
 
-            <!-- Bouton CTA -->
-            <div style="margin: 0 0 20px 0;">
-              <a href="${SITE_URL}" style="display: inline-block; background-color: ${colors.primary}; color: ${colors.white}; text-decoration: none; padding: 18px 50px; border-radius: 8px; font-size: 16px; font-weight: 600;">
-                Confirmer ma présence
-              </a>
+              <p style="color: ${colors.text}; line-height: 1.9; margin: 0 0 40px 0; font-size: 16px;">
+                Cela mérite d'être partagé avec famille et amis<br>
+                lors d'une soirée musicale et festive !
+              </p>
+
+              <!-- Séparateur -->
+              <div style="width: 50px; height: 1px; background-color: ${colors.text}; opacity: 0.2; margin: 0 auto 40px auto;"></div>
+
+              <!-- L'invitation principale -->
+              <p style="color: ${colors.text}; font-size: 17px; margin: 0 0 15px 0;">
+                Rendez-vous le
+              </p>
+              <p style="font-family: ${fontTitle}; color: ${colors.primary}; font-size: 28px; font-weight: 600; margin: 0 0 15px 0; letter-spacing: 1px;">
+                Samedi 27 juin 2026
+              </p>
+              <p style="color: ${colors.text}; font-size: 17px; margin: 0 0 40px 0;">
+                chez Granny, à partir de <strong style="color: ${colors.primary};">18h30</strong>
+              </p>
+
+              <!-- Le programme musical -->
+              <p style="color: ${colors.text}; line-height: 1.9; margin: 0 0 15px 0; font-size: 16px;">
+                L'occasion d'écouter et chanter avec
+              </p>
+              <p style="font-family: ${fontTitle}; font-size: 20px; margin: 0 0 10px 0; letter-spacing: 1px;">
+                <span style="color: ${colors.primary};">Watts UP</span>
+                <span style="color: ${colors.text}; opacity: 0.5;"> &bull; </span>
+                <span style="color: ${colors.primary};">Steliophonie</span>
+              </p>
+              <p style="font-family: ${fontScript}; color: ${colors.text}; font-size: 18px; margin: 0 0 50px 0; opacity: 0.8;">
+                ...et une scène ouverte pour les talents ?
+              </p>
+
+              <!-- Bouton CTA Flat Design -->
+              <div style="margin: 0 0 25px 0; padding: 20px 0;">
+                <a href="${SITE_URL}" style="display: inline-block; background-color: ${colors.primary}; color: ${colors.white}; text-decoration: none; padding: 18px 50px; border-radius: 12px; font-size: 16px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
+                  Confirmer ma présence
+                </a>
+              </div>
+
+              <!-- Date limite inscription -->
+              <p style="color: ${colors.text}; font-size: 14px; margin: 0 0 50px 0; opacity: 0.7;">
+                Merci de vous inscrire avant le <strong style="color: ${colors.primary};">29/03/2026</strong>
+              </p>
+
+              <!-- Séparateur -->
+              <div style="width: 80px; height: 2px; background-color: ${colors.primary}; margin: 0 auto 40px auto;"></div>
+
+              <!-- Footer : lien vers le site -->
+              <p style="color: ${colors.text}; font-size: 14px; line-height: 1.8; margin: 0 0 30px 0; opacity: 0.8;">
+                Découvrez plein de souvenirs et de bêtises sur le site :<br>
+                <a href="${SITE_URL}" style="color: ${colors.primary}; text-decoration: none; font-weight: 500;">${SITE_URL}</a>
+              </p>
+
+              <!-- Signature chaleureuse -->
+              <p style="font-family: ${fontScript}; color: ${colors.primary}; font-size: 22px; margin: 0 0 8px 0;">
+                On a hâte de vous retrouver !
+              </p>
+              <p style="color: ${colors.text}; font-size: 15px; font-weight: 600; margin: 0;">
+                — La famille Lavergne
+              </p>
+
             </div>
-
-            <!-- Date limite inscription -->
-            <p style="color: ${colors.text}; font-size: 14px; margin: 0 0 60px 0; opacity: 0.8;">
-              Merci de vous inscrire sur le site avant le <strong>29/03/2026</strong>.
-            </p>
-
-            <!-- Séparateur -->
-            <div style="width: 60px; height: 2px; background-color: ${colors.primary}; margin: 0 auto 40px auto;"></div>
-
-            <!-- Mot de la fin -->
-            <p style="color: ${colors.text}; line-height: 1.8; margin: 0 0 50px 0; font-size: 16px;">
-              Puis pour finir, découvrez plein de souvenirs et de bêtises sur le site :<br>
-              <a href="${SITE_URL}" style="color: ${colors.primary}; text-decoration: underline; font-weight: 500;">${SITE_URL}</a>
-            </p>
-
-            <!-- Signature -->
-            <p style="color: ${colors.primary}; font-size: 18px; font-weight: 600; margin: 0 0 10px 0;">
-              On a hâte de vous retrouver !
-            </p>
-            <p style="color: ${colors.text}; font-size: 16px; margin: 0;">
-              — La famille Lavergne
-            </p>
-
           </div>
         </div>
       </body>
