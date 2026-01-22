@@ -252,15 +252,6 @@ export default function BounceCards({
             className="object-cover pointer-events-none"
             sizes="(max-width: 768px) 75vw, 300px"
           />
-          {/* Name and description overlay */}
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent p-3 pointer-events-none">
-            <p className="font-yanone text-white text-xl md:text-2xl font-bold leading-tight">
-              {member.name}
-            </p>
-            <p className="font-meow text-white/90 text-sm md:text-base">
-              {member.description}
-            </p>
-          </div>
         </div>
       ))}
     </div>
