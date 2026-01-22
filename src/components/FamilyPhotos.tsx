@@ -41,13 +41,13 @@ const desktopTransformStyles = [
   'rotate(-5deg) translate(320px, -30px)'
 ];
 
-// Mobile transform styles - vertical stack with Y offsets
+// Mobile transform styles - vertical stack with larger Y offsets for big cards
 const mobileTransformStyles = [
-  'rotate(3deg) translate(0px, -160px)',
-  'rotate(-2deg) translate(0px, -80px)',
+  'rotate(3deg) translate(0px, -280px)',
+  'rotate(-2deg) translate(0px, -140px)',
   'rotate(0deg) translate(0px, 0px)',
-  'rotate(2deg) translate(0px, 80px)',
-  'rotate(-3deg) translate(0px, 160px)'
+  'rotate(2deg) translate(0px, 140px)',
+  'rotate(-3deg) translate(0px, 280px)'
 ];
 
 export default function FamilyPhotos() {
@@ -64,10 +64,10 @@ export default function FamilyPhotos() {
       const screenWidth = window.innerWidth;
 
       if (screenWidth < 768) {
-        // Mobile: vertical stack with Y offsets
+        // Mobile: vertical stack with Y offsets - large container for big spread cards
         setIsMobile(true);
         setContainerWidth(Math.min(screenWidth - 32, 400));
-        setContainerHeight(650);
+        setContainerHeight(1100);
         setTransformStyles(mobileTransformStyles);
       } else if (screenWidth < 1024) {
         // Tablet: medium horizontal fan

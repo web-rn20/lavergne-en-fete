@@ -176,8 +176,8 @@ export default function BounceCards({
         let pushedTransform: string;
 
         if (isMobile) {
-          // Mobile: push cards vertically (up or down)
-          const offsetY = i < hoveredIdx ? -80 : 80;
+          // Mobile: push cards vertically (up or down) - subtle offset since cards are already spread
+          const offsetY = i < hoveredIdx ? -30 : 30;
           pushedTransform = getPushedTransformY(baseTransform, offsetY);
         } else {
           // Desktop: push cards horizontally (left or right)
@@ -234,7 +234,7 @@ export default function BounceCards({
       {members.map((member, idx) => (
         <div
           key={idx}
-          className={`bounce-card bounce-card-${idx} absolute w-[150px] md:w-[300px] aspect-square border-8 border-white rounded-[30px] overflow-hidden cursor-pointer`}
+          className={`bounce-card bounce-card-${idx} absolute w-[85vw] max-w-[380px] md:w-[300px] aspect-[4/5] md:aspect-square border-8 border-white rounded-[30px] overflow-hidden cursor-pointer`}
           style={{
             transform: transformStyles[idx] || 'none',
             zIndex: idx,
@@ -248,7 +248,7 @@ export default function BounceCards({
             alt={`Photo de ${member.name}`}
             fill
             className="object-cover pointer-events-none"
-            sizes="(max-width: 768px) 150px, 300px"
+            sizes="(max-width: 768px) 85vw, 300px"
           />
         </div>
       ))}
