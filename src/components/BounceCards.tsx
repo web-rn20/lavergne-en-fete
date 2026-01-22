@@ -50,18 +50,29 @@ export default function BounceCards({
   const containerRef = useRef<HTMLDivElement>(null);
   const hasAnimated = useRef(false);
 
+  // Mobile vertical transform styles - cards spread vertically from the start
+  const mobileTransformStyles = [
+    'rotate(3deg) translateY(-180px)',
+    'rotate(-2deg) translateY(-90px)',
+    'rotate(0deg) translateY(0px)',
+    'rotate(2deg) translateY(90px)',
+    'rotate(-3deg) translateY(180px)'
+  ];
+
+  // Choose styles based on mobile/desktop
+  const activeStyles = isMobile ? mobileTransformStyles : transformStyles;
+
+  // Container dimensions for mobile
+  const activeWidth = isMobile ? '100%' : containerWidth;
+  const activeHeight = isMobile ? Math.max(800, containerHeight) : containerHeight;
+
   // Initial GSAP animation on scroll
   useEffect(() => {
     if (!containerRef.current || hasAnimated.current) return;
 
     const ctx = gsap.context(() => {
-      // Set initial state - scale to 0 and offset for bounce effect
-      if (isMobile) {
-        // Mobile: cards bounce from bottom to top
-        gsap.set('.bounce-card', { scale: 0, y: 100 });
-      } else {
-        gsap.set('.bounce-card', { scale: 0 });
-      }
+      // Set initial state - only scale to 0, let inline styles handle positioning
+      gsap.set('.bounce-card', { scale: 0 });
 
       // Create scroll trigger animation
       ScrollTrigger.create({
@@ -70,32 +81,14 @@ export default function BounceCards({
         once: true,
         onEnter: () => {
           hasAnimated.current = true;
-          if (isMobile) {
-            // Mobile: bounce from bottom with Y offset
-            gsap.fromTo(
-              '.bounce-card',
-              { scale: 0, y: 100 },
-              {
-                scale: 1,
-                y: 0,
-                stagger: animationStagger,
-                ease: easeType,
-                delay: animationDelay
-              }
-            );
-          } else {
-            // Desktop: standard scale animation
-            gsap.fromTo(
-              '.bounce-card',
-              { scale: 0 },
-              {
-                scale: 1,
-                stagger: animationStagger,
-                ease: easeType,
-                delay: animationDelay
-              }
-            );
-          }
+          // Only animate scale - don't override transform/y values
+          // This lets the cards animate to their natural positions defined by activeStyles
+          gsap.to('.bounce-card', {
+            scale: 1,
+            stagger: animationStagger,
+            ease: easeType,
+            delay: animationDelay
+          });
         }
       });
     }, containerRef);
@@ -134,7 +127,16 @@ export default function BounceCards({
 
   // Helper: add offset Y to translate in transform string (Mobile)
   const getPushedTransformY = (baseTransform: string, offsetY: number): string => {
-    // Match translate with 1 or 2 values: translate(Xpx) or translate(Xpx, Ypx)
+    // First check for translateY(Ypx) format (used in mobile styles)
+    const translateYRegex = /translateY\(([-0-9.]+)px\)/;
+    const matchY = baseTransform.match(translateYRegex);
+    if (matchY) {
+      const currentY = parseFloat(matchY[1]);
+      const newY = currentY + offsetY;
+      return baseTransform.replace(translateYRegex, `translateY(${newY}px)`);
+    }
+
+    // Then check for translate(Xpx, Ypx) format (desktop styles)
     const translateRegex = /translate\(([-0-9.]+)px(?:,\s*([-0-9.]+)px)?\)/;
     const match = baseTransform.match(translateRegex);
     if (match) {
@@ -144,8 +146,8 @@ export default function BounceCards({
       return baseTransform.replace(translateRegex, `translate(${currentX}px, ${newY}px)`);
     } else {
       return baseTransform === 'none'
-        ? `translate(0px, ${offsetY}px)`
-        : `${baseTransform} translate(0px, ${offsetY}px)`;
+        ? `translateY(${offsetY}px)`
+        : `${baseTransform} translateY(${offsetY}px)`;
     }
   };
 
@@ -158,7 +160,7 @@ export default function BounceCards({
       const selector = q(`.bounce-card-${i}`);
       gsap.killTweensOf(selector);
 
-      const baseTransform = transformStyles[i] || 'none';
+      const baseTransform = activeStyles[i] || 'none';
 
       if (i === hoveredIdx) {
         // Hovered card: remove rotation, slight scale up
@@ -176,8 +178,8 @@ export default function BounceCards({
         let pushedTransform: string;
 
         if (isMobile) {
-          // Mobile: push cards vertically (up or down) - subtle offset since cards are already spread
-          const offsetY = i < hoveredIdx ? -30 : 30;
+          // Mobile: push cards vertically (up or down) - subtle offset to stay on screen
+          const offsetY = i < hoveredIdx ? -40 : 40;
           pushedTransform = getPushedTransformY(baseTransform, offsetY);
         } else {
           // Desktop: push cards horizontally (left or right)
@@ -210,7 +212,7 @@ export default function BounceCards({
       const selector = q(`.bounce-card-${i}`);
       gsap.killTweensOf(selector);
 
-      const baseTransform = transformStyles[i] || 'none';
+      const baseTransform = activeStyles[i] || 'none';
       gsap.to(selector, {
         transform: baseTransform,
         scale: 1,
@@ -227,16 +229,16 @@ export default function BounceCards({
       className={`relative flex items-center justify-center ${className}`}
       ref={containerRef}
       style={{
-        width: containerWidth,
-        height: containerHeight
+        width: activeWidth,
+        height: activeHeight
       }}
     >
       {members.map((member, idx) => (
         <div
           key={idx}
-          className={`bounce-card bounce-card-${idx} absolute w-[75vw] max-w-[300px] md:w-[300px] aspect-[4/5] border-8 border-white rounded-[30px] overflow-hidden cursor-pointer`}
+          className={`bounce-card bounce-card-${idx} absolute ${isMobile ? 'w-[75vw] max-w-[280px]' : 'w-[300px]'} aspect-[4/5] border-8 border-white rounded-[30px] overflow-hidden cursor-pointer`}
           style={{
-            transform: transformStyles[idx] || 'none',
+            transform: activeStyles[idx] || 'none',
             zIndex: idx,
             pointerEvents: 'auto'
           }}
