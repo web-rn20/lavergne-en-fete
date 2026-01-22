@@ -773,9 +773,14 @@ export default function RSVPForm() {
 
         {/* Message d'accueil personnalisé */}
         {invite ? (
-          <p className="font-meow text-3xl md:text-4xl text-brand-primary text-center mb-8">
-            Bonjour {invite.prenom} !
-          </p>
+          <div className="text-center mb-8">
+            <p className="font-meow text-3xl md:text-4xl text-brand-primary">
+              Bonjour {invite.prenom} !
+            </p>
+            <p className="font-dosis text-sm text-brand-dark/80 mt-2">
+              Votre conjoint(e) et vos enfants sont également les bienvenus !
+            </p>
+          </div>
         ) : (
           <p className="text-brand-dark/70 text-center mb-8 font-montserrat">
             Veuillez vous identifier pour confirmer votre présence
