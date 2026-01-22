@@ -424,16 +424,11 @@ export interface InvitationEmailData {
   email: string;
 }
 
-export async function sendInvitationEmail(
-  data: InvitationEmailData
-): Promise<boolean> {
-  console.log("Tentative d'envoi email invitation à:", data.email);
-
-  try {
-    const transporter = getTransporter();
-    const fromEmail = process.env.SMTP_EMAIL;
-
-    const html = `
+/**
+ * Génère le HTML du template d'invitation (sans envoyer l'email)
+ */
+export function generateInvitationHtml(data: Pick<InvitationEmailData, 'prenom'>): string {
+  return `
       <!DOCTYPE html>
       <html lang="fr">
       <head>
@@ -529,6 +524,18 @@ export async function sendInvitationEmail(
       </body>
       </html>
     `;
+}
+
+export async function sendInvitationEmail(
+  data: InvitationEmailData
+): Promise<boolean> {
+  console.log("Tentative d'envoi email invitation à:", data.email);
+
+  try {
+    const transporter = getTransporter();
+    const fromEmail = process.env.SMTP_EMAIL;
+
+    const html = generateInvitationHtml(data);
 
     console.log("--- ENVOI EMAIL INVITATION ---");
     console.log("From:", fromEmail);
@@ -563,21 +570,16 @@ export interface ReminderEmailData {
   inviteId?: string;
 }
 
-export async function sendReminderEmail(
-  data: ReminderEmailData
-): Promise<boolean> {
-  console.log("Tentative d'envoi email relance à:", data.email);
+/**
+ * Génère le HTML du template de relance (sans envoyer l'email)
+ */
+export function generateReminderHtml(data: Pick<ReminderEmailData, 'prenom' | 'inviteId'>): string {
+  // Construire le lien RSVP avec l'ID de l'invité si disponible
+  const rsvpLink = data.inviteId
+    ? `${SITE_URL}?id=${encodeURIComponent(data.inviteId)}`
+    : SITE_URL;
 
-  try {
-    const transporter = getTransporter();
-    const fromEmail = process.env.SMTP_EMAIL;
-
-    // Construire le lien RSVP avec l'ID de l'invité si disponible
-    const rsvpLink = data.inviteId
-      ? `${SITE_URL}?id=${encodeURIComponent(data.inviteId)}`
-      : SITE_URL;
-
-    const html = `
+  return `
       <!DOCTYPE html>
       <html lang="fr">
       <head>
@@ -663,6 +665,18 @@ export async function sendReminderEmail(
       </body>
       </html>
     `;
+}
+
+export async function sendReminderEmail(
+  data: ReminderEmailData
+): Promise<boolean> {
+  console.log("Tentative d'envoi email relance à:", data.email);
+
+  try {
+    const transporter = getTransporter();
+    const fromEmail = process.env.SMTP_EMAIL;
+
+    const html = generateReminderHtml(data);
 
     console.log("--- ENVOI EMAIL RELANCE ---");
     console.log("From:", fromEmail);
