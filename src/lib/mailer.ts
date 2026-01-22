@@ -473,7 +473,7 @@ export function generateInvitationHtml(data: Pick<InvitationEmailData, 'prenom'>
               <!-- Intro : l'accroche -->
               <p style="color: ${colors.text}; line-height: 1.9; margin: 0 0 25px 0; font-size: 16px;">
                 En 2025, nous avons fêté plein de choses : nos <strong style="color: ${colors.primary};">30 ans de mariage</strong>,<br>
-                les <strong style="color: ${colors.primary};">25 ans de Maxime</strong> et les <strong style="color: ${colors.primary};">20 ans de Jade</strong>.
+                les <strong style="color: ${colors.primary};">27 ans de Romain</strong>, les <strong style="color: ${colors.primary};">25 ans de Maxime</strong> et les <strong style="color: ${colors.primary};">20 ans de Jade</strong>.
               </p>
 
               <p style="color: ${colors.text}; line-height: 1.9; margin: 0 0 40px 0; font-size: 16px;">
@@ -492,7 +492,7 @@ export function generateInvitationHtml(data: Pick<InvitationEmailData, 'prenom'>
                 Samedi 27 juin 2026
               </p>
               <p style="color: ${colors.text}; font-size: 17px; margin: 0 0 40px 0;">
-                chez Granny, à partir de <strong style="color: ${colors.primary};">18h30</strong>
+                chez Granny, à partir de <strong style="color: ${colors.primary};">18h</strong>
               </p>
 
               <!-- Le programme musical -->
