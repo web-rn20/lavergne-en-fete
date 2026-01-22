@@ -41,13 +41,13 @@ const desktopTransformStyles = [
   'rotate(-5deg) translate(320px, -30px)'
 ];
 
-// Mobile transform styles - vertical stack with larger Y offsets for big cards
+// Mobile transform styles - vertical stack with Y offsets for expanded view
 const mobileTransformStyles = [
-  'rotate(3deg) translate(0px, -280px)',
-  'rotate(-2deg) translate(0px, -140px)',
-  'rotate(0deg) translate(0px, 0px)',
-  'rotate(2deg) translate(0px, 140px)',
-  'rotate(-3deg) translate(0px, 280px)'
+  'rotate(3deg) translate(0px, -180px)',
+  'rotate(-2deg) translate(0px, -90px)',
+  'rotate(4deg) translate(0px, 0px)',
+  'rotate(-3deg) translate(0px, 90px)',
+  'rotate(2deg) translate(0px, 180px)'
 ];
 
 export default function FamilyPhotos() {
@@ -64,10 +64,11 @@ export default function FamilyPhotos() {
       const screenWidth = window.innerWidth;
 
       if (screenWidth < 768) {
-        // Mobile: vertical stack with Y offsets - large container for big spread cards
+        // Mobile: vertical stack with Y offsets - container height for expanded cards
+        // Cards: 75vw * 5/4 ratio ≈ 375px, plus offsets -180 to +180 = 360px spread
         setIsMobile(true);
         setContainerWidth(Math.min(screenWidth - 32, 400));
-        setContainerHeight(1100);
+        setContainerHeight(850);
         setTransformStyles(mobileTransformStyles);
       } else if (screenWidth < 1024) {
         // Tablet: medium horizontal fan
@@ -111,7 +112,7 @@ export default function FamilyPhotos() {
             Cela mérite d&apos;être partagé avec famille et amis lors d&apos;une soirée musicale et festive.
           </p>
           {/* Loading placeholder */}
-          <div className="h-[600px]" />
+          <div className="h-[850px] md:h-[600px]" />
         </div>
       </SectionContainer>
     );
