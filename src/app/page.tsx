@@ -61,9 +61,15 @@ export default function Home() {
       <GuestbookSection />
 
       {/* Footer */}
-      <SectionContainer as="footer" className="py-8 bg-brand-dark text-brand-light text-center">
-        <p className="font-sans text-sm">
-          Avec amour, Romain, Maxime & Jade - 2026
+      <SectionContainer as="footer" className="py-10 bg-brand-dark text-brand-light text-center">
+        <h3 className="font-yanone text-2xl md:text-3xl mb-3">
+          Lavergne en Fête
+        </h3>
+        <p className="font-meow text-lg md:text-xl text-brand-light/80">
+          30 ans de bonheur, de musique et de souvenirs partagés.
+        </p>
+        <p className="font-meow text-lg md:text-xl text-brand-light/80 mt-1">
+          Une histoire de famille avant tout.
         </p>
       </SectionContainer>
     </main>
