@@ -234,7 +234,7 @@ export default function BounceCards({
       {members.map((member, idx) => (
         <div
           key={idx}
-          className={`bounce-card bounce-card-${idx} absolute w-[85vw] max-w-[380px] md:w-[300px] aspect-[4/5] md:aspect-square border-8 border-white rounded-[30px] overflow-hidden cursor-pointer`}
+          className={`bounce-card bounce-card-${idx} absolute w-[75vw] max-w-[300px] md:w-[300px] aspect-[4/5] border-8 border-white rounded-[30px] overflow-hidden cursor-pointer`}
           style={{
             transform: transformStyles[idx] || 'none',
             zIndex: idx,
@@ -248,8 +248,17 @@ export default function BounceCards({
             alt={`Photo de ${member.name}`}
             fill
             className="object-cover pointer-events-none"
-            sizes="(max-width: 768px) 85vw, 300px"
+            sizes="(max-width: 768px) 75vw, 300px"
           />
+          {/* Name and description overlay */}
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent p-3 pointer-events-none">
+            <p className="font-yanone text-white text-xl md:text-2xl font-bold leading-tight">
+              {member.name}
+            </p>
+            <p className="font-meow text-white/90 text-sm md:text-base">
+              {member.description}
+            </p>
+          </div>
         </div>
       ))}
     </div>
