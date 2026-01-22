@@ -17,7 +17,7 @@ const familyMembers: FamilyMember[] = [
   },
   {
     name: 'Romain',
-    description: 'Le Grand',
+    description: '27 ans',
     image: '/photos/famille/20nov05 (016).JPG',
   },
   {
@@ -108,7 +108,7 @@ export default function FamilyPhotos() {
             En 2025, nous avons fêté plein de choses...
           </p>
           <p className="font-montserrat text-sm text-brand-dark/70 text-center max-w-xl mb-6">
-            Nos 30 ans de mariage, les 25 ans de Maxime et les 20 ans de Jade.
+            Nos 30 ans de mariage, les 27 ans de Romain, les 25 ans de Maxime et les 20 ans de Jade.
             Cela mérite d&apos;être partagé avec famille et amis lors d&apos;une soirée musicale et festive.
           </p>
           {/* Loading placeholder */}
@@ -128,7 +128,7 @@ export default function FamilyPhotos() {
           En 2025, nous avons fêté plein de choses...
         </p>
         <p className="font-montserrat text-sm text-brand-dark/70 text-center max-w-xl mb-6">
-          Nos 30 ans de mariage, les 25 ans de Maxime et les 20 ans de Jade.
+          Nos 30 ans de mariage, les 27 ans de Romain, les 25 ans de Maxime et les 20 ans de Jade.
           Cela mérite d&apos;être partagé avec famille et amis lors d&apos;une soirée musicale et festive.
         </p>
 
