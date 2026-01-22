@@ -1,5 +1,8 @@
 import nodemailer from "nodemailer";
 
+// URL du site (configurable via variable d'environnement)
+const SITE_URL = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_SITE_URL || "https://lavergne-en-fete.vercel.app";
+
 // Configuration du transporteur Gmail
 function getTransporter() {
   const smtpEmail = process.env.SMTP_EMAIL;
@@ -409,4 +412,359 @@ export async function sendRSVPNotificationToHosts(
     console.error("Message:", error instanceof Error ? error.message : String(error));
     return false;
   }
+}
+
+// ============================================================================
+// TEMPLATE 1 : EMAIL D'INVITATION (LE LANCEMENT)
+// Design Flat & Festif avec police sans-serif
+// ============================================================================
+export interface InvitationEmailData {
+  prenom: string;
+  nom: string;
+  email: string;
+}
+
+export async function sendInvitationEmail(
+  data: InvitationEmailData
+): Promise<boolean> {
+  console.log("Tentative d'envoi email invitation à:", data.email);
+
+  try {
+    const transporter = getTransporter();
+    const fromEmail = process.env.SMTP_EMAIL;
+
+    const html = `
+      <!DOCTYPE html>
+      <html lang="fr">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Invitation Noces de Perle</title>
+      </head>
+      <body style="margin: 0; padding: 0; background-color: #f5f5f5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #f5f5f5; padding: 40px 20px;">
+
+          <!-- Header Bannière -->
+          <div style="background-color: ${colors.primary}; border-radius: 16px 16px 0 0; padding: 30px 20px; text-align: center;">
+            <h1 style="color: ${colors.white}; margin: 0; font-size: 24px; font-weight: 600; letter-spacing: 1px;">
+              Véronique & Christophe
+            </h1>
+            <p style="color: ${colors.white}; margin: 8px 0 0 0; font-size: 18px; opacity: 0.9;">
+              30 ans de mariage
+            </p>
+          </div>
+
+          <!-- Corps principal -->
+          <div style="background-color: ${colors.white}; padding: 35px 30px; border-radius: 0 0 16px 16px;">
+
+            <h2 style="color: ${colors.text}; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">
+              Salut ${data.prenom} !
+            </h2>
+
+            <p style="color: ${colors.text}; line-height: 1.7; margin: 0 0 20px 0; font-size: 16px;">
+              C'est officiel : <strong>le site est en ligne !</strong> 🎉
+            </p>
+
+            <p style="color: ${colors.text}; line-height: 1.7; margin: 0 0 25px 0; font-size: 16px;">
+              Rendez-vous sur notre site pour nous confirmer ta présence <strong>avant le 29 mars</strong>.
+            </p>
+
+            <!-- Bouton CTA Principal -->
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${SITE_URL}" style="display: inline-block; background-color: ${colors.accent}; color: ${colors.white}; text-decoration: none; padding: 16px 40px; border-radius: 50px; font-size: 16px; font-weight: 600; box-shadow: 0 4px 15px rgba(244, 91, 105, 0.3);">
+                Je confirme ma présence
+              </a>
+            </div>
+
+            <!-- Section Jukebox -->
+            <div style="background-color: ${colors.background}; border-radius: 12px; padding: 20px; margin: 25px 0;">
+              <h3 style="color: ${colors.primary}; margin: 0 0 10px 0; font-size: 18px; font-weight: 600;">
+                🎵 Le Jukebox
+              </h3>
+              <p style="color: ${colors.text}; margin: 0; font-size: 15px; line-height: 1.6;">
+                Viens choisir la playlist de la soirée ! Ajoute tes morceaux préférés pour faire vibrer la piste.
+              </p>
+            </div>
+
+            <!-- Section Scène Ouverte -->
+            <div style="background-color: ${colors.background}; border-radius: 12px; padding: 20px; margin: 25px 0;">
+              <h3 style="color: ${colors.primary}; margin: 0 0 10px 0; font-size: 18px; font-weight: 600;">
+                🎤 La Scène Ouverte
+              </h3>
+              <p style="color: ${colors.text}; margin: 0; font-size: 15px; line-height: 1.6;">
+                Guitare, triangle ou voix de rockstar... Prépare ton talent ! La scène t'attend après les concerts.
+              </p>
+            </div>
+
+            <!-- Horaires -->
+            <div style="border-left: 4px solid ${colors.accent}; padding-left: 20px; margin: 25px 0;">
+              <p style="color: ${colors.primary}; margin: 0 0 5px 0; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
+                Horaires
+              </p>
+              <p style="color: ${colors.text}; margin: 0; font-size: 18px; font-weight: 600;">
+                22h00 — Jusqu'à épuisement des fûts ! 🍺
+              </p>
+            </div>
+
+            <p style="color: ${colors.text}; line-height: 1.7; margin: 25px 0 0 0; font-size: 16px;">
+              On a hâte de te retrouver pour cette grande fête !
+            </p>
+          </div>
+
+          <!-- Footer -->
+          <div style="text-align: center; padding: 30px 20px;">
+            <p style="color: ${colors.text}; margin: 0 0 8px 0; font-size: 14px; font-style: italic; opacity: 0.8;">
+              On a hâte de vous retrouver pour célébrer cette belle tribu.
+            </p>
+            <p style="color: ${colors.text}; margin: 0 0 15px 0; font-size: 14px; font-weight: 600;">
+              — La famille Lavergne
+            </p>
+            <p style="margin: 0;">
+              <a href="mailto:verochris.lavergne@gmail.com" style="color: ${colors.primary}; font-size: 13px; text-decoration: none;">
+                verochris.lavergne@gmail.com
+              </a>
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    console.log("--- ENVOI EMAIL INVITATION ---");
+    console.log("From:", fromEmail);
+    console.log("To:", data.email);
+
+    await transporter.sendMail({
+      from: fromEmail,
+      replyTo: fromEmail,
+      to: data.email,
+      subject: "🎸 Prêt pour le concert ? Invitation Noces de Perle !",
+      html,
+    });
+
+    console.log("Email d'invitation envoyé avec succès à:", data.email);
+    return true;
+  } catch (error) {
+    console.error("--- ERREUR MAIL INVITATION ---");
+    console.error("Type:", error instanceof Error ? error.constructor.name : typeof error);
+    console.error("Message:", error instanceof Error ? error.message : String(error));
+    return false;
+  }
+}
+
+// ============================================================================
+// TEMPLATE 2 : EMAIL DE RELANCE (LE RAPPEL)
+// Envoyé aux invités qui n'ont pas encore répondu OUI ou NON
+// ============================================================================
+export interface ReminderEmailData {
+  prenom: string;
+  nom: string;
+  email: string;
+  inviteId?: string;
+}
+
+export async function sendReminderEmail(
+  data: ReminderEmailData
+): Promise<boolean> {
+  console.log("Tentative d'envoi email relance à:", data.email);
+
+  try {
+    const transporter = getTransporter();
+    const fromEmail = process.env.SMTP_EMAIL;
+
+    // Construire le lien RSVP avec l'ID de l'invité si disponible
+    const rsvpLink = data.inviteId
+      ? `${SITE_URL}?id=${encodeURIComponent(data.inviteId)}`
+      : SITE_URL;
+
+    const html = `
+      <!DOCTYPE html>
+      <html lang="fr">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Rappel - Noces de Perle</title>
+      </head>
+      <body style="margin: 0; padding: 0; background-color: #f5f5f5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #f5f5f5; padding: 40px 20px;">
+
+          <!-- Header Bannière -->
+          <div style="background-color: ${colors.primary}; border-radius: 16px 16px 0 0; padding: 30px 20px; text-align: center;">
+            <h1 style="color: ${colors.white}; margin: 0; font-size: 24px; font-weight: 600; letter-spacing: 1px;">
+              Véronique & Christophe
+            </h1>
+            <p style="color: ${colors.white}; margin: 8px 0 0 0; font-size: 18px; opacity: 0.9;">
+              30 ans de mariage
+            </p>
+          </div>
+
+          <!-- Corps principal -->
+          <div style="background-color: ${colors.white}; padding: 35px 30px; border-radius: 0 0 16px 16px;">
+
+            <h2 style="color: ${colors.text}; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">
+              Salut ${data.prenom} !
+            </h2>
+
+            <!-- Alerte Deadline -->
+            <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; border-radius: 0 8px 8px 0; padding: 15px 20px; margin: 0 0 25px 0;">
+              <p style="color: #856404; margin: 0; font-size: 15px; font-weight: 500;">
+                ⏳ Le 29 mars approche à grands pas !
+              </p>
+            </div>
+
+            <p style="color: ${colors.text}; line-height: 1.7; margin: 0 0 20px 0; font-size: 16px;">
+              On n'a pas encore reçu ta réponse pour les <strong>30 ans de mariage de Véro & Chris</strong>.
+            </p>
+
+            <p style="color: ${colors.text}; line-height: 1.7; margin: 0 0 25px 0; font-size: 16px;">
+              Inscris-toi vite pour que nous puissions prévoir les fûts en conséquence ! 🍺
+            </p>
+
+            <!-- Bouton CTA Principal -->
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${rsvpLink}" style="display: inline-block; background-color: ${colors.accent}; color: ${colors.white}; text-decoration: none; padding: 16px 40px; border-radius: 50px; font-size: 16px; font-weight: 600; box-shadow: 0 4px 15px rgba(244, 91, 105, 0.3);">
+                Je donne ma réponse
+              </a>
+            </div>
+
+            <!-- Rappel du programme -->
+            <div style="background-color: ${colors.background}; border-radius: 12px; padding: 20px; margin: 25px 0;">
+              <h3 style="color: ${colors.primary}; margin: 0 0 15px 0; font-size: 16px; font-weight: 600;">
+                Au programme :
+              </h3>
+              <ul style="margin: 0; padding-left: 20px; color: ${colors.text}; font-size: 15px; line-height: 1.8;">
+                <li>Concerts live</li>
+                <li>Scène ouverte pour les talents</li>
+                <li>Jukebox collaboratif</li>
+                <li>Soirée jusqu'à épuisement des fûts !</li>
+              </ul>
+            </div>
+
+            <p style="color: ${colors.text}; line-height: 1.7; margin: 25px 0 0 0; font-size: 16px;">
+              On espère te compter parmi nous !
+            </p>
+          </div>
+
+          <!-- Footer -->
+          <div style="text-align: center; padding: 30px 20px;">
+            <p style="color: ${colors.text}; margin: 0 0 8px 0; font-size: 14px; font-style: italic; opacity: 0.8;">
+              On a hâte de vous retrouver pour célébrer cette belle tribu.
+            </p>
+            <p style="color: ${colors.text}; margin: 0 0 15px 0; font-size: 14px; font-weight: 600;">
+              — La famille Lavergne
+            </p>
+            <p style="margin: 0;">
+              <a href="mailto:verochris.lavergne@gmail.com" style="color: ${colors.primary}; font-size: 13px; text-decoration: none;">
+                verochris.lavergne@gmail.com
+              </a>
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    console.log("--- ENVOI EMAIL RELANCE ---");
+    console.log("From:", fromEmail);
+    console.log("To:", data.email);
+
+    await transporter.sendMail({
+      from: fromEmail,
+      replyTo: fromEmail,
+      to: data.email,
+      subject: "⏳ Ne tardez pas ! Réponse attendue pour les 30 ans de Véro & Chris",
+      html,
+    });
+
+    console.log("Email de relance envoyé avec succès à:", data.email);
+    return true;
+  } catch (error) {
+    console.error("--- ERREUR MAIL RELANCE ---");
+    console.error("Type:", error instanceof Error ? error.constructor.name : typeof error);
+    console.error("Message:", error instanceof Error ? error.message : String(error));
+    return false;
+  }
+}
+
+// ============================================================================
+// ENVOI D'EMAILS EN MASSE
+// Fonction utilitaire pour envoyer des emails à plusieurs destinataires
+// ============================================================================
+export interface BulkEmailResult {
+  total: number;
+  success: number;
+  failed: number;
+  errors: Array<{ email: string; error: string }>;
+}
+
+export async function sendBulkInvitations(
+  recipients: InvitationEmailData[]
+): Promise<BulkEmailResult> {
+  console.log(`=== ENVOI EN MASSE: ${recipients.length} invitations ===`);
+
+  const result: BulkEmailResult = {
+    total: recipients.length,
+    success: 0,
+    failed: 0,
+    errors: [],
+  };
+
+  for (const recipient of recipients) {
+    try {
+      const success = await sendInvitationEmail(recipient);
+      if (success) {
+        result.success++;
+      } else {
+        result.failed++;
+        result.errors.push({ email: recipient.email, error: "Échec de l'envoi" });
+      }
+      // Petite pause pour éviter les limites de taux Gmail
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    } catch (error) {
+      result.failed++;
+      result.errors.push({
+        email: recipient.email,
+        error: error instanceof Error ? error.message : "Erreur inconnue"
+      });
+    }
+  }
+
+  console.log(`=== RÉSULTAT: ${result.success}/${result.total} envoyés ===`);
+  return result;
+}
+
+export async function sendBulkReminders(
+  recipients: ReminderEmailData[]
+): Promise<BulkEmailResult> {
+  console.log(`=== ENVOI EN MASSE: ${recipients.length} relances ===`);
+
+  const result: BulkEmailResult = {
+    total: recipients.length,
+    success: 0,
+    failed: 0,
+    errors: [],
+  };
+
+  for (const recipient of recipients) {
+    try {
+      const success = await sendReminderEmail(recipient);
+      if (success) {
+        result.success++;
+      } else {
+        result.failed++;
+        result.errors.push({ email: recipient.email, error: "Échec de l'envoi" });
+      }
+      // Petite pause pour éviter les limites de taux Gmail
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    } catch (error) {
+      result.failed++;
+      result.errors.push({
+        email: recipient.email,
+        error: error instanceof Error ? error.message : "Erreur inconnue"
+      });
+    }
+  }
+
+  console.log(`=== RÉSULTAT: ${result.success}/${result.total} envoyés ===`);
+  return result;
 }

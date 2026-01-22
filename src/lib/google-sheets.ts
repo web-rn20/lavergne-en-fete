@@ -1106,6 +1106,62 @@ export async function addRSVPReponse(
   }
 }
 
+// Interface pour un invité sans réponse (pour les relances)
+export interface InviteSansReponse {
+  id: string;
+  nom: string;
+  prenom: string;
+  email: string;
+}
+
+// Récupération des invités qui n'ont pas encore répondu (ni OUI ni NON)
+// Utilisé pour l'envoi de relances par email
+export async function getInvitesSansReponse(): Promise<InviteSansReponse[]> {
+  try {
+    console.log("[getInvitesSansReponse] Recherche des invités sans réponse...");
+
+    const doc = await getGoogleSheet();
+    const sheet = doc.sheetsByTitle["Liste_Invites"] || doc.sheetsByIndex[0];
+
+    if (!sheet) {
+      console.log("[getInvitesSansReponse] Onglet Liste_Invites non trouvé");
+      return [];
+    }
+
+    const rows = await sheet.getRows();
+    const invitesSansReponse: InviteSansReponse[] = [];
+
+    for (const row of rows) {
+      const reponseRaw = row.get("Réponse") || row.get("Reponse") || "";
+      const reponse = reponseRaw.toString().trim().toUpperCase();
+
+      // Si la réponse n'est ni OUI ni NON (vide ou autre), c'est un invité sans réponse
+      if (reponse !== "OUI" && reponse !== "NON") {
+        const id = getRowId(row) || "";
+        const email = row.get("Mail") || row.get("Email") || row.get("email") || "";
+
+        // Ne garder que les invités avec un email valide
+        if (email && email.includes("@")) {
+          invitesSansReponse.push({
+            id,
+            nom: getRowNom(row),
+            prenom: getRowPrenom(row),
+            email: email.toString().trim(),
+          });
+        }
+      }
+    }
+
+    console.log(`[getInvitesSansReponse] ${invitesSansReponse.length} invité(s) sans réponse trouvé(s)`);
+    invitesSansReponse.forEach(inv => console.log(`  - ${inv.prenom} ${inv.nom} (${inv.email})`));
+
+    return invitesSansReponse;
+  } catch (error) {
+    console.error("[getInvitesSansReponse] Erreur:", error);
+    return [];
+  }
+}
+
 // Suppression d'une réponse RSVP de l'onglet RSVP_Reponses
 // Utilisé lors d'une désinscription (réponse NON) pour nettoyer les données
 export async function deleteRSVPReponse(inviteId: string): Promise<boolean> {
