@@ -26,6 +26,7 @@ interface BounceCardsProps {
   easeType?: string;
   transformStyles?: string[];
   enableHover?: boolean;
+  isMobile?: boolean;
 }
 
 export default function BounceCards({
@@ -43,7 +44,8 @@ export default function BounceCards({
     'rotate(5deg) translate(160px, 15px)',
     'rotate(-5deg) translate(320px, -30px)'
   ],
-  enableHover = true
+  enableHover = true,
+  isMobile = false
 }: BounceCardsProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const hasAnimated = useRef(false);
@@ -53,8 +55,13 @@ export default function BounceCards({
     if (!containerRef.current || hasAnimated.current) return;
 
     const ctx = gsap.context(() => {
-      // Set initial state - scale to 0
-      gsap.set('.bounce-card', { scale: 0 });
+      // Set initial state - scale to 0 and offset for bounce effect
+      if (isMobile) {
+        // Mobile: cards bounce from bottom to top
+        gsap.set('.bounce-card', { scale: 0, y: 100 });
+      } else {
+        gsap.set('.bounce-card', { scale: 0 });
+      }
 
       // Create scroll trigger animation
       ScrollTrigger.create({
@@ -63,22 +70,38 @@ export default function BounceCards({
         once: true,
         onEnter: () => {
           hasAnimated.current = true;
-          gsap.fromTo(
-            '.bounce-card',
-            { scale: 0 },
-            {
-              scale: 1,
-              stagger: animationStagger,
-              ease: easeType,
-              delay: animationDelay
-            }
-          );
+          if (isMobile) {
+            // Mobile: bounce from bottom with Y offset
+            gsap.fromTo(
+              '.bounce-card',
+              { scale: 0, y: 100 },
+              {
+                scale: 1,
+                y: 0,
+                stagger: animationStagger,
+                ease: easeType,
+                delay: animationDelay
+              }
+            );
+          } else {
+            // Desktop: standard scale animation
+            gsap.fromTo(
+              '.bounce-card',
+              { scale: 0 },
+              {
+                scale: 1,
+                stagger: animationStagger,
+                ease: easeType,
+                delay: animationDelay
+              }
+            );
+          }
         }
       });
     }, containerRef);
 
     return () => ctx.revert();
-  }, [animationDelay, animationStagger, easeType]);
+  }, [animationDelay, animationStagger, easeType, isMobile]);
 
   // Helper: remove rotation from transform string
   const getNoRotationTransform = (transformStr: string): string => {
@@ -92,7 +115,7 @@ export default function BounceCards({
     }
   };
 
-  // Helper: add offset to translate in transform string
+  // Helper: add offset X to translate in transform string (Desktop)
   const getPushedTransform = (baseTransform: string, offsetX: number): string => {
     // Match translate with 1 or 2 values: translate(Xpx) or translate(Xpx, Ypx)
     const translateRegex = /translate\(([-0-9.]+)px(?:,\s*([-0-9.]+)px)?\)/;
@@ -109,7 +132,24 @@ export default function BounceCards({
     }
   };
 
-  // Push siblings away on hover
+  // Helper: add offset Y to translate in transform string (Mobile)
+  const getPushedTransformY = (baseTransform: string, offsetY: number): string => {
+    // Match translate with 1 or 2 values: translate(Xpx) or translate(Xpx, Ypx)
+    const translateRegex = /translate\(([-0-9.]+)px(?:,\s*([-0-9.]+)px)?\)/;
+    const match = baseTransform.match(translateRegex);
+    if (match) {
+      const currentX = parseFloat(match[1]);
+      const currentY = match[2] ? parseFloat(match[2]) : 0;
+      const newY = currentY + offsetY;
+      return baseTransform.replace(translateRegex, `translate(${currentX}px, ${newY}px)`);
+    } else {
+      return baseTransform === 'none'
+        ? `translate(0px, ${offsetY}px)`
+        : `${baseTransform} translate(0px, ${offsetY}px)`;
+    }
+  };
+
+  // Push siblings away on hover/tap
   const pushSiblings = (hoveredIdx: number) => {
     if (!enableHover || !containerRef.current) return;
     const q = gsap.utils.selector(containerRef);
@@ -133,8 +173,17 @@ export default function BounceCards({
         });
       } else {
         // Other cards: push away
-        const offsetX = i < hoveredIdx ? -160 : 160;
-        const pushedTransform = getPushedTransform(baseTransform, offsetX);
+        let pushedTransform: string;
+
+        if (isMobile) {
+          // Mobile: push cards vertically (up or down)
+          const offsetY = i < hoveredIdx ? -80 : 80;
+          pushedTransform = getPushedTransformY(baseTransform, offsetY);
+        } else {
+          // Desktop: push cards horizontally (left or right)
+          const offsetX = i < hoveredIdx ? -160 : 160;
+          pushedTransform = getPushedTransform(baseTransform, offsetX);
+        }
 
         const distance = Math.abs(hoveredIdx - i);
         const delay = distance * 0.05;
