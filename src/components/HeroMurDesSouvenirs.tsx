@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useEffect, useState, useRef } from "react";
 
 // Adresse du lieu de réception (cohérence avec LogisticsSection)
-const RECEPTION_ADDRESS = "35 chemin de l'église, 31700 Cornebarrieu";
+const RECEPTION_ADDRESS = "68 route de Seilh, 31700 Cornebarrieu";
 const RECEPTION_MAPS_LINK = "https://share.google/gu5MfJ1OBj9OsJiZY";
 
 // Détails de l'événement pour le calendrier

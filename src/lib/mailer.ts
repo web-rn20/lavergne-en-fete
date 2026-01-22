@@ -160,8 +160,9 @@ export async function sendRSVPConfirmationEmail(
 
           <!-- Footer -->
           <div style="text-align: center; font-size: 13px; color: ${colors.text}; opacity: 0.7;">
-            <p style="margin: 0;">Avec amour, Romain, Maxime & Jade</p>
-            <p style="margin: 8px 0 0 0;">Une question ? <a href="mailto:verochris.lavergne@gmail.com" style="color: ${colors.primary};">verochris.lavergne@gmail.com</a></p>
+            <p style="margin: 0; font-style: italic;">On a hâte de vous retrouver pour célébrer cette belle tribu.</p>
+            <p style="margin: 6px 0 0 0; font-weight: 600;">— La famille Lavergne</p>
+            <p style="margin: 12px 0 0 0;">Une question ? <a href="mailto:verochris.lavergne@gmail.com" style="color: ${colors.primary};">verochris.lavergne@gmail.com</a></p>
           </div>
         </div>
       </body>
@@ -257,8 +258,9 @@ export async function sendRSVPAbsenceEmail(
 
           <!-- Footer -->
           <div style="text-align: center; font-size: 13px; color: ${colors.text}; opacity: 0.7;">
-            <p style="margin: 0;">Avec amour, Romain, Maxime & Jade</p>
-            <p style="margin: 8px 0 0 0;">Une question ? <a href="mailto:verochris.lavergne@gmail.com" style="color: ${colors.primary};">verochris.lavergne@gmail.com</a></p>
+            <p style="margin: 0; font-style: italic;">On a hâte de vous retrouver pour célébrer cette belle tribu.</p>
+            <p style="margin: 6px 0 0 0; font-weight: 600;">— La famille Lavergne</p>
+            <p style="margin: 12px 0 0 0;">Une question ? <a href="mailto:verochris.lavergne@gmail.com" style="color: ${colors.primary};">verochris.lavergne@gmail.com</a></p>
           </div>
         </div>
       </body>
@@ -379,7 +381,9 @@ export async function sendRSVPNotificationToHosts(
 
           <!-- Footer -->
           <div style="text-align: center; font-size: 12px; color: ${colors.text}; opacity: 0.7;">
-            <p style="margin: 0;">Reçu le ${new Date().toLocaleString("fr-FR")}</p>
+            <p style="margin: 0; font-style: italic;">On a hâte de vous retrouver pour célébrer cette belle tribu.</p>
+            <p style="margin: 6px 0 0 0; font-weight: 600;">— La famille Lavergne</p>
+            <p style="margin: 12px 0 0 0;">Reçu le ${new Date().toLocaleString("fr-FR")}</p>
             <p style="margin: 8px 0 0 0;">Contact support : <a href="mailto:verochris.lavergne@gmail.com" style="color: ${colors.primary};">verochris.lavergne@gmail.com</a></p>
           </div>
         </div>

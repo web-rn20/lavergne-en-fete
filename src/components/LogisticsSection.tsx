@@ -4,11 +4,11 @@ import SectionContainer from "@/components/SectionContainer";
 
 // Adresse du lieu de réception (cohérence avec HeroMurDesSouvenirs)
 const RECEPTION_NAME = "Chez Granny";
-const RECEPTION_ADDRESS = "35 chemin de l'église, 31700 Cornebarrieu";
+const RECEPTION_ADDRESS = "68 route de Seilh, 31700 Cornebarrieu";
 const RECEPTION_ADDRESS_ENCODED = encodeURIComponent(`${RECEPTION_NAME}, ${RECEPTION_ADDRESS}`);
 
-// Lien Google Maps direct pour l'itinéraire vers le lieu
-const RECEPTION_MAPS_LINK = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent("Chez Granny, 35 chemin de l'église, 31700 Cornebarrieu")}`;
+// Lien Google Maps direct vers l'établissement Chez Granny
+const RECEPTION_MAPS_LINK = "https://maps.app.goo.gl/EB4UNveZ16V5teEb9";
 
 // Coordonnées exactes de Chez Granny pour le marqueur (plus précis)
 const CHEZ_GRANNY_COORDS = "43.6214,1.3343";
@@ -90,7 +90,7 @@ export default function LogisticsSection() {
           <div className="relative w-full rounded-2xl overflow-hidden bg-white">
             <div className="aspect-video md:aspect-[21/9]">
               <iframe
-                src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${RECEPTION_ADDRESS_ENCODED}&center=${CHEZ_GRANNY_COORDS}&zoom=16&maptype=roadmap`}
+                src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=Chez+Granny,+68+route+de+Seilh,+31700+Cornebarrieu,+France&zoom=16&maptype=roadmap`}
                 className="w-full h-full border-0"
                 allowFullScreen
                 loading="lazy"
