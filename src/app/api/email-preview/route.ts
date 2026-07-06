@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { generateInvitationHtml, generateReminderHtml } from "@/lib/mailer";
+import { generateInvitationHtml, generateReminderHtml, generateThankYouHtml } from "@/lib/mailer";
 
 // ============================================================================
 // API ROUTE: Prévisualisation des templates d'emails
@@ -13,7 +13,7 @@ import { generateInvitationHtml, generateReminderHtml } from "@/lib/mailer";
 // ============================================================================
 
 // Types de templates disponibles
-type EmailType = "invitation" | "reminder";
+type EmailType = "invitation" | "reminder" | "thankyou";
 
 // Données fictives pour l'aperçu
 const TEST_DATA = {
@@ -53,11 +53,11 @@ export async function GET(request: NextRequest) {
     }
 
     // Vérification du type de template
-    if (!type || !["invitation", "reminder"].includes(type)) {
+    if (!type || !["invitation", "reminder", "thankyou"].includes(type)) {
       return NextResponse.json(
         {
           success: false,
-          error: "Paramètre 'type' requis (valeurs: 'invitation' ou 'reminder')",
+          error: "Paramètre 'type' requis (valeurs: 'invitation', 'reminder' ou 'thankyou')",
         },
         { status: 400 }
       );
@@ -75,6 +75,9 @@ export async function GET(request: NextRequest) {
           prenom: TEST_DATA.prenom,
           inviteId: TEST_DATA.inviteId,
         });
+        break;
+      case "thankyou":
+        html = generateThankYouHtml();
         break;
       default:
         return NextResponse.json(

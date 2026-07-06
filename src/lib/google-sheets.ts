@@ -1162,6 +1162,62 @@ export async function getInvitesSansReponse(): Promise<InviteSansReponse[]> {
   }
 }
 
+// Interface pour un invité présent (pour les remerciements)
+export interface InvitePresent {
+  id: string;
+  nom: string;
+  prenom: string;
+  email: string;
+}
+
+// Récupération des invités présents (réponse OUI) avec un email valide
+// Utilisé pour l'envoi des emails de remerciement après la fête
+export async function getInvitesPresents(): Promise<InvitePresent[]> {
+  try {
+    console.log("[getInvitesPresents] Recherche des invités présents...");
+
+    const doc = await getGoogleSheet();
+    const sheet = doc.sheetsByTitle["Liste_Invites"] || doc.sheetsByIndex[0];
+
+    if (!sheet) {
+      console.log("[getInvitesPresents] Onglet Liste_Invites non trouvé");
+      return [];
+    }
+
+    const rows = await sheet.getRows();
+    const invitesPresents: InvitePresent[] = [];
+
+    for (const row of rows) {
+      const reponseRaw = row.get("Réponse") || row.get("Reponse") || "";
+      const reponse = reponseRaw.toString().trim().toUpperCase();
+
+      // Ne garder que les invités ayant répondu OUI
+      if (reponse === "OUI") {
+        const id = getRowId(row) || "";
+        const email = row.get("Mail") || row.get("Email") || row.get("email") || "";
+
+        // Ne garder que les invités avec un email valide
+        if (email && email.includes("@")) {
+          invitesPresents.push({
+            id,
+            nom: getRowNom(row),
+            prenom: getRowPrenom(row),
+            email: email.toString().trim(),
+          });
+        }
+      }
+    }
+
+    console.log(`[getInvitesPresents] ${invitesPresents.length} invité(s) présent(s) trouvé(s)`);
+    invitesPresents.forEach(inv => console.log(`  - ${inv.prenom} ${inv.nom} (${inv.email})`));
+
+    return invitesPresents;
+  } catch (error) {
+    console.error("[getInvitesPresents] Erreur:", error);
+    return [];
+  }
+}
+
 // Suppression d'une réponse RSVP de l'onglet RSVP_Reponses
 // Utilisé lors d'une désinscription (réponse NON) pour nettoyer les données
 export async function deleteRSVPReponse(inviteId: string): Promise<boolean> {

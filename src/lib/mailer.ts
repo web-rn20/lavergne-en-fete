@@ -720,6 +720,204 @@ export async function sendReminderEmail(
 }
 
 // ============================================================================
+// TEMPLATE 3 : EMAIL DE REMERCIEMENT (L'APRÈS-FÊTE)
+// Envoyé après la soirée aux invités présents, avec les liens des albums photos
+// ============================================================================
+export interface ThankYouEmailData {
+  prenom: string;
+  nom: string;
+  email: string;
+}
+
+// Liens vers les albums photos de la soirée
+const PHOTO_ALBUMS = {
+  photomaton: "https://photos.app.goo.gl/dcep3RCmGjo4xHfP8",
+  maudAntonio: "https://photos.app.goo.gl/Pe3x6VMXzcpEtdhx8",
+};
+
+/**
+ * Génère le HTML du template de remerciement (sans envoyer l'email)
+ * Design Flat & Faire-part, cohérent avec l'invitation
+ */
+export function generateThankYouHtml(): string {
+  // Polices fallback pour emails (les polices custom sont souvent bloquées)
+  const fontTitle = "Impact, 'Arial Narrow', Helvetica, sans-serif";
+  const fontScript = "'Brush Script MT', 'Segoe Script', cursive";
+  const fontBody = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
+
+  return `
+      <!DOCTYPE html>
+      <html lang="fr">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Merci - La famille Lavergne</title>
+      </head>
+      <body style="margin: 0; padding: 0; background-color: ${colors.emailBackground}; font-family: ${fontBody};">
+
+        <!-- Conteneur externe avec fond gris clair -->
+        <div style="background-color: ${colors.emailBackground}; padding: 40px 20px;">
+
+          <!-- Carte blanche centrale avec bordure brand-primary en haut -->
+          <div style="max-width: 580px; margin: 0 auto; background-color: ${colors.white}; border-top: 8px solid ${colors.primary}; border-radius: 0 0 4px 4px;">
+
+            <!-- Contenu de la carte -->
+            <div style="padding: 50px 40px;">
+
+              <!-- En-tête -->
+              <div style="text-align: center;">
+                <h1 style="font-family: ${fontTitle}; font-size: 32px; color: ${colors.text}; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 3px;">
+                  Merci à tous
+                </h1>
+                <p style="font-family: ${fontScript}; font-size: 22px; color: ${colors.accent}; margin: 0 0 35px 0;">
+                  Nos noces de perle
+                </p>
+                <!-- Séparateur décoratif -->
+                <div style="width: 80px; height: 2px; background-color: ${colors.primary}; margin: 0 auto 35px auto;"></div>
+              </div>
+
+              <!-- Corps du message -->
+              <p style="color: ${colors.text}; line-height: 1.9; margin: 0 0 20px 0; font-size: 16px;">
+                Bonjour à tous,
+              </p>
+
+              <p style="color: ${colors.text}; line-height: 1.9; margin: 0 0 20px 0; font-size: 16px;">
+                Merci d'avoir été à nos côtés pour fêter avec nous nos noces de perles.
+              </p>
+
+              <p style="color: ${colors.text}; line-height: 1.9; margin: 0 0 20px 0; font-size: 16px;">
+                Votre présence, vos sourires, vos mots, vos cadeaux nous ont beaucoup touchés.
+              </p>
+
+              <p style="color: ${colors.text}; line-height: 1.9; margin: 0 0 30px 0; font-size: 16px;">
+                Nous avons été ravis de passer ce moment avec vous et nous espérons que vos oreilles et vos papilles ont apprécié la soirée.
+              </p>
+
+              <!-- Bloc albums photos -->
+              <div style="background-color: ${colors.background}; border-radius: 12px; padding: 25px; margin: 0 0 30px 0; text-align: center;">
+                <h3 style="font-family: ${fontTitle}; color: ${colors.text}; margin: 0 0 8px 0; font-size: 20px; text-transform: uppercase; letter-spacing: 1px;">
+                  Les albums photos
+                </h3>
+                <p style="color: ${colors.text}; line-height: 1.7; margin: 0 0 25px 0; font-size: 15px; opacity: 0.85;">
+                  Voici les liens vers les albums photos de la soirée.
+                </p>
+
+                <!-- Bouton Photomaton -->
+                <div style="margin: 0 0 18px 0;">
+                  <a href="${PHOTO_ALBUMS.photomaton}" style="display: inline-block; background-color: ${colors.primary}; color: ${colors.white}; text-decoration: none; padding: 15px 40px; border-radius: 12px; font-size: 15px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
+                    Le photomaton
+                  </a>
+                </div>
+
+                <!-- Bouton Photos Maud & Antonio -->
+                <div style="margin: 0 0 12px 0;">
+                  <a href="${PHOTO_ALBUMS.maudAntonio}" style="display: inline-block; background-color: ${colors.accent}; color: ${colors.white}; text-decoration: none; padding: 15px 40px; border-radius: 12px; font-size: 15px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
+                    Les photos de Maud & Antonio
+                  </a>
+                </div>
+                <p style="color: ${colors.text}; line-height: 1.6; margin: 0; font-size: 13px; opacity: 0.75; font-style: italic;">
+                  Si vous en avez, n'hésitez pas à les rajouter à cet album.
+                </p>
+              </div>
+
+              <!-- Remerciement aux enfants -->
+              <div style="border-left: 4px solid ${colors.primary}; padding: 5px 0 5px 20px; margin: 0 0 30px 0;">
+                <p style="color: ${colors.text}; line-height: 1.9; margin: 0; font-size: 16px;">
+                  Nous tenons à remercier nos enfants, <strong style="color: ${colors.primary};">Romain, Maxime et Jade</strong>. Ils se sont investis avec nous, la fête en a été d'autant plus belle à nos yeux.
+                </p>
+              </div>
+
+              <!-- Clôture -->
+              <p style="color: ${colors.text}; line-height: 1.9; margin: 0 0 5px 0; font-size: 16px;">
+                À bientôt.
+              </p>
+              <p style="color: ${colors.text}; line-height: 1.9; margin: 0 0 30px 0; font-size: 16px;">
+                Bises.
+              </p>
+
+              <!-- Signature -->
+              <p style="font-family: ${fontScript}; color: ${colors.primary}; font-size: 26px; margin: 0; text-align: center;">
+                Véro &amp; Chris
+              </p>
+
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+}
+
+export async function sendThankYouEmail(
+  data: ThankYouEmailData
+): Promise<boolean> {
+  console.log("Tentative d'envoi email remerciement à:", data.email);
+
+  try {
+    const transporter = getTransporter();
+    const fromEmail = process.env.SMTP_EMAIL;
+
+    const html = generateThankYouHtml();
+
+    console.log("--- ENVOI EMAIL REMERCIEMENT ---");
+    console.log("From:", fromEmail);
+    console.log("To:", data.email);
+
+    await transporter.sendMail({
+      from: fromEmail,
+      replyTo: fromEmail,
+      to: data.email,
+      subject: "Merci d'avoir fêté nos noces de perle avec nous !",
+      html,
+    });
+
+    console.log("Email de remerciement envoyé avec succès à:", data.email);
+    return true;
+  } catch (error) {
+    console.error("--- ERREUR MAIL REMERCIEMENT ---");
+    console.error("Type:", error instanceof Error ? error.constructor.name : typeof error);
+    console.error("Message:", error instanceof Error ? error.message : String(error));
+    return false;
+  }
+}
+
+export async function sendBulkThankYou(
+  recipients: ThankYouEmailData[]
+): Promise<BulkEmailResult> {
+  console.log(`=== ENVOI EN MASSE: ${recipients.length} remerciements ===`);
+
+  const result: BulkEmailResult = {
+    total: recipients.length,
+    success: 0,
+    failed: 0,
+    errors: [],
+  };
+
+  for (const recipient of recipients) {
+    try {
+      const success = await sendThankYouEmail(recipient);
+      if (success) {
+        result.success++;
+      } else {
+        result.failed++;
+        result.errors.push({ email: recipient.email, error: "Échec de l'envoi" });
+      }
+      // Petite pause pour éviter les limites de taux Gmail
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    } catch (error) {
+      result.failed++;
+      result.errors.push({
+        email: recipient.email,
+        error: error instanceof Error ? error.message : "Erreur inconnue"
+      });
+    }
+  }
+
+  console.log(`=== RÉSULTAT: ${result.success}/${result.total} envoyés ===`);
+  return result;
+}
+
+// ============================================================================
 // ENVOI D'EMAILS EN MASSE
 // Fonction utilitaire pour envoyer des emails à plusieurs destinataires
 // ============================================================================
