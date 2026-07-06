@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getInvitesPresents } from "@/lib/google-sheets";
-import { sendBulkThankYou, sendThankYouEmail, ThankYouEmailData } from "@/lib/mailer";
+import { sendBulkThankYou, sendThankYouEmail, verifySmtp, ThankYouEmailData } from "@/lib/mailer";
 
 // ============================================================================
 // API ROUTE: Envoi des emails de remerciement
@@ -39,9 +39,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Option: envoyer à un seul email (pour test)
+    // Lecture du corps de la requête (tolérant à un corps vide/invalide)
     const body = await request.json().catch(() => ({}));
     const testEmail = body.testEmail;
+    const diagnose = body.diagnose === true;
+    const confirmAll = body.confirmAll === true;
+
+    // Mode diagnostic: vérifie la connexion Gmail SANS envoyer d'email.
+    // Renvoie le vrai message d'erreur SMTP pour comprendre les échecs d'envoi.
+    if (diagnose) {
+      console.log("Mode diagnostic SMTP");
+      const status = await verifySmtp();
+      return NextResponse.json({
+        success: status.ok,
+        message: status.ok
+          ? `Connexion Gmail OK (${status.email}). Les envois devraient fonctionner.`
+          : `Connexion Gmail EN ÉCHEC (${status.email || "SMTP_EMAIL non défini"}).`,
+        error: status.error,
+      });
+    }
 
     if (testEmail) {
       // Mode test: envoyer à un seul email
@@ -52,13 +68,31 @@ export async function POST(request: NextRequest) {
         email: testEmail,
       });
 
+      // En cas d'échec, on récupère la vraie raison SMTP pour aider au diagnostic
+      const smtp = success ? null : await verifySmtp();
+
       return NextResponse.json({
         success,
         message: success
           ? `Email de test envoyé à ${testEmail}`
           : `Échec de l'envoi à ${testEmail}`,
+        error: smtp && !smtp.ok ? smtp.error : undefined,
         stats: { total: 1, success: success ? 1 : 0, failed: success ? 0 : 1 },
       });
+    }
+
+    // SÉCURITÉ: l'envoi groupé (à TOUS les invités présents) doit être confirmé
+    // explicitement pour éviter tout envoi massif accidentel (ex: corps de
+    // requête vide ou mal lu). Sans confirmAll, on ne fait rien.
+    if (!confirmAll) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Envoi groupé non confirmé. Ajoutez {\"confirmAll\": true} pour envoyer à TOUS les invités présents, ou {\"testEmail\": \"...\"} pour un test unique.",
+        },
+        { status: 400 }
+      );
     }
 
     // Mode production: envoyer à tous les invités présents

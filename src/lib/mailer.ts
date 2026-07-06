@@ -25,6 +25,24 @@ function getTransporter() {
   });
 }
 
+// Vérifie la connexion/authentification SMTP sans envoyer d'email.
+// Utile pour diagnostiquer pourquoi les envois échouent (mot de passe
+// d'application Gmail manquant/invalide, connexion refusée, etc.)
+export async function verifySmtp(): Promise<{ ok: boolean; email?: string; error?: string }> {
+  const email = process.env.SMTP_EMAIL;
+  try {
+    const transporter = getTransporter();
+    await transporter.verify();
+    return { ok: true, email };
+  } catch (error) {
+    return {
+      ok: false,
+      email,
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
 // Interface pour les données d'email
 export interface RSVPEmailData {
   prenom: string;
