@@ -1,28 +1,16 @@
-# Politique RN20 (2026-09-14) : une PR securite groupee des qu'une faille sort,
-# une PR hebdo (lundi) des mineures et correctives, 7 jours apres leur sortie.
-# Les majeures ne sont jamais proposees : a planifier a la main.
+# Politique RN20 (2026-09-14, revue) : depot peu actif, une PR securite groupee des qu'une faille sort.
+# Aucune mise a jour de version (quota GitHub Actions).
 version: 2
 updates:
   - package-ecosystem: npm
     directories:
       - "/"
     schedule:
-      interval: weekly
-      day: monday
-      time: "06:00"
+      interval: monthly
       timezone: Europe/Paris
-    # Mises a jour de version : mineures et correctives seulement (n'affecte pas la securite).
-    allow:
-      - dependency-name: "*"
-        update-types: ["version-update:semver-minor", "version-update:semver-patch"]
-    cooldown:
-      default-days: 7
-    open-pull-requests-limit: 3
+    # Depot peu actif : correctifs de securite seulement, aucune mise a jour de version.
+    open-pull-requests-limit: 0
     groups:
       securite:
         applies-to: security-updates
         patterns: ["*"]
-      mineures:
-        applies-to: version-updates
-        patterns: ["*"]
-        update-types: ["minor", "patch"]
